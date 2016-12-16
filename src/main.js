@@ -8,7 +8,7 @@ import App from './App';
 require('vue-material/dist/vue-material.css');
 
 Vue.use(VueMaterial);
-Vue.material.theme.register('default', {
+Vue.material.registerTheme('default', {
   primary: 'light-green',
   accent: 'lime',
 });

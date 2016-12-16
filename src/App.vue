@@ -1,5 +1,5 @@
 <template>
-  <div id="app" v-md-theme="'default'">
+  <div id="app">
     <md-toolbar>
       <h2 class="md-title" style="flex: 1">Default</h2>
       <auth></auth>

@@ -26,7 +26,7 @@
       });
       firebase.auth().getRedirectResult().then((result) => {
         this.user = result.user;
-      }, (...args) => { console.log(args); });
+      });
     },
     methods: {
       login() {
