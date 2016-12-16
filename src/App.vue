@@ -1,28 +1,23 @@
 <template>
-  <div id="app">
+  <div id="app" v-md-theme="'default'">
+    <md-toolbar>
+      <h2 class="md-title" style="flex: 1">Default</h2>
+      <auth></auth>
+    </md-toolbar>
     <img src="./assets/logo.png">
-    <hello></hello>
   </div>
 </template>
 
 <script>
-import Hello from './components/Hello';
+import Auth from './components/Auth';
 
 export default {
   name: 'app',
   components: {
-    Hello,
+    Auth,
   },
 };
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>
