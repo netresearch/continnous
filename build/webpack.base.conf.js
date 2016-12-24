@@ -59,6 +59,10 @@ module.exports = {
         exclude: /node_modules/
       },
       {
+        test: /\.theme$/,
+        loaders: ['raw', 'sass-loader']
+      },
+      {
         test: /\.json$/,
         loader: 'json'
       },

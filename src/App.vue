@@ -23,13 +23,13 @@ import Auth from './components/Auth';
 export default {
   name: 'app',
   components: {
-    Auth,
+    Auth
   },
   data() {
     return {
-      user: null,
+      user: null
     };
-  },
+  }
 };
 </script>
 

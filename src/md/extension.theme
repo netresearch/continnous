@@ -1,0 +1,10 @@
+.THEME_NAME {
+  .md-contrast {
+    color: #{'PRIMARY-CONTRAST'};
+    &.md-spinner {
+      .md-spinner-path {
+        stroke: #{'PRIMARY-CONTRAST'}
+      }
+    }
+  }
+}
