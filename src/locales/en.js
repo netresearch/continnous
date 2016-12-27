@@ -9,5 +9,8 @@ module.exports = {
     signOut: 'Sign out',
     switchAccount: 'Switch account'
   },
-  overview: 'Overview'
+  settings: 'Settings',
+  overview: 'Overview',
+  objective: 'Objective | Objectives',
+  idea: 'Idea | Ideas'
 };

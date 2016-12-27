@@ -6,19 +6,34 @@
         <account-switcher></account-switcher>
       </template>
 
-      <div>
-        Orga: {{$route.params.organization_key}}
-      </div>
+      <template v-if="organization">
+        <router-view :organization="organization"></router-view>
 
-      <md-list slot="sidebar">
-        <md-list-item>
-          <md-icon>home</md-icon>
-          <span>{{$t('overview')}}</span>
-          <md-button v-if="isAdmin" class="md-icon-button md-list-action">
-            <md-icon>settings</md-icon>
-          </md-button>
-        </md-list-item>
-      </md-list>
+        <md-list slot="sidebar">
+          <md-list-item class="menu-entry">
+            <router-link :to="'/' + organization.key" exact>
+              <md-icon>home</md-icon>
+              <span>{{$t('overview')}}</span>
+              <router-link exact v-if="isAdmin" :to="'/' + organization.key + '/settings'" class="md-button md-icon-button md-list-action">
+                <md-icon>settings</md-icon>
+                <md-tooltip>{{$t('settings')}}</md-tooltip>
+              </router-link>
+            </router-link>
+          </md-list-item>
+          <md-list-item>
+            <router-link :to="'/' + organization.key + '/objectives'">
+              <md-icon>rowing</md-icon>
+              <span>{{$tc('objective', 2)}}</span>
+            </router-link>
+          </md-list-item>
+          <md-list-item>
+            <router-link :to="'/' + organization.key + '/ideas'">
+              <md-icon>lightbulb_outline</md-icon>
+              <span>{{$tc('idea', 2)}}</span>
+            </router-link>
+          </md-list-item>
+        </md-list>
+      </template>
     </md-app>
 
     <md-message
@@ -44,6 +59,7 @@
   import Firebase from 'firebase';
   import auth from '../auth';
   import AccountSwitcher from './AccountSwitcher';
+  import Organization from '../models/Organization';
 
   export default {
     components: {
@@ -65,15 +81,20 @@
     },
     methods: {
       fetchOrganization() {
+        if (this.organization && this.organization.key === this.$route.params.organization_key) {
+          return;
+        }
         if (this.orgsRef) {
           this.orgsRef.off('value');
         }
         this.orgsRef = Firebase.database().ref('organizations/' + this.$route.params.organization_key);
         this.orgsRef.on('value',
           (snapshot) => {
-            this.organization = snapshot.val();
-            if (this.organization) {
+            if (snapshot.val()) {
+              this.organization = new Organization(snapshot.key, snapshot.val());
               this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
+            } else {
+              this.organization = null;
             }
           },
           () => {
@@ -100,3 +121,10 @@
     }
   };
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .menu-entry {
+    background-color: #fafafa;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+</style>

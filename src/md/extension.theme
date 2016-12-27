@@ -7,6 +7,12 @@
       }
     }
   }
+  .router-link-active {
+      color: #{'PRIMARY-COLOR'};
+      > .md-icon {
+        color: #{'PRIMARY-COLOR'};
+      }
+  }
   .md-app > .md-sidenav > .md-sidenav-content {
       background-color: #{'BACKGROUND-COLOR-A100'};
       color: #{'BACKGROUND-CONTRAST'};
