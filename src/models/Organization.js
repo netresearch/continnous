@@ -1,35 +1,30 @@
 const firebase = require('firebase');
 
 export default class Organization {
-  constructor(uid, name) {
-    this.uid = uid;
-    this.name = name;
+  constructor(id, data) {
+    Object.assign(this, data);
+    this.valid = true;
   }
-  static getByDomain(domain) {
-    const orgsRef = firebase.database().ref('organizations').orderByChild('domain').equalTo(domain);
-    const organizations = [];
-    organizations.loading = true;
-    orgsRef.on('value', () => {
-      organizations.loading = false;
-    });
-    orgsRef.on('child_added', (snapshot) => {
-      organizations.push(new Organization(snapshot.key, snapshot.val().name));
-    });
-    orgsRef.on('child_removed', (snapshot) => {
-      organizations.forEach((org, index) => {
-        if (org.uid === snapshot.key) {
-          organizations.splice(index, 1);
+  static getByKey(key) {
+    const orgsRef = firebase.database().ref('organizations/' + key);
+    let organization;
+    return new Promise((resolve, reject) => {
+      orgsRef.on('value', (snapshot) => {
+        if (!snapshot.val()) {
+          if (organization) {
+            organization.valid = false;
+          } else {
+            reject();
+          }
+          return;
+        }
+        if (organization) {
+          Object.assign(organization, snapshot.val());
+        } else {
+          organization = new Organization(key, snapshot.val());
+          resolve(organization);
         }
       });
     });
-    orgsRef.on('child_changed', (snapshot) => {
-      organizations.forEach((org) => {
-        const my = org;
-        if (my.uid === snapshot.key) {
-          my.name = snapshot.val().name;
-        }
-      });
-    });
-    return organizations;
   }
 }

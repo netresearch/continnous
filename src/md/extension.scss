@@ -1,0 +1,10 @@
+.md-button.md-link {
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  &:hover {
+    background: transparent !important;
+    text-decoration: underline !important;
+  }
+}

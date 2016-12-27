@@ -1,4 +1,4 @@
-import Organization from './Organization';
+// import Organization from './Organization';
 
 export default class User {
   constructor(data) {
@@ -7,7 +7,7 @@ export default class User {
     this.uid = data.uid;
     this.photoURL = data.photoURL;
 
-    this.organizations = Organization.getByDomain(this.email.split('@').pop());
+    this.organizations = []; // Organization.getByDomain(this.email.split('@').pop());
   }
   static createFromAuth(authUser) {
     return new User(authUser);

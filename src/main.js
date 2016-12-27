@@ -3,10 +3,16 @@
 import 'vue-material/dist/vue-material.css';
 import Vue from 'vue';
 import VueMaterial from 'vue-material';
+import VueRouter from 'vue-router';
+import Routes from './routes';
 import AdditionalVueMaterial from './md';
+
+import './locales';
+import './firebase';
 
 import App from './App';
 
+Vue.use(VueRouter);
 Vue.use(VueMaterial);
 Vue.use(AdditionalVueMaterial);
 Vue.material.registerTheme('default', {
@@ -14,20 +20,10 @@ Vue.material.registerTheme('default', {
   accent: 'lime',
 });
 
-const firebase = require('firebase');
-
-const config = {
-  apiKey: 'AIzaSyCy4CP6XOpkZuAeiK4YhZWysu9FD2W4l-8',
-  authDomain: 'continnous.firebaseapp.com',
-  databaseURL: 'https://continnous.firebaseio.com',
-  storageBucket: 'continnous.appspot.com',
-  messagingSenderId: '552370645245',
-};
-firebase.initializeApp(config);
-
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
+  router: new VueRouter(Routes),
   template: '<App/>',
   components: { App },
 });

@@ -1,6 +1,17 @@
 {
   "rules": {
     ".read": "auth != null",
-    ".write": "auth != null"
+    ".write": false,
+    "organizations": {
+      "$organization_id": {
+        ".write": "!data.exists() && newData.exists() || data.child('admins/' + auth.uid).exists()"
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    }
   }
 }

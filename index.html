@@ -5,9 +5,84 @@
     <title>continnous</title>
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
     <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+    <style type="text/css">
+      html, body {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+      }
+      #app {
+        min-height: 100%;
+        position: relative;
+      }
+      .splash {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: #fdfdfd;
+        z-index: 1000;
+      }
+      .splash > .message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      .splash > .message:before {
+        content: "ContInnoUs";
+        color: #ddd;
+        display:block;
+        font-size: 20px;
+        width: 200px;
+        text-align: center;
+        font-family: Roboto, sans-serif;
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        margin-left: -100px;
+        white-space: nowrap;
+      }
+      .loader {
+        display: block;
+        min-width: 32px;
+        position: relative;
+        height: 2px;
+        background: #ddd;
+      }
+      .splash > .message > .loader {
+        width: 70px;
+      }
+      .loader:after {
+        display: block;
+        position: absolute;
+        content: "";
+        left: 0;
+        width: 1px;
+        height: 100%;
+        bottom:0;
+        background-color: #2980b9;
+        animation: preloading 2s linear infinite;
+      }
+
+      @keyframes preloading {
+        from {left: 0; width: 1%;}
+        50% { left: 0; width: 50%;}
+        70% { left: 50%; width: 50%;}
+        80% { left: 70%; width: 30%; }
+        to {left: 100%; width: 0; }
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="splash">
+        <div class="message">
+          <div class="loader"></div>
+        </div>
+      </div>
+    </div>
     <!-- built files will be auto injected -->
   </body>
 </html>
