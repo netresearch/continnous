@@ -3,7 +3,7 @@ import VueI18n from 'vue-i18n';
 
 Vue.use(VueI18n);
 
-const available = ['en', 'de'];
+const available = ['en']; // , 'de'];
 
 function loadLocales(lang) {
   /* eslint-disable global-require, import/no-dynamic-require */

@@ -8,5 +8,6 @@ module.exports = {
     signIn: 'Sign in',
     signOut: 'Sign out',
     switchAccount: 'Switch account'
-  }
+  },
+  overview: 'Overview'
 };

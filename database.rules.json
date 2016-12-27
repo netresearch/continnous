@@ -1,10 +1,19 @@
 {
   "rules": {
-    ".read": "auth != null",
+    ".read": false,
     ".write": false,
     "organizations": {
       "$organization_id": {
-        ".write": "!data.exists() && newData.exists() || data.child('admins/' + auth.uid).exists()"
+        ".read": "auth != null",
+        ".write": "!data.exists() && newData.exists() || root.child('organization_admins/' + $organization_id + '/' + auth.uid).exists()",
+        "admins": {
+          ".read": "data.child(auth.uid).exists()"
+        }
+      }
+    },
+    "organization_admins": {
+      "$organization_id": {
+        ".read": "data.child(auth.uid).exists()"
       }
     },
     "users": {

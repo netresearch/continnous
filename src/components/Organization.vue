@@ -11,13 +11,16 @@
       </div>
 
       <md-list slot="sidebar">
-        <md-list-item>Huhu</md-list-item>
+        <md-list-item>
+          <md-icon>home</md-icon>
+          <span>{{$t('overview')}}</span>
+          <md-button v-if="isAdmin" class="md-icon-button md-list-action">
+            <md-icon>settings</md-icon>
+          </md-button>
+        </md-list-item>
       </md-list>
     </md-app>
-    <!--<md-toolbar :class="{'md-transparent': !organization}">
-      <h2 class="md-title" style="flex: 1">{{organization ? organization.name : ''}}</h2>
-      <account-switcher></account-switcher>
-    </md-toolbar>-->
+
     <md-message
         v-if="!organization"
         :loading="organization === undefined || !auth.ready"
@@ -52,12 +55,13 @@
     data() {
       return {
         organization: undefined,
+        isAdmin: false,
         auth
       };
     },
     watch: {
-      // call again the method if the route changes
-      $route: 'fetchOrganization'
+      $route: 'fetchOrganization',
+      'auth.user': 'fetchOrganizationAdmin'
     },
     methods: {
       fetchOrganization() {
@@ -76,6 +80,22 @@
             this.organization = false;
           }
         );
+
+        this.fetchOrganizationAdmin();
+      },
+      fetchOrganizationAdmin() {
+        if (this.orgAdminsRef) {
+          this.orgAdminsRef.off('value');
+        }
+        this.isAdmin = false;
+        if (this.auth.user) {
+          this.orgAdminsRef = Firebase.database().ref(
+            'organization_admins/' + this.$route.params.organization_key + '/' + this.auth.user.uid
+          );
+          this.orgAdminsRef.on('value', (snapshot) => {
+            this.isAdmin = snapshot.val();
+          });
+        }
       }
     }
   };
