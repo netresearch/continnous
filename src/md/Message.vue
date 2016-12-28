@@ -1,13 +1,13 @@
 <template>
   <div class="message-wrapper" :style="{display: toast || splash || !visible ? 'none' : 'block'}">
     <div class="message" v-show="visible">
-      <template v-if="status === 0">
+      <template v-if="st === 0">
         <div class="loader" v-if="splash"></div>
         <md-spinner v-else md-indeterminate :md-size="32"></md-spinner>
       </template>
       <div class="message-content" v-else>
-        <md-icon :class="status < 0 ? 'md-warn' : 'md-primary'">{{status === -1 ? 'error' : (status === -2 ? 'warning' : (status === 1 ? 'done' : 'info'))}}</md-icon>
-        <div><slot>{{status < 0 ? $t('errors.general') : ''}}</slot></div>
+        <md-icon :class="st < 0 ? 'md-warn' : 'md-primary'">{{st === -1 ? 'error' : (st === -2 ? 'warning' : (st === 1 ? 'done' : 'info'))}}</md-icon>
+        <div><slot>{{st < 0 ? $t('errors.general') : ''}}</slot></div>
       </div>
     </div>
   </div>
@@ -31,7 +31,8 @@
     },
     data() {
       return {
-        visible: false
+        visible: false,
+        st: this.status
       };
     },
     watch: {
@@ -39,6 +40,7 @@
         immediate: true,
         handler(status) {
           this.visible = !isNaN(status);
+          this.st = status;
           if (status !== 0 && !isNaN(status) && this.timeout > 0) {
             /* global window */
             window.setTimeout(() => {
@@ -82,6 +84,7 @@
           }
         }
         this.visible = false;
+        this.st = NaN;
       }
     }
   };
