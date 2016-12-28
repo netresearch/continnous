@@ -112,7 +112,6 @@
             }
           }
         });
-        console.log(newTheme);
         this.$emit('input', newTheme);
       },
       onChange(key, color, hue) {

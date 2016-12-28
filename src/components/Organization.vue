@@ -40,9 +40,8 @@
 
     <md-message
         v-if="!organization"
-        :loading="organization === undefined || !auth.ready"
-        :warning="organization === false"
-        :error="organization === null"
+        :status="organization === undefined || !auth.ready ? 0 : (organization === false ? -2 : (organizaion === null ? -1 : 1))"
+        :timeout="0"
         splash>
       <div v-if="organization === null">
         {{$t('errors.404')}}

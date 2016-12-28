@@ -1,10 +1,13 @@
 <template>
-  <div class="message-wrapper" style="display: none">
-    <div class="message">
-      <div class="loader" v-if="loading"></div>
+  <div class="message-wrapper" :style="{display: toast || splash || !visible ? 'none' : 'block'}">
+    <div class="message" v-show="visible">
+      <template v-if="status === 0">
+        <div class="loader" v-if="splash"></div>
+        <md-spinner v-else md-indeterminate :md-size="32"></md-spinner>
+      </template>
       <div class="message-content" v-else>
-        <md-icon :class="{'md-warn': error || warning}">{{error ? 'error' : (warning ? 'warning' : 'info')}}</md-icon>
-        <div><slot></slot></div>
+        <md-icon :class="status < 0 ? 'md-warn' : 'md-primary'">{{status === -1 ? 'error' : (status === -2 ? 'warning' : (status === 1 ? 'done' : 'info'))}}</md-icon>
+        <div><slot>{{status < 0 ? $t('errors.general') : ''}}</slot></div>
       </div>
     </div>
   </div>
@@ -15,10 +18,37 @@
 
   export default {
     props: {
-      error: Boolean,
-      warning: Boolean,
-      loading: Boolean,
-      splash: Boolean // Not supported to be changed by now
+      splash: Boolean, // Not supported to be changed by now
+      toast: Boolean, // Not supported to be changed by now
+      status: {
+        type: Number,
+        default: NaN
+      },
+      timeout: {
+        type: Number,
+        default: 1500
+      }
+    },
+    data() {
+      return {
+        visible: false
+      };
+    },
+    watch: {
+      status: {
+        immediate: true,
+        handler(status) {
+          this.visible = !isNaN(status);
+          if (status !== 0 && !isNaN(status) && this.timeout > 0) {
+            /* global window */
+            window.setTimeout(() => {
+              if (this.status !== 0 && !isNaN(this.status)) {
+                this.close();
+              }
+            }, this.timeout);
+          }
+        }
+      }
     },
     mounted() {
       this.$nextTick(() => {
@@ -27,18 +57,31 @@
           this.splashElement = document.createElement('div');
           this.splashElement.className = 'splash';
           this.$root.$el.appendChild(this.splashElement);
-        } else if (!toastsElement) {
+        } else if (this.toast && !toastsElement) {
           toastsElement = document.createElement('div');
           toastsElement.className = 'toasts';
         }
         this.element = this.$el.childNodes[0];
-        (this.splash ? this.splashElement : toastsElement).appendChild(this.element);
+        if (this.toast || this.splash) {
+          (this.splash ? this.splashElement : toastsElement).appendChild(this.element);
+        }
       });
     },
     beforeDestroy() {
-      this.element.parentNode.removeChild(this.element);
-      if (this.splash) {
-        this.splashElement.parentNode.removeChild(this.splashElement);
+      this.close();
+    },
+    methods: {
+      close() {
+        if (this.toast || this.splash) {
+          if (this.element) {
+            this.$el.appendChild(this.element);
+            this.element = null;
+          }
+          if (this.splashElement) {
+            this.splashElement.parentNode.removeChild(this.splashElement);
+          }
+        }
+        this.visible = false;
       }
     }
   };
@@ -62,5 +105,23 @@
   .splash > .message > .message-content {
     padding-top: 10px;
     border-top: 2px solid #ddd;
+  }
+  .message-wrapper {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(250, 250, 250, 0.8);
+    z-index: 100;
+    .md-spinner, .message {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      .message-content > div {
+        padding-top: 10px;
+      }
+    }
   }
 </style>

@@ -22,16 +22,18 @@
         <theme ref="theme" :value="organization.theme" @input="onChange('theme', $event)"></theme>
       </md-card-content>
       <md-card-actions>
-        <md-button class="md-primary md-raised" :disabled="!changes.theme">{{$t('actions.save')}}</md-button>
-        <md-button :disabled="!changes.theme" @click="$refs.theme.setValue(organization.theme); $delete(changes, 'theme')">{{$t('actions.reset')}}</md-button>
+        <md-button @click="save('theme')" class="md-primary md-raised" :disabled="!changes.theme">{{$t('actions.save')}}</md-button>
+        <md-button @click="$refs.theme.setValue(organization.theme); $delete(changes, 'theme')" :disabled="!changes.theme">{{$t('actions.reset')}}</md-button>
         <span style="flex: 1"></span>
         <md-button @click="$refs.theme.resetToDefaults()" class="md-dense">{{$t('actions.resetToDefaults')}}</md-button>
       </md-card-actions>
+      <md-message :status="saved.theme"></md-message>
     </md-card>
   </div>
 </template>
 
 <script>
+  import Firebase from 'firebase';
   import Theme from './settings/Theme';
 
   export default {
@@ -41,12 +43,38 @@
     },
     data() {
       return {
-        changes: {}
+        changes: {},
+        saved: {}
       };
     },
     methods: {
       onChange(key, value) {
         this.$set(this.changes, key, value);
+      },
+      save(keysString) {
+        const keys = keysString.split('|');
+        const updates = {};
+        keys.forEach((key) => {
+          if (Object.prototype.hasOwnProperty.call(this.changes, key)) {
+            updates['/organizations/' + this.organization.key + '/' + key] = this.changes[key];
+          }
+        });
+
+        if (Object.keys(updates).length) {
+          this.$set(this.saved, keysString, 0);
+          Firebase.database().ref().update(updates).then(
+            () => {
+              this.$set(this.saved, keysString, 1);
+              if (keys.indexOf('theme') > -1) {
+                /* global document */
+                document.location.reload();
+              }
+            },
+            () => {
+              this.$set(this.saved, keysString, -1);
+            }
+          );
+        }
       }
     }
   };
