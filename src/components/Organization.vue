@@ -7,7 +7,9 @@
       </template>
 
       <template v-if="organization">
-        <router-view :organization="organization"></router-view>
+        <div class="app-content">
+          <router-view :organization="organization"></router-view>
+        </div>
 
         <md-list slot="sidebar">
           <md-list-item class="menu-entry">
@@ -126,5 +128,11 @@
   .menu-entry {
     background-color: #fafafa;
     border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .app-content {
+    padding: 16px;
+    > div > .md-toolbar {
+      margin:-16px -16px 16px;
+    }
   }
 </style>

@@ -12,5 +12,24 @@ module.exports = {
   settings: 'Settings',
   overview: 'Overview',
   objective: 'Objective | Objectives',
-  idea: 'Idea | Ideas'
+  idea: 'Idea | Ideas',
+  organization: {
+    info: 'Organization information'
+  },
+  theme: 'Theme',
+  general: 'General',
+  name: 'Name',
+  actions: {
+    reset: 'Reset',
+    resetToDefaults: 'Reset to defaults',
+    save: 'Save'
+  },
+  vision: {
+    label: 'Vision statement',
+    placeholder: 'Provide a clear vision statement'
+  },
+  mission: {
+    label: 'Mission statement',
+    placeholder: 'Provide a clear mission statement'
+  }
 };
