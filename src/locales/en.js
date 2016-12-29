@@ -27,6 +27,19 @@ module.exports = {
   name: 'Name',
   domain: 'Domain | Domains',
   addDomain: 'Add domain',
+  roles: {
+    member: 'Member',
+    guest: 'Guest',
+    anyone: 'Anyone'
+  },
+  permissions: {
+    objectives: 'Objectives',
+    personal_objectives: 'Personal objectives',
+    ideas: 'Ideas',
+    personal_ideas: 'Personal ideas',
+    read: 'Read',
+    write: 'Write'
+  },
   actions: {
     reset: 'Reset',
     resetToDefaults: 'Reset to defaults',

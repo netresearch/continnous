@@ -26,7 +26,10 @@ export default {
           }
           this.firebaseRef = Firebase.database().ref(firebasePath);
           this.firebaseRef.on('value', (snapshot) => {
-            this.$set(this, this.$options.objectPath, snapshot.val() || {});
+            this.$set(
+              this, this.$options.objectPath,
+              this.$options.firebaseReceive.call(this, snapshot)
+            );
           });
         }
       }
@@ -35,6 +38,9 @@ export default {
       this.values = Object.assign({}, newValue);
       this.$nextTick(bindToFirebase);
     }, { immediate: true });
+  },
+  firebaseReceive(snapshot) {
+    return snapshot().val() || {};
   },
   bindToFirebase: false,
   validate: {
