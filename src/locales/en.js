@@ -15,11 +15,18 @@ module.exports = {
   objective: 'Objective | Objectives',
   idea: 'Idea | Ideas',
   organization: {
-    info: 'Organization information'
+    info: 'Organization information',
+    domains: 'Organization domains'
+  },
+  guest: {
+    domains: 'Guest domains'
   },
   theme: 'Theme',
   general: 'General',
+  permission: 'Permission | Permissions',
   name: 'Name',
+  domain: 'Domain | Domains',
+  addDomain: 'Add domain',
   actions: {
     reset: 'Reset',
     resetToDefaults: 'Reset to defaults',

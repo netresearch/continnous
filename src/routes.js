@@ -2,6 +2,8 @@ import Index from './components/Index';
 import Organization from './components/Organization';
 import OrganizationOverview from './components/organization/Overview';
 import OrganizationSettings from './components/organization/Settings';
+import OrganizationSettingsGeneral from './components/organization/settings/General';
+import OrganizationSettingsPermissions from './components/organization/settings/Permissions';
 import OrganizationObjectives from './components/organization/Objectives';
 import OrganizationIdeas from './components/organization/Ideas';
 
@@ -13,7 +15,14 @@ export default {
       component: Organization,
       children: [
         { path: '', component: OrganizationOverview },
-        { path: 'settings', component: OrganizationSettings },
+        {
+          path: 'settings',
+          component: OrganizationSettings,
+          children: [
+            { path: '', component: OrganizationSettingsGeneral },
+            { path: 'permissions', component: OrganizationSettingsPermissions }
+          ]
+        },
         { path: 'objectives', component: OrganizationObjectives },
         { path: 'ideas', component: OrganizationIdeas }
       ]

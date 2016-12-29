@@ -16,7 +16,7 @@
             <router-link :to="'/' + organization.key" exact>
               <md-icon>home</md-icon>
               <span>{{$t('overview')}}</span>
-              <router-link exact v-if="isAdmin" :to="'/' + organization.key + '/settings'" class="md-button md-icon-button md-list-action">
+              <router-link v-if="isAdmin" :to="'/' + organization.key + '/settings'" class="md-button md-icon-button md-list-action">
                 <md-icon>settings</md-icon>
                 <md-tooltip>{{$t('settings')}}</md-tooltip>
               </router-link>
@@ -130,7 +130,8 @@
   }
   .app-content {
     padding: 16px;
-    > div > .md-toolbar {
+    > div > .md-toolbar,
+    > div .md-tabs {
       margin:-16px -16px 16px;
     }
   }

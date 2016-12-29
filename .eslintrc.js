@@ -29,6 +29,7 @@ module.exports = {
     'prefer-template': 0,
     'comma-dangle': 0,
     'no-plusplus': 0,
-    'no-prototype-builtins': 0
+    'no-prototype-builtins': 0,
+    'no-continue': 0
   }
 }

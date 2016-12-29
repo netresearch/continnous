@@ -13,7 +13,14 @@
     },
     "organization_admins": {
       "$organization_id": {
-        ".read": "data.child(auth.uid).exists()"
+        ".read": "data.child(auth.uid).exists()",
+        ".write": "data.child(auth.uid).exists()"
+      }
+    },
+    "organization_permissions": {
+      "$organization_id": {
+        ".read": "root.child('organization_admins/' + $organization_id + '/' + auth.uid).exists()",
+        ".write": "root.child('organization_admins/' + $organization_id + '/' + auth.uid).exists()"
       }
     },
     "users": {

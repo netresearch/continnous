@@ -13,6 +13,20 @@
         color: #{'PRIMARY-COLOR'};
       }
   }
+  .md-toolbar.md-nav-bar > .md-button {
+    color: #{'PRIMARY-CONTRAST-0.54'};
+  }
+  .md-toolbar > .router-link-active {
+    color: #{'PRIMARY-CONTRAST'} !important;
+  }
+  .md-nav-bar > .md-button {
+    &.md-active,
+    &.router-link-active {
+      &:after {
+        background: #{'PRIMARY-CONTRAST'};
+      }
+    }
+  }
   .md-app > .md-sidenav > .md-sidenav-content {
       background-color: #{'BACKGROUND-COLOR-A100'};
       color: #{'BACKGROUND-CONTRAST'};
