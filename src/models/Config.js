@@ -1,8 +1,10 @@
-export default {
+// CommonJS because required on CLI
+
+module.exports = {
   roles: ['member', 'guest', 'anyone'],
   getDefaultPermissions() {
-    const defaultPermissions = {};
-    const availableResources = {
+    const permissions = {};
+    const resources = {
       objectives: ['read', 'write'],
       personal_objectives: ['read', 'write'],
       ideas: ['read', 'write'],
@@ -25,16 +27,19 @@ export default {
     };
 
     Object.keys(roles).forEach((role) => {
-      defaultPermissions[role] = {};
-      Object.keys(availableResources).forEach((resource) => {
-        defaultPermissions[role][resource] = {};
-        availableResources[resource].forEach((privilege) => {
-          defaultPermissions[role][resource][privilege] =
-            roles[role][resource] && roles[role][resource].indexOf(privilege) > -1;
+      permissions[role] = {};
+      Object.keys(resources).forEach((resource) => {
+        permissions[role][resource] = {};
+        resources[resource].forEach((privilege) => {
+          if (roles[role][resource]) {
+            permissions[role][resource][privilege] = roles[role][resource].indexOf(privilege) > -1;
+          } else {
+            permissions[role][resource][privilege] = false;
+          }
         });
       });
     });
 
-    return defaultPermissions;
+    return permissions;
   }
 };

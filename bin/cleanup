@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+
+/* eslint-disable no-console */
+
+const program = require('commander');
+const cp = require('child_process');
+const fs = require('fs');
+const extend = require('extend');
+const Config = require('../src/models/Config');
+
+const tmpFile = './continnous.json';
+
+program
+  .command('privileges')
+  .option('-d, --dry-run', 'Only print data that would be written')
+  .action((options) => {
+    const organizations = JSON.parse(cp.execSync('firebase database:get /organizations'));
+    const defaultPermissions = Config.getDefaultPermissions();
+    const l = Object.keys(organizations).length;
+    let i = 0;
+    console.log('Received ' + l + ' objects');
+    Object.keys(organizations).forEach((organizationKey) => {
+      i++;
+      console.log(i + '/' + l + ': ' + organizationKey);
+      const path = '/organization_permissions/' + organizationKey;
+      console.log('  - reading permissions');
+      const permissions = extend(true, {}, defaultPermissions, JSON.parse(cp.execSync('firebase database:get ' + path)));
+      if (options.dryRun) {
+        console.log(JSON.stringify(permissions, null, 2));
+        return;
+      }
+      console.log('  - updating permissions');
+      fs.writeFileSync(tmpFile, JSON.stringify(permissions));
+      cp.execSync('firebase database:set -y ' + path + ' ' + tmpFile);
+      console.log('  - done');
+    });
+    if (l > 0 && !options.dryRun) {
+      fs.unlinkSync(tmpFile);
+    }
+  });
+
+program.parse(process.argv);
