@@ -15,7 +15,7 @@
                 <md-icon>clear</md-icon>
               </md-button>
             </div>
-            <md-button class="md-link" v-if="isValid(key)" @click="addDomain(key)">{{$t('addDomain')}}</md-button>
+            <md-button class="md-link" v-if="(!values[key] || values[key].length < 5) && isValid(key)" @click="addDomain(key)">{{$t('addDomain')}}</md-button>
           </div>
         </div>
       </md-card-content>
@@ -68,7 +68,7 @@
         const newDomains = (this.values[type] || []).slice(0);
         newDomains.splice(index, 1);
         this.$set(this.values, type, newDomains);
-        this.onChange(type, this.permissions.hasOwnProperty(type) ? newDomains : '');
+        this.onChange(type, this.firebaseObject.hasOwnProperty(type) ? newDomains : '');
       }
     }
   };
