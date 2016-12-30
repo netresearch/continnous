@@ -6,9 +6,11 @@ export default {
       values: {},
       changed: {},
       errors: {},
-      saved: {}
+      saved: {},
+      firebaseObject: {}
     };
   },
+  objectPath: 'firebaseObject',
   created() {
     if (!this.$options.objectPath) {
       throw new Error('objectPath option required');
@@ -30,6 +32,9 @@ export default {
               this, this.$options.objectPath,
               this.$options.firebaseReceive.call(this, snapshot)
             );
+          },
+          (error) => {
+            throw error;
           });
         }
       }
@@ -40,7 +45,7 @@ export default {
     }, { immediate: true });
   },
   firebaseReceive(snapshot) {
-    return snapshot().val() || {};
+    return snapshot.val() || {};
   },
   bindToFirebase: false,
   validate: {

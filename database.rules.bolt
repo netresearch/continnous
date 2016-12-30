@@ -1,0 +1,45 @@
+isAuthenticated() {
+    return auth.uid !== null && auth.token.email !== null;
+}
+
+isAdmin(oid) {
+    return root.security.organizations[oid].admins[auth.uid] != null;
+}
+
+isInNthDomain(organizationId, type, n) {
+    return auth.token.email.endsWith('@' + root.security.organizations[organizationId].domains[type]['' + n]);
+}
+
+isInDomain(organizationId, type) {
+    return isInNthDomain(organizationId, type, 0)
+        || isInNthDomain(organizationId, type, 1)
+        || isInNthDomain(organizationId, type, 2)
+        || isInNthDomain(organizationId, type, 3)
+        || isInNthDomain(organizationId, type, 4)
+}
+
+isAllowed(resource, privilege, organizationId) {
+    return root.security.organizations[organizationId].permissions[
+        isInDomain(organizationId, 'member') ? 'member' : (isInDomain(organizationId, 'guest') ? 'guest' : 'anyone')
+    ][resource][privilege]
+}
+
+path /security/organizations/{oid} {
+    read() { isAuthenticated() && isAdmin(oid) }
+    write() { isAuthenticated() && isAdmin(oid) }
+}
+
+path /organizations/{oid} is Any {
+    read() { isAuthenticated() }
+    write() { isAuthenticated() && isAdmin(oid) }
+}
+
+path /resources/{oid}/{type}/{rid} {
+     read() { isAuthenticated() && (isAllowed(type, 'read', oid) || this.creator === auth.uid) }
+     write() { isAuthenticated() && (isAllowed(type, 'write', oid) || prior(this.creator) === auth.uid) }
+}
+
+path /users/{uid} is Any {
+    read() { auth.uid != null && auth.uid === uid }
+    write() { auth.uid != null && auth.uid === uid }
+}

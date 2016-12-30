@@ -1,32 +1,33 @@
 {
   "rules": {
-    ".read": false,
-    ".write": false,
-    "organizations": {
-      "$organization_id": {
-        ".read": "auth != null",
-        ".write": "!data.exists() && newData.exists() || root.child('organization_admins/' + $organization_id + '/' + auth.uid).exists()",
-        "admins": {
-          ".read": "data.child(auth.uid).exists()"
+    "security": {
+      "organizations": {
+        "$oid": {
+          ".read": "auth.uid != null && auth.token.email != null && root.child('security').child('organizations').child($oid).child('admins').child(auth.uid).val() != null",
+          ".write": "auth.uid != null && auth.token.email != null && newData.parent().parent().parent().child('security').child('organizations').child($oid).child('admins').child(auth.uid).val() != null"
         }
       }
     },
-    "organization_admins": {
-      "$organization_id": {
-        ".read": "data.child(auth.uid).exists()",
-        ".write": "data.child(auth.uid).exists()"
+    "organizations": {
+      "$oid": {
+        ".read": "auth.uid != null && auth.token.email != null",
+        ".write": "auth.uid != null && auth.token.email != null && newData.parent().parent().child('security').child('organizations').child($oid).child('admins').child(auth.uid).val() != null"
       }
     },
-    "organization_permissions": {
-      "$organization_id": {
-        ".read": "root.child('organization_admins/' + $organization_id + '/' + auth.uid).exists()",
-        ".write": "root.child('organization_admins/' + $organization_id + '/' + auth.uid).exists()"
+    "resources": {
+      "$oid": {
+        "$type": {
+          "$rid": {
+            ".read": "auth.uid != null && auth.token.email != null && (root.child('security').child('organizations').child($oid).child('permissions').child(auth.token.email.endsWith(('@' + root.child('security').child('organizations').child($oid).child('domains').child('member').child('' + 0).val())) || auth.token.email.endsWith(('@' + root.child('security').child('organizations').child($oid).child('domains').child('member').child('' + 1).val())) || auth.token.email.endsWith(('@' + root.child('security').child('organizations').child($oid).child('domains').child('member').child('' + 2).val())) || auth.token.email.endsWith(('@' + root.child('security').child('organizations').child($oid).child('domains').child('member').child('' + 3).val())) || auth.token.email.endsWith(('@' + root.child('security').child('organizations').child($oid).child('domains').child('member').child('' + 4).val())) ? 'member' : auth.token.email.endsWith(('@' + root.child('security').child('organizations').child($oid).child('domains').child('guest').child('' + 0).val())) || auth.token.email.endsWith(('@' + root.child('security').child('organizations').child($oid).child('domains').child('guest').child('' + 1).val())) || auth.token.email.endsWith(('@' + root.child('security').child('organizations').child($oid).child('domains').child('guest').child('' + 2).val())) || auth.token.email.endsWith(('@' + root.child('security').child('organizations').child($oid).child('domains').child('guest').child('' + 3).val())) || auth.token.email.endsWith(('@' + root.child('security').child('organizations').child($oid).child('domains').child('guest').child('' + 4).val())) ? 'guest' : 'anyone').child($type).child('read').val() == true || data.child('creator').val() == auth.uid)",
+            ".write": "auth.uid != null && auth.token.email != null && (newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('permissions').child(auth.token.email.endsWith(('@' + newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('domains').child('member').child('' + 0).val())) || auth.token.email.endsWith(('@' + newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('domains').child('member').child('' + 1).val())) || auth.token.email.endsWith(('@' + newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('domains').child('member').child('' + 2).val())) || auth.token.email.endsWith(('@' + newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('domains').child('member').child('' + 3).val())) || auth.token.email.endsWith(('@' + newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('domains').child('member').child('' + 4).val())) ? 'member' : auth.token.email.endsWith(('@' + newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('domains').child('guest').child('' + 0).val())) || auth.token.email.endsWith(('@' + newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('domains').child('guest').child('' + 1).val())) || auth.token.email.endsWith(('@' + newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('domains').child('guest').child('' + 2).val())) || auth.token.email.endsWith(('@' + newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('domains').child('guest').child('' + 3).val())) || auth.token.email.endsWith(('@' + newData.parent().parent().parent().parent().child('security').child('organizations').child($oid).child('domains').child('guest').child('' + 4).val())) ? 'guest' : 'anyone').child($type).child('write').val() == true || data.child('creator').val() == auth.uid)"
+          }
+        }
       }
     },
     "users": {
       "$uid": {
-        ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid"
+        ".read": "auth.uid != null && auth.uid == $uid",
+        ".write": "auth.uid != null && auth.uid == $uid"
       }
     }
   }

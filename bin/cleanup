@@ -22,7 +22,7 @@ program
     Object.keys(organizations).forEach((organizationKey) => {
       i++;
       console.log(i + '/' + l + ': ' + organizationKey);
-      const path = '/organization_permissions/' + organizationKey;
+      const path = '/security/organizations/' + organizationKey + '/permissions';
       console.log('  - reading permissions');
       const permissions = extend(true, {}, defaultPermissions, JSON.parse(cp.execSync('firebase database:get ' + path)));
       if (options.dryRun) {
