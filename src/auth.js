@@ -17,13 +17,21 @@ const auth = {
   }
 };
 
-Firebase.auth().onAuthStateChanged((user) => {
+function setUser(user) {
   auth.ready = true;
   auth.user = user ? User.createFromAuth(user) : undefined;
-});
+  if (user) {
+    Firebase.database().ref('/users/' + user.uid).set({
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL
+    });
+  }
+}
+
+Firebase.auth().onAuthStateChanged(setUser);
 Firebase.auth().getRedirectResult().then((result) => {
-  auth.ready = true;
-  auth.user = result.user ? User.createFromAuth(result.user) : undefined;
+  setUser(result.user);
 });
 
 export default auth;
