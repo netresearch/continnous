@@ -159,6 +159,7 @@
     .md-input-container {
       display: inline-block;
       margin-left: 16px;
+      width: auto;
     }
   }
 </style>

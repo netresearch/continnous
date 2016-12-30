@@ -38,7 +38,7 @@ module.exports = {
     personal_objectives: 'Personal objectives',
     ideas: 'Ideas',
     personal_ideas: 'Personal ideas',
-    read: 'Read',
+    read: 'View',
     write: 'Write'
   },
   actions: {
