@@ -3,7 +3,7 @@ isAuthenticated() {
 }
 
 isAdmin(oid) {
-    return root.security.organizations[oid].admins[auth.uid] != null;
+    return root.security.organizations[oid].users[auth.uid].status === 'admin';
 }
 
 isInNthDomain(organizationId, type, n) {
@@ -20,13 +20,22 @@ isInDomain(organizationId, type) {
 
 isAllowed(resource, privilege, organizationId) {
     return root.security.organizations[organizationId].permissions[
-        isInDomain(organizationId, 'member') ? 'member' : (isInDomain(organizationId, 'guest') ? 'guest' : 'anyone')
+        root.security.organizations[organizationId].users[auth.uid].status != null ?
+            root.security.organizations[organizationId].users[auth.uid].status :
+            isInDomain(organizationId, 'member') ? 'member' : (isInDomain(organizationId, 'guest') ? 'guest' : 'anyone')
     ][resource][privilege]
 }
 
 path /security/organizations/{oid} {
     read() { isAuthenticated() && isAdmin(oid) }
     write() { isAuthenticated() && isAdmin(oid) }
+}
+
+path /security/organizations/{oid}/users/{uid} {
+    read() { isAuthenticated() && (uid === auth.uid || isAllowed('organization', 'read', oid) || isAdmin(oid)) }
+    create() { isAuthenticated() && (uid === auth.uid && this.status == null || isAdmin(oid)) }
+    update() { isAuthenticated() && (uid === auth.uid && this.status === prior(this.status) || isAdmin(oid)) }
+    delete() { isAuthenticated() && isAdmin(oid) }
 }
 
 path /organizations/{oid} is Any {
@@ -37,9 +46,4 @@ path /organizations/{oid} is Any {
 path /resources/{oid}/{type}/{rid} {
      read() { isAuthenticated() && (isAllowed(type, 'read', oid) || this.creator === auth.uid) }
      write() { isAuthenticated() && (isAllowed(type, 'write', oid) || prior(this.creator) === auth.uid) }
-}
-
-path /users/{uid} is Any {
-    read() { auth.uid != null && auth.uid === uid }
-    write() { auth.uid != null && auth.uid === uid }
 }

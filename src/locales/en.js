@@ -27,6 +27,7 @@ module.exports = {
   name: 'Name',
   domain: 'Domain | Domains',
   addDomain: 'Add domain',
+  user: 'User | Users',
   roles: {
     member: 'Member',
     guest: 'Guest',

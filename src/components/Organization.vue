@@ -16,7 +16,7 @@
             <router-link :to="'/' + organization.key" exact>
               <md-icon>home</md-icon>
               <span>{{$t('overview')}}</span>
-              <router-link v-if="isAdmin" :to="'/' + organization.key + '/settings'" class="md-button md-icon-button md-list-action">
+              <router-link v-if="membership && membership.status === 'admin'" :to="'/' + organization.key + '/settings'" class="md-button md-icon-button md-list-action">
                 <md-icon>settings</md-icon>
                 <md-tooltip>{{$t('settings')}}</md-tooltip>
               </router-link>
@@ -50,7 +50,9 @@
         <div>
           {{$t('errors.' + (auth.user ? 403 : 401))}}
         </div>
-        <md-button class="md-raised md-primary" @click="auth.login()">{{$t('auth.' + (auth.user ? 'switchAccount' : 'signIn'))}}</md-button>
+        <md-button :class="{'md-raised': true, 'md-primary': !auth.user || membership}" @click="auth.login()">{{$t('auth.' + (auth.user ? 'switchAccount' : 'signIn'))}}</md-button>
+        <md-button class="md-raised md-primary" v-if="auth.user && !membership" @click="requestMembership">Request membership</md-button>
+        <p v-else-if="auth.user && membership">Your membership request gets processed.</p>
       </div>
     </md-message>
   </div>
@@ -72,13 +74,14 @@
     data() {
       return {
         organization: undefined,
-        isAdmin: false,
+        membership: undefined,
         auth
       };
     },
     watch: {
       $route: 'fetchOrganization',
-      'auth.user': 'fetchOrganizationAdmin'
+      'auth.user': 'fetchOrganizationMembership',
+      organization: 'fetchOrganizationMembership'
     },
     methods: {
       fetchOrganization() {
@@ -100,24 +103,30 @@
           },
           () => {
             this.organization = false;
+            this.fetchOrganization();
           }
         );
-
-        this.fetchOrganizationAdmin();
       },
-      fetchOrganizationAdmin() {
-        if (this.orgAdminsRef) {
-          this.orgAdminsRef.off('value');
+      fetchOrganizationMembership() {
+        if (this.orgUsersRef) {
+          this.orgUsersRef.off('value');
         }
-        this.isAdmin = false;
+        this.membership = undefined;
         if (this.auth.user) {
-          this.orgAdminsRef = Firebase.database().ref(
-            '/security/organizations/' + this.$route.params.organization_key + '/admins/' + this.auth.user.uid
+          this.orgUsersRef = Firebase.database().ref(
+            '/security/organizations/' + this.$route.params.organization_key + '/users/' + this.auth.user.uid
           );
-          this.orgAdminsRef.on('value', (snapshot) => {
-            this.isAdmin = snapshot.val();
+          this.orgUsersRef.on('value', (snapshot) => {
+            this.membership = snapshot.val();
           });
         }
+      },
+      requestMembership() {
+        this.orgUsersRef.set({
+          email: this.auth.user.email,
+          displayName: this.auth.user.displayName,
+          photoURL: this.auth.user.photoURL
+        });
       }
     }
   };
