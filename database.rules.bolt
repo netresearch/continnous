@@ -30,7 +30,7 @@ path /security/organizations/{oid} {
 }
 
 path /organizations/{oid} is Any {
-    read() { isAuthenticated() }
+    read() { isAuthenticated() && (isAllowed('organization', 'read', oid) || isAdmin(oid)) }
     write() { isAuthenticated() && isAdmin(oid) }
 }
 

@@ -33,6 +33,7 @@ module.exports = {
     anyone: 'Anyone'
   },
   permissions: {
+    organization: 'Organization',
     objectives: 'Objectives',
     personal_objectives: 'Personal objectives',
     ideas: 'Ideas',

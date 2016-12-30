@@ -5,6 +5,7 @@ module.exports = {
   getDefaultPermissions() {
     const permissions = {};
     const resources = {
+      organization: ['read'],
       objectives: ['read', 'write'],
       personal_objectives: ['read', 'write'],
       ideas: ['read', 'write'],

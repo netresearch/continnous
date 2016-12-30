@@ -112,7 +112,7 @@
         this.isAdmin = false;
         if (this.auth.user) {
           this.orgAdminsRef = Firebase.database().ref(
-            'organization_admins/' + this.$route.params.organization_key + '/' + this.auth.user.uid
+            '/security/organizations/' + this.$route.params.organization_key + '/admins/' + this.auth.user.uid
           );
           this.orgAdminsRef.on('value', (snapshot) => {
             this.isAdmin = snapshot.val();
