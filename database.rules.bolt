@@ -3,7 +3,7 @@ isAuthenticated() {
 }
 
 isAdmin(oid) {
-    return root.security.organizations[oid].users[auth.uid].status === 'admin';
+    return root.security.organizations[oid].users[auth.uid] === 'admin';
 }
 
 isInNthDomain(organizationId, type, n) {
@@ -20,8 +20,8 @@ isInDomain(organizationId, type) {
 
 isAllowed(resource, privilege, organizationId) {
     return root.security.organizations[organizationId].permissions[
-        root.security.organizations[organizationId].users[auth.uid].status != null ?
-            root.security.organizations[organizationId].users[auth.uid].status :
+        root.security.organizations[organizationId].users[auth.uid] != null ?
+            root.security.organizations[organizationId].users[auth.uid] :
             isInDomain(organizationId, 'member') ? 'member' : (isInDomain(organizationId, 'guest') ? 'guest' : 'anyone')
     ][resource][privilege]
 }
@@ -33,14 +33,21 @@ path /security/organizations/{oid} {
 
 path /security/organizations/{oid}/users/{uid} {
     read() { isAuthenticated() && (uid === auth.uid || isAllowed('organization', 'read', oid) || isAdmin(oid)) }
-    create() { isAuthenticated() && (uid === auth.uid && this.status == null || isAdmin(oid)) }
-    update() { isAuthenticated() && (uid === auth.uid && this.status === prior(this.status) || isAdmin(oid)) }
+    create() { isAuthenticated() && (uid === auth.uid && this === '?' || isAdmin(oid)) }
+    update() { isAuthenticated() && isAdmin(oid) }
     delete() { isAuthenticated() && isAdmin(oid) }
 }
 
 path /organizations/{oid} is Any {
     read() { isAuthenticated() && (isAllowed('organization', 'read', oid) || isAdmin(oid)) }
     write() { isAuthenticated() && isAdmin(oid) }
+}
+
+path /organizations/{oid}/users/{uid} {
+    read() { isAuthenticated() && (uid === auth.uid || isAllowed('organization', 'read', oid) || isAdmin(oid)) }
+    create() { isAuthenticated() && (uid === auth.uid) }
+    update() { isAuthenticated() && (uid === auth.uid || isAdmin(oid)) }
+    delete() { isAuthenticated() && isAdmin(oid) }
 }
 
 path /resources/{oid}/{type}/{rid} {
