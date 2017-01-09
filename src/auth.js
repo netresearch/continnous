@@ -11,9 +11,8 @@ const auth = {
     Firebase.auth().signInWithRedirect(provider);
   },
   logout() {
-    Firebase.auth().signOut().then(() => {
-      auth.user = undefined;
-    });
+    auth.user = undefined;
+    Firebase.auth().signOut();
   }
 };
 
