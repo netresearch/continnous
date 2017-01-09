@@ -52,7 +52,7 @@
         </div>
         <md-button :class="{'md-raised': true, 'md-primary': !auth.user || membership}" @click="auth.login()">{{$t('auth.' + (auth.user ? 'switchAccount' : 'signIn'))}}</md-button>
         <md-button class="md-raised md-primary" v-if="auth.user && !membership" @click="requestMembership">Request membership</md-button>
-        <p v-else-if="auth.user && membership">Your membership request is being processed.</p>
+        <p v-else-if="auth.user && membership">Your membership request {{membership === '!' ? 'has been denied' : 'is being processed.'}}</p>
       </div>
     </md-message>
   </div>

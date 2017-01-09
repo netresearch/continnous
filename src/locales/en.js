@@ -29,10 +29,14 @@ module.exports = {
   addDomain: 'Add domain',
   user: 'User | Users',
   roles: {
+    admin: 'Administrator',
     member: 'Member',
     guest: 'Guest',
-    anyone: 'Anyone'
+    anyone: 'Anyone',
+    applicant: 'Requesting membership',
+    denied: 'Denied'
   },
+  changeStatus: 'Change status',
   permissions: {
     organization: 'Organization',
     objectives: 'Objectives',

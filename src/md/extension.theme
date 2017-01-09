@@ -1,4 +1,8 @@
 .THEME_NAME {
+  span.md-primary {
+      color: #{'PRIMARY-COLOR'};
+  }
+
   .md-contrast {
     color: #{'PRIMARY-CONTRAST'};
     &.md-spinner {
