@@ -1,15 +1,17 @@
 // CommonJS because required on CLI
+
+const resources = {
+  organization: ['read'],
+  objectives: ['read', 'write'],
+  personal_objectives: ['read', 'write'],
+  ideas: ['read', 'write'],
+  personal_ideas: ['read', 'write']
+};
+
 module.exports = {
   roles: ['member', 'guest', 'anyone'],
   getDefaultPermissions() {
     const permissions = {};
-    const resources = {
-      organization: ['read'],
-      objectives: ['read', 'write'],
-      personal_objectives: ['read', 'write'],
-      ideas: ['read', 'write'],
-      personal_ideas: ['read', 'write']
-    };
     const roles = {
       member: {
         objectives: ['read'],
@@ -40,6 +42,16 @@ module.exports = {
       });
     });
 
+    return permissions;
+  },
+  getAllDeniedPermissions() {
+    const permissions = {};
+    Object.keys(resources).forEach((resource) => {
+      permissions[resource] = {};
+      resources[resource].forEach((privilege) => {
+        permissions[resource][privilege] = false;
+      });
+    });
     return permissions;
   }
 };

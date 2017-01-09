@@ -22,16 +22,13 @@
               </router-link>
             </router-link>
           </md-list-item>
-          <md-list-item>
-            <router-link :to="'/' + organization.key + '/objectives'">
-              <md-icon>rowing</md-icon>
-              <span>{{$tc('objective', 2)}}</span>
-            </router-link>
-          </md-list-item>
-          <md-list-item>
-            <router-link :to="'/' + organization.key + '/ideas'">
-              <md-icon>lightbulb_outline</md-icon>
-              <span>{{$tc('idea', 2)}}</span>
+          <md-list-item v-for="(entry, key) in {objectives: { label: $tc('objective', 2), icon: 'rowing'}, ideas: { label: $tc('idea', 2), icon: 'lightbulb_outline'}}">
+            <router-link :to="'/' + organization.key + '/' + key">
+              <md-icon>{{entry.icon}}</md-icon>
+              <span>{{entry.label}}</span>
+              <router-link v-if="permissions[key].write || permissions['personal_' + key].write" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
+                <md-icon>add</md-icon>
+              </router-link>
             </router-link>
           </md-list-item>
         </md-list>
@@ -65,6 +62,8 @@
   import Organization from '../models/Organization';
   import Config from '../models/Config';
 
+  const allDeniedPermissions = Config.getAllDeniedPermissions();
+
   export default {
     components: {
       AccountSwitcher
@@ -76,7 +75,7 @@
       return {
         organization: undefined,
         role: undefined,
-        permissions: Config.getDefaultPermissions(),
+        permissions: allDeniedPermissions,
         auth
       };
     },
@@ -116,6 +115,7 @@
           this.orgUsersRef.off('value');
         }
         this.role = undefined;
+        this.permissions = allDeniedPermissions;
         if (user) {
           this.orgUsersRef = Firebase.database().ref(
             '/security/organizations/' + orgKey + '/users/' + user.uid
