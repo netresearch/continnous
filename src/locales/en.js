@@ -8,7 +8,10 @@ module.exports = {
   auth: {
     signIn: 'Sign in',
     signOut: 'Sign out',
-    switchAccount: 'Switch account'
+    switchAccount: 'Switch account',
+    requestMembership: 'Request membership',
+    membershipProcessed: 'Your membership is being processed',
+    membershipDenied: 'Your membership has been denied'
   },
   settings: 'Settings',
   overview: 'Overview',

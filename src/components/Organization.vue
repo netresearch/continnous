@@ -51,8 +51,8 @@
           {{$t('errors.' + (auth.user ? 403 : 401))}}
         </div>
         <md-button :class="{'md-raised': true, 'md-primary': !auth.user || membership}" @click="auth.login()">{{$t('auth.' + (auth.user ? 'switchAccount' : 'signIn'))}}</md-button>
-        <md-button class="md-raised md-primary" v-if="auth.user && !membership" @click="requestMembership">Request membership</md-button>
-        <p v-else-if="auth.user && membership">Your membership request {{membership === '!' ? 'has been denied' : 'is being processed.'}}</p>
+        <md-button class="md-raised md-primary" v-if="auth.user && !membership" @click="requestMembership">$t('auth.requestMembership')</md-button>
+        <p v-else-if="auth.user && membership">{{$t('auth.membership' + (membership === '!' ? 'Denied' : 'Processed'))}}.</p>
       </div>
     </md-message>
   </div>
