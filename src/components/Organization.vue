@@ -62,7 +62,7 @@
   import Organization from '../models/Organization';
   import Config from '../models/Config';
 
-  const allDeniedPermissions = Config.getAllDeniedPermissions();
+  const allDeniedPermissions = Config.getAllPermissionsWith(false);
 
   export default {
     components: {
@@ -133,7 +133,7 @@
               }
             };
 
-            if (this.organization && this.role !== '?' && this.role !== '!') {
+            if (this.organization && this.role !== '?' && this.role !== '!' && this.role !== 'admin') {
               // Load permissions and set role for domain members (for whom snapshot.val() is null)
               const roles = this.role ? [this.role] : Config.roles.slice(0);
               const loadPermissions = (role) => {
@@ -153,6 +153,9 @@
               };
               loadPermissions(roles.shift());
             } else {
+              if (this.role === 'admin') {
+                this.permissions = Config.getAllPermissionsWith(true);
+              }
               updateUser();
             }
           });

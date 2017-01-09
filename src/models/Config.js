@@ -44,12 +44,12 @@ module.exports = {
 
     return permissions;
   },
-  getAllDeniedPermissions() {
+  getAllPermissionsWith(value) {
     const permissions = {};
     Object.keys(resources).forEach((resource) => {
       permissions[resource] = {};
       resources[resource].forEach((privilege) => {
-        permissions[resource][privilege] = false;
+        permissions[resource][privilege] = value;
       });
     });
     return permissions;
