@@ -16,7 +16,7 @@
             <router-link :to="'/' + organization.key" exact>
               <md-icon>home</md-icon>
               <span>{{$t('overview')}}</span>
-              <router-link v-if="membership === 'admin'" :to="'/' + organization.key + '/settings'" class="md-button md-icon-button md-list-action">
+              <router-link v-if="role === 'admin'" :to="'/' + organization.key + '/settings'" class="md-button md-icon-button md-list-action">
                 <md-icon>settings</md-icon>
                 <md-tooltip>{{$t('settings')}}</md-tooltip>
               </router-link>
@@ -40,7 +40,7 @@
 
     <md-message
         v-if="!organization"
-        :status="organization === undefined || !auth.ready ? 0 : (organization === false ? -2 : (organizaion === null ? -1 : 1))"
+        :status="organization === undefined || !auth.ready ? 0 : (organization === false ? -2 : (organization === null ? -1 : 1))"
         :timeout="0"
         splash>
       <div v-if="organization === null">
@@ -50,9 +50,9 @@
         <div>
           {{$t('errors.' + (auth.user ? 403 : 401))}}
         </div>
-        <md-button :class="{'md-raised': true, 'md-primary': !auth.user || membership}" @click="auth.login()">{{$t('auth.' + (auth.user ? 'switchAccount' : 'signIn'))}}</md-button>
-        <md-button class="md-raised md-primary" v-if="auth.user && !membership" @click="requestMembership">$t('auth.requestMembership')</md-button>
-        <p v-else-if="auth.user && membership">{{$t('auth.membership' + (membership === '!' ? 'Denied' : 'Processed'))}}.</p>
+        <md-button :class="{'md-raised': true, 'md-primary': !auth.user || role}" @click="auth.login()">{{$t('auth.' + (auth.user ? 'switchAccount' : 'signIn'))}}</md-button>
+        <md-button class="md-raised md-primary" v-if="auth.user && !role" @click="requestMembership">$t('auth.requestMembership')</md-button>
+        <p v-else-if="auth.user && role">{{$t('auth.role' + (role === '!' ? 'Denied' : 'Processed'))}}.</p>
       </div>
     </md-message>
   </div>
@@ -63,6 +63,7 @@
   import auth from '../auth';
   import AccountSwitcher from './AccountSwitcher';
   import Organization from '../models/Organization';
+  import Config from '../models/Config';
 
   export default {
     components: {
@@ -74,14 +75,15 @@
     data() {
       return {
         organization: undefined,
-        membership: undefined,
+        role: undefined,
+        permissions: Config.getDefaultPermissions(),
         auth
       };
     },
     watch: {
       $route: 'fetchOrganization',
-      'auth.user': 'fetchOrganizationMembership',
-      organization: 'fetchOrganizationMembership'
+      'auth.user': 'fetchRoleAndPermissions',
+      organization: 'fetchRoleAndPermissions'
     },
     methods: {
       fetchOrganization() {
@@ -107,25 +109,51 @@
           }
         );
       },
-      fetchOrganizationMembership() {
+      fetchRoleAndPermissions() {
         const user = this.auth.user;
         const orgKey = this.$route.params.organization_key;
         if (this.orgUsersRef) {
           this.orgUsersRef.off('value');
         }
-        this.membership = undefined;
+        this.role = undefined;
         if (user) {
           this.orgUsersRef = Firebase.database().ref(
             '/security/organizations/' + orgKey + '/users/' + user.uid
           );
           this.orgUsersRef.on('value', (snapshot) => {
-            this.membership = snapshot.val();
-            if (this.membership || this.organization) {
-              Firebase.database().ref('/organizations/' + orgKey + '/users/' + user.uid).update({
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL
-              });
+            this.role = snapshot.val();
+
+            const updateUser = () => {
+              if (this.role || this.organization) {
+                Firebase.database().ref('/organizations/' + orgKey + '/users/' + user.uid).update({
+                  email: user.email,
+                  displayName: user.displayName,
+                  photoURL: user.photoURL
+                });
+              }
+            };
+
+            if (this.organization && this.role !== '?' && this.role !== '!') {
+              // Load permissions and set role for domain members (for whom snapshot.val() is null)
+              const roles = this.role ? [this.role] : Config.roles.slice(0);
+              const loadPermissions = (role) => {
+                Firebase.database().ref('/security/organizations/' + orgKey + '/permissions/' + role).once('value',
+                  (permSnap) => {
+                    this.role = role;
+                    this.permissions = permSnap.val();
+                    updateUser();
+                  },
+                  () => {
+                    if (roles.length) {
+                      loadPermissions(roles.shift());
+                    } else {
+                      updateUser();
+                    }
+                  });
+              };
+              loadPermissions(roles.shift());
+            } else {
+              updateUser();
             }
           });
         }

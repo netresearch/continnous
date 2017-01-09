@@ -31,6 +31,10 @@ path /security/organizations/{oid} {
     write() { isAuthenticated() && isAdmin(oid) }
 }
 
+path /security/organizations/{oid}/permissions/{role} {
+    read() { isAuthenticated() && (root.security.organizations[oid].users[auth.uid] === role || root.security.organizations[oid].users[auth.uid] == null && isInDomain(oid, role)) }
+}
+
 path /security/organizations/{oid}/users/{uid} {
     read() { isAuthenticated() && (uid === auth.uid || isAllowed('organization', 'read', oid) || isAdmin(oid)) }
     create() { isAuthenticated() && (uid === auth.uid && this === '?' || isAdmin(oid)) }
@@ -51,6 +55,8 @@ path /organizations/{oid}/users/{uid} {
 }
 
 path /resources/{oid}/{type}/{rid} {
-     read() { isAuthenticated() && (isAllowed(type, 'read', oid) || this.creator === auth.uid) }
-     write() { isAuthenticated() && (isAllowed(type, 'write', oid) || prior(this.creator) === auth.uid) }
+     read() { isAuthenticated() && (this.creator === auth.uid || isAllowed(type, 'read', oid) && (!type.startsWith('personal_') || rid === auth.uid)) }
+     update() { isAuthenticated() && (prior(this.creator) === auth.uid || isAllowed(type, 'write', oid) && (!type.startsWith('personal_') || rid === auth.uid)) }
+     create() { isAuthenticated() && isAllowed(type, 'write', oid) && (!type.startsWith('personal_') || rid === auth.uid) }
+     delete() { isAuthenticated() && (prior(this.creator === auth.uid) || isAdmin(oid) || type.startsWith('personal_') && rid === auth.uid) }
 }

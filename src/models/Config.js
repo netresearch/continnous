@@ -1,5 +1,4 @@
 // CommonJS because required on CLI
-
 module.exports = {
   roles: ['member', 'guest', 'anyone'],
   getDefaultPermissions() {
