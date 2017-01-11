@@ -2,7 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import 'vue-material/dist/vue-material.css';
 import Vue from 'vue';
-import VueMaterial from 'vue-material/dist/vue-material.debug';
+import VueMaterial from 'vue-material';
 import VueRouter from 'vue-router';
 import VueFire from 'vuefire';
 import Routes from './routes';

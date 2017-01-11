@@ -1,6 +1,5 @@
 import mdExtensionTheme from './extension.theme';
 import MdAvatarButton from './AvatarButton';
-import MdMenuContent from './MenuContent';
 import MdMessage from './Message';
 import MdApp from './App';
 
@@ -8,7 +7,6 @@ import './extension.scss';
 
 const components = {
   MdAvatarButton,
-  MdMenuContent,
   MdMessage,
   MdApp
 };
@@ -40,9 +38,10 @@ export default function install(Vue) {
       Object.keys(theme).forEach((color) => {
         if (typeof theme[color] === 'string') {
           const parts = theme[color].split('@');
-          normalizedTheme[color] = { color: parts[0] };
           if (parts.length > 1) {
-            normalizedTheme[color].hue = parts[1];
+            normalizedTheme[color] = { color: parts[0], hue: parseInt(parts[1], 10) };
+          } else {
+            normalizedTheme[color] = parts[0];
           }
         } else {
           normalizedTheme[color] = theme[color];
