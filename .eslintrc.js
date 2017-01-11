@@ -30,6 +30,7 @@ module.exports = {
     'comma-dangle': 0,
     'no-plusplus': 0,
     'no-prototype-builtins': 0,
-    'no-continue': 0
+    'no-continue': 0,
+    'no-param-reassign': 0
   }
 }

@@ -28,6 +28,8 @@ module.exports = {
   general: 'General',
   permission: 'Permission | Permissions',
   name: 'Name',
+  title: 'Title',
+  thisPlatform: 'Innovation Platform',
   domain: 'Domain | Domains',
   addDomain: 'Add domain',
   user: 'User | Users',
@@ -52,6 +54,7 @@ module.exports = {
   actions: {
     reset: 'Reset',
     resetToDefaults: 'Reset to defaults',
+    cancel: 'Cancel',
     save: 'Save'
   },
   vision: {
@@ -61,5 +64,11 @@ module.exports = {
   mission: {
     label: 'Mission statement',
     placeholder: 'Provide a clear mission statement'
+  },
+  objectives: {
+    title: {
+      label: 'Objective title',
+      placeholder: 'Short title of the objective'
+    }
   }
 };
