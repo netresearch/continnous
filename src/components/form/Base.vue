@@ -9,12 +9,10 @@
   import Vue from 'vue';
   import Firebase from '../../firebase';
   import Element from './Element';
-  import Dialog from './Dialog';
   import Button from './Button';
 
   Vue.use((vm) => {
     vm.component('form-element', Element);
-    vm.component('form-dialog', Dialog);
     vm.component('form-button', Button);
   });
 
@@ -55,10 +53,18 @@
       return {
         object: Object.assign({}, this.value),
         values: Object.assign({}, this.value),
+        elementKeys: [],
         changed: {},
         errors: {},
         status: undefined
       };
+    },
+    computed: {
+      allKeys() {
+        return this.keys.concat(this.elementKeys).filter(
+          (key, index, self) => self.indexOf(key) === index
+        );
+      }
     },
     created() {
       this.bindToFirebase();
@@ -74,7 +80,7 @@
     methods: {
       takeOverValues(values) {
         this.object = values;
-        this.keys.forEach((key) => {
+        this.allKeys.forEach((key) => {
           if (!this.changed[key]) {
             if (values.hasOwnProperty(key)) {
               this.$set(this.values, key, values[key]);
@@ -90,7 +96,7 @@
             this.firebaseRef.off('value');
           }
           if (this.firebasePath && this.firebaseBind) {
-            this.firebaseRef = Firebase.database().ref(this.firebasePath);
+            this.firebaseRef = this.getFirebaseRef();
             this.firebaseRef.on('value',
               (snapshot) => {
                 this.takeOverValues(this.firebaseReceive.call(this.$parent, snapshot));
@@ -101,6 +107,16 @@
             );
           }
         });
+      },
+      isNewFirebaseRef() {
+        return this.firebasePath && this.firebasePath.substr(-6) === '/{new}';
+      },
+      getFirebaseRef() {
+        if (this.firebasePath.substr(-6) === '/{new}') {
+          const parentPath = this.firebasePath.substr(0, this.firebasePath.length - 6);
+          return Firebase.database().ref(parentPath).push();
+        }
+        return Firebase.database().ref(this.firebasePath);
       },
       getSettingsObject() {
         const settingsPathParts = this.$options.objectPath.split('.');
@@ -156,7 +172,7 @@
         return !this.errors.hasOwnProperty(key);
       },
       hasChanged(includeInvalid) {
-        const keys = this.keys;
+        const keys = this.allKeys;
         for (let i = 0, l = keys.length; i < l; i++) {
           if (this.changed.hasOwnProperty(keys[i])) {
             return true;
@@ -168,7 +184,7 @@
         return false;
       },
       reset() {
-        this.keys.forEach((key) => {
+        this.allKeys.forEach((key) => {
           this.$delete(this.changed, key);
           this.$delete(this.errors, key);
           this.$delete(this.values, key);
@@ -178,39 +194,37 @@
         });
       },
       save() {
-        const firebasePath = this.firebasePath;
-        const keys = this.keys;
+        const keys = this.allKeys;
         const updates = {};
         const changedKeys = [];
+        const isNew = this.isNewFirebaseRef();
         keys.forEach((key) => {
-          if (this.changed.hasOwnProperty(key)) {
-            updates[firebasePath + '/' + key] = this.values[key];
+          if (isNew || this.changed.hasOwnProperty(key)) {
+            updates[key] = this.values[key];
             changedKeys.push(key);
           }
         });
 
         if (Object.keys(updates).length) {
           this.status = 0;
-          Firebase.database().ref().update(updates).then(
+          (this.firebaseRef || this.getFirebaseRef()).update(updates).then(
             () => {
               this.status = 1;
               changedKeys.forEach((key) => {
                 this.$delete(this.changed, key);
               });
-              if (keys.indexOf('theme') > -1) {
-                /* global document */
-                document.location.reload();
-              }
+              this.$emit('saved', updates);
             },
             () => {
               this.status = -1;
+              this.$emit('save-error', updates);
             }
           );
         }
       },
       _registerFormElement(element) {
         if (element.name) {
-          this.keys.push(element.name);
+          this.elementKeys.push(element.name);
           element.$on('input', this.onChange);
         }
       }

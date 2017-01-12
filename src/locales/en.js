@@ -69,6 +69,9 @@ module.exports = {
     title: {
       label: 'Objective title',
       placeholder: 'Short title of the objective'
+    },
+    personal: {
+      label: 'This is a personal objective'
     }
   }
 };

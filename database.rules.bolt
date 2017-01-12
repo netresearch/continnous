@@ -21,9 +21,17 @@ isInDomain(organizationId, type) {
 isAllowed(resource, privilege, organizationId) {
     return root.security.organizations[organizationId].permissions[
         root.security.organizations[organizationId].users[auth.uid] != null ?
-            root.security.organizations[organizationId].users[auth.uid] :
+            (root.security.organizations[organizationId].users[auth.uid] === 'admin' ?
+                'member' :
+                root.security.organizations[organizationId].users[auth.uid]
+            ) :
             isInDomain(organizationId, 'member') ? 'member' : (isInDomain(organizationId, 'guest') ? 'guest' : 'anyone')
     ][resource][privilege]
+}
+
+isAllowedScope(scope, resource, privilege, oid) {
+    return isAllowed((scope === 'organization' ? '' : 'personal_') + resource, privilege, oid) &&
+            (scope === 'organization' || scope === auth.uid)
 }
 
 path /security/organizations/{oid} {
@@ -54,9 +62,16 @@ path /organizations/{oid}/users/{uid} {
     delete() { isAuthenticated() && isAdmin(oid) }
 }
 
-path /resources/{oid}/{type}/{rid} {
-     read() { isAuthenticated() && (this.creator === auth.uid || isAllowed(type, 'read', oid) && (!type.startsWith('personal_') || rid === auth.uid)) }
-     update() { isAuthenticated() && (prior(this.creator) === auth.uid || isAllowed(type, 'write', oid) && (!type.startsWith('personal_') || rid === auth.uid)) }
-     create() { isAuthenticated() && isAllowed(type, 'write', oid) && (!type.startsWith('personal_') || rid === auth.uid) }
-     delete() { isAuthenticated() && (prior(this.creator === auth.uid) || isAdmin(oid) || type.startsWith('personal_') && rid === auth.uid) }
+path /resources/organizations/{oid}/{scope}/{type} {
+    read() { isAuthenticated() && isAllowedScope(scope, type, 'read', oid) }
+}
+
+path /resources/organizations/{oid}/{scope}/{type}/{rid} {
+    write() {
+        isAuthenticated() && isAllowedScope(scope, type, 'write', oid) && (
+            prior(this) == null ||
+            (scope === 'organization' && prior(this).creator === auth.uid || scope === auth.uid) ||
+            this == null && isAdmin(oid)
+        )
+    }
 }

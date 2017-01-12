@@ -7,7 +7,7 @@ export default {
   mounted() {
     let parent = this.$parent;
     /* eslint-disable no-underscore-dangle */
-    while (parent._uid !== 0) {
+    while (parent && parent._uid !== 0) {
       if (typeof parent._registerFormElement === 'function') {
         break;
       }

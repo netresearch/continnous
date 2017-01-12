@@ -15,7 +15,7 @@
       </template>
     </card-form>
     <p class="md-caption">{{$t('theme')}}</p>
-    <card-form v-model="organization" :firebase-path="'/organizations/' + organization.key">
+    <card-form @saved="onThemeSaved" v-model="organization" :firebase-path="'/organizations/' + organization.key">
       <template scope="form">
         <form-element name="theme" bla="blubb" naked>
           <theme :value="form.values.theme" ref="theme"></theme>
@@ -39,6 +39,10 @@
     methods: {
       validateName(value) {
         return typeof value === 'string' && value.length > 2;
+      },
+      onThemeSaved() {
+        /* global document */
+        document.location.reload();
       }
     }
   };

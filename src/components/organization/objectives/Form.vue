@@ -1,29 +1,34 @@
 <template>
-  <div>
-    <md-dialog class="form-base-dialog" ref="dialog">
-      <md-dialog-title>
-        <form-element md-inline :label="titleLabel" name="title">
-          <md-input></md-input>
-        </form-element>
-      </md-dialog-title>
+  <dialog-form
+      class="form-base-dialog"
+      :firebase-path="'/resources/organizations/' + organization.key + '/' + (personal ? auth.user.uid : 'organization') + '/objectives/{new}'"
+      :value="{creator: auth.user.uid}"
+      :keys="personal ? [] : ['creator']"
+  >
+    <template slot="title" scope="form">
+      <form-element name="title" md-inline :label="$t('objectives.title.placeholder')">
+        <md-input :value="form.values.title"></md-input>
+      </form-element>
+    </template>
 
-      <md-dialog-content>
-        <slot></slot>
-      </md-dialog-content>
-
-      <md-dialog-actions>
-        <md-button @click="close">{{$t('actions.cancel')}}</md-button>
-        <md-button class="md-primary">{{$t('actions.save')}}</md-button>
-      </md-dialog-actions>
-    </md-dialog>
-  </div>
+    <template scope="form">
+      <md-checkbox v-model="personal">{{$t('objectives.personal.label')}}</md-checkbox>
+    </template>
+  </dialog-form>
 </template>
 
 <script>
-  import FormBase from '../../form/Base';
+  import DialogForm from '../../form/Dialog';
+  import auth from '../../../auth';
 
   export default {
-    extends: FormBase,
-    props: ['organization']
+    props: ['organization'],
+    components: { DialogForm },
+    data() {
+      return {
+        auth,
+        personal: false
+      };
+    }
   };
 </script>
