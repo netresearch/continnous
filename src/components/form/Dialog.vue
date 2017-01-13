@@ -21,20 +21,21 @@
 <script>
   import Base from './Base';
 
-  console.log(Base);
-
   export default {
     extends: Base,
+    created() {
+      this.$on('saved', this.close);
+    },
     mounted() {
       this.$nextTick(() => {
         this.$refs.dialog.open();
       });
     },
     methods: {
-      close() {
+      close(saved) {
         this.$refs.dialog.close();
         this.$nextTick(() => {
-          this.$router.back();
+          this.$emit('closed', saved);
         });
       },
     }

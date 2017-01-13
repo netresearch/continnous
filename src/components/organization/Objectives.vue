@@ -1,17 +1,14 @@
 <template>
-  <div>
-    <md-toolbar class="md-dense">
-      <h2 class="md-title">{{$tc('objective', 2)}}</h2>
-    </md-toolbar>
+  <resource-page type="objectives" :organization="organization" :permissions="permissions">
 
-    <router-view :organization="organization"></router-view>
-
-    <h3>Objectives</h3>
-  </div>
+  </resource-page>
 </template>
 
 <script>
+  import ResourcePage from './resources/Page';
+
   export default {
-    props: ['organization']
+    props: ['organization', 'permissions'],
+    components: { ResourcePage }
   };
 </script>

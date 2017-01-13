@@ -1,0 +1,67 @@
+<template>
+  <div>
+    <dialog-form
+        class="form-base-dialog"
+        v-if="id !== undefined"
+        :firebase-path="
+          '/resources/organizations/' + organization.key
+          + '/' + (personal ? auth.user.uid : 'organization')
+          + '/' + type
+          + '/' + (id || '{new}')"
+        firebase-bind
+        :value="{creator: auth.user.uid}"
+        :keys="id ? ['updated'] : ['creator','created', 'updated']"
+        ref="form"
+        @closed="onClosed"
+    >
+      <template slot="title" scope="form">
+        <form-element name="title" md-inline :label="$t(type + '.title.placeholder')">
+          <md-input :value="form.values.title"></md-input>
+        </form-element>
+      </template>
+
+      <template scope="form">
+        <md-checkbox v-if="id === null" v-model="personal">{{$t(type + '.personal.label')}}</md-checkbox>
+      </template>
+    </dialog-form>
+  </div>
+</template>
+
+<script>
+  import DialogForm from '../../form/Dialog';
+  import auth from '../../../auth';
+
+  export default {
+    props: ['organization', 'type'],
+    components: { DialogForm },
+    data() {
+      return {
+        auth,
+        personal: false,
+        id: undefined,
+        item: null
+      };
+    },
+    watch: {
+      $route: {
+        immediate: true,
+        handler(route) {
+          this.personal = !!route.params.personal;
+          this.id = route.params.id || null;
+        }
+      }
+    },
+    methods: {
+      onClosed(saved) {
+        let path = '/' + this.organization.key + '/' + this.type;
+        if (this.id || saved) {
+          if (this.personal) {
+            path += '/personal';
+          }
+          path += '/' + this.$refs.form.firebaseRef.key;
+        }
+        this.$router.push(path);
+      }
+    }
+  };
+</script>

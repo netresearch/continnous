@@ -8,7 +8,7 @@
 
       <template v-if="organization">
         <div class="app-content">
-          <router-view :organization="organization"></router-view>
+          <router-view :organization="organization" :permissions="permissions"></router-view>
         </div>
 
         <md-list slot="sidebar">

@@ -41,12 +41,12 @@
       },
       firebaseBind: Boolean,
       validate: Object,
-        /* {
-          fieldKey => 'method'
-          fieldKey => 'method1,method2'
-          fieldKey => function(value) {}
-          fieldKey => ['method', function(value) {}]
-        } */
+      /* {
+       fieldKey => 'method'
+       fieldKey => 'method1,method2'
+       fieldKey => function(value) {}
+       fieldKey => ['method', function(value) {}]
+       } */
       filter: Object,
     },
     data() {
@@ -84,7 +84,7 @@
           if (!this.changed[key]) {
             if (values.hasOwnProperty(key)) {
               this.$set(this.values, key, values[key]);
-            } else {
+            } else if (!this.isNewFirebaseRef()) {
               this.$delete(this.values, key);
             }
           }
@@ -200,7 +200,7 @@
         const isNew = this.isNewFirebaseRef();
         keys.forEach((key) => {
           if (isNew || this.changed.hasOwnProperty(key)) {
-            updates[key] = this.values[key];
+            updates[key] = (isNew && key === 'created') || key === 'updated' ? +new Date() : this.values[key];
             changedKeys.push(key);
           }
         });

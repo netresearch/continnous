@@ -4,7 +4,7 @@
   }
 
   .md-contrast {
-    color: #{'PRIMARY-CONTRAST'};
+    color: #{'PRIMARY-CONTRAST'} !important;
     &.md-spinner {
       .md-spinner-path {
         stroke: #{'PRIMARY-CONTRAST'}

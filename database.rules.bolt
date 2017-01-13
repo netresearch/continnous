@@ -62,13 +62,16 @@ path /organizations/{oid}/users/{uid} {
     delete() { isAuthenticated() && isAdmin(oid) }
 }
 
-path /resources/organizations/{oid}/{scope}/{type} {
-    read() { isAuthenticated() && isAllowedScope(scope, type, 'read', oid) }
+path /{branch}/organizations/{oid}/{scope}/{type} {
+    read() { (branch === 'resources' || branch === 'trash') && isAuthenticated() && isAllowedScope(scope, type, 'read', oid) }
 }
 
-path /resources/organizations/{oid}/{scope}/{type}/{rid} {
+path /{branch}/organizations/{oid}/{scope}/{type}/{rid} {
     write() {
-        isAuthenticated() && isAllowedScope(scope, type, 'write', oid) && (
+        (branch === 'resources' || branch === 'trash')
+        && isAuthenticated()
+        && isAllowedScope(scope, type, 'write', oid)
+        && (
             prior(this) == null ||
             (scope === 'organization' && prior(this).creator === auth.uid || scope === auth.uid) ||
             this == null && isAdmin(oid)

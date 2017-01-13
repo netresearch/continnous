@@ -52,10 +52,13 @@ module.exports = {
     write: 'Write'
   },
   actions: {
+    edit: 'Edit',
+    delete: 'Delete',
     reset: 'Reset',
     resetToDefaults: 'Reset to defaults',
     cancel: 'Cancel',
-    save: 'Save'
+    save: 'Save',
+    restore: 'Restore'
   },
   vision: {
     label: 'Vision statement',
@@ -71,6 +74,7 @@ module.exports = {
       placeholder: 'Short title of the objective'
     },
     personal: {
+      title: 'Personal objectives',
       label: 'This is a personal objective'
     }
   }
