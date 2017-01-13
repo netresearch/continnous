@@ -48,6 +48,9 @@
               <md-icon>delete_sweep</md-icon>
             </md-button>
           </md-card-header>
+          <md-card-media v-if="item.image && item.image.preview">
+            <img :src="item.image.preview" alt="People">
+          </md-card-media>
           <md-card-content>
             Huhu
           </md-card-content>
@@ -61,8 +64,10 @@
   import sortBy from 'sort-by';
   import Firebase from '../../../firebase';
   import auth from '../../../auth';
+  import mixin from './mixin';
 
   export default {
+    mixins: [mixin],
     props: {
       organization: Object,
       permissions: Object,
@@ -118,13 +123,13 @@
           .orderByChild('updated')['limitTo' + (this.order === 'desc' ? 'Last' : 'First')](100);
         this.items = [];
         this.itemsRef.on('child_added', (item) => {
-          this.items.push(Object.assign({}, item.val(), { id: item.key }));
+          this.items.push(this.createItem(item.key, item.val()));
           this.items.sort(sortBy((this.order === 'desc' ? '-' : '') + this.orderBy));
         });
         this.itemsRef.on('child_changed', (item) => {
           for (let i = 0; i < this.items.length; i++) {
             if (this.items[i].id === item.key) {
-              Object.assign(this.items[i], item.val());
+              Object.assign(this.items[i], this.createItem(item.key, item.val()));
             }
           }
         });

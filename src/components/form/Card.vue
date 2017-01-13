@@ -11,7 +11,7 @@
       <span style="flex: 1"></span>
       <slot name="secondaryButtons"></slot>
     </md-card-actions>
-    <md-message :status="status"></md-message>
+    <md-message :status="status" :progress="progress"></md-message>
   </md-card>
 </template>
 

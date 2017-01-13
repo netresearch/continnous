@@ -9,6 +9,7 @@
           + '/' + type
           + '/' + (id || '{new}')"
         firebase-bind
+        :firebase-receive="firebaseReceive"
         :value="{creator: auth.user.uid}"
         :keys="id ? ['updated'] : ['creator','created', 'updated']"
         ref="form"
@@ -22,6 +23,10 @@
 
       <template scope="form">
         <md-checkbox v-if="id === null" v-model="personal">{{$t(type + '.personal.label')}}</md-checkbox>
+
+        <form-element naked name="image">
+          <form-file :value="form.values.image"></form-file>
+        </form-element>
       </template>
     </dialog-form>
   </div>
@@ -30,8 +35,10 @@
 <script>
   import DialogForm from '../../form/Dialog';
   import auth from '../../../auth';
+  import mixin from './mixin';
 
   export default {
+    mixins: [mixin],
     props: ['organization', 'type'],
     components: { DialogForm },
     data() {
@@ -52,6 +59,9 @@
       }
     },
     methods: {
+      firebaseReceive(snapshot) {
+        return this.createItem(snapshot.key, snapshot.val());
+      },
       onClosed(saved) {
         let path = '/' + this.organization.key + '/' + this.type;
         if (this.id || saved) {

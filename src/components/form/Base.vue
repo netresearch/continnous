@@ -1,7 +1,7 @@
 <template>
   <div class="form">
     <slot :values="values" :errors="errors"></slot>
-    <md-message :status="status"></md-message>
+    <md-message :status="status" :progress="progress"></md-message>
   </div>
 </template>
 
@@ -10,10 +10,12 @@
   import Firebase from '../../firebase';
   import Element from './Element';
   import Button from './Button';
+  import File from './File';
 
   Vue.use((vm) => {
     vm.component('form-element', Element);
     vm.component('form-button', Button);
+    vm.component('form-file', File);
   });
 
   /**
@@ -56,7 +58,9 @@
         elementKeys: [],
         changed: {},
         errors: {},
-        status: undefined
+        status: undefined,
+        waiting: false,
+        progress: false
       };
     },
     computed: {
@@ -207,19 +211,48 @@
 
         if (Object.keys(updates).length) {
           this.status = 0;
-          (this.firebaseRef || this.getFirebaseRef()).update(updates).then(
-            () => {
-              this.status = 1;
-              changedKeys.forEach((key) => {
-                this.$delete(this.changed, key);
-              });
-              this.$emit('saved', updates);
-            },
-            () => {
-              this.status = -1;
-              this.$emit('save-error', updates);
+          const beforeSave = [];
+          const progress = {
+            done: 0,
+            total: 0,
+            get: () => {
+              let total;
+              let done = 0;
+              return {
+                setTotal(newTotal) {
+                  if (total) {
+                    progress.total -= total;
+                  }
+                  progress.total += newTotal;
+                  total = newTotal;
+                },
+                tick: (tick) => {
+                  progress.done += tick - done;
+                  this.progress = (progress.total && progress.total > progress.done)
+                    ? ((progress.done / progress.total) * 100) : false;
+                  done = tick;
+                }
+              };
             }
-          );
+          };
+          this.progress = false;
+          this.$emit('before-save', beforeSave, progress);
+          Promise.all(beforeSave).then(() => {
+            this.progress = false;
+            (this.firebaseRef || this.getFirebaseRef()).update(updates).then(
+              () => {
+                this.status = 1;
+                changedKeys.forEach((key) => {
+                  this.$delete(this.changed, key);
+                });
+                this.$emit('saved', updates);
+              },
+              () => {
+                this.status = -1;
+                this.$emit('save-error', updates);
+              }
+            );
+          });
         }
       },
       _registerFormElement(element) {

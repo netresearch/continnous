@@ -50,6 +50,8 @@
         /* eslint-disable no-underscore-dangle */
         this.form._registerFormElement(this);
         /* eslint-enable no-underscore-dangle */
+
+        this.input.$emit('registered', this.form);
       });
     },
     methods: {

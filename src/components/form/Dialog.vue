@@ -13,7 +13,7 @@
         <md-button @click="close()">{{$t('actions.cancel')}}</md-button>
         <form-button action="save" class="md-primary md-raised"></form-button>
       </md-dialog-actions>
-      <md-message :status="status"></md-message>
+      <md-message :status="status" :progress="progress"></md-message>
     </md-dialog>
   </div>
 </template>
