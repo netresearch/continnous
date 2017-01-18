@@ -19,8 +19,9 @@
 
     <router-view :organization="organization" :type="type"></router-view>
 
-    <md-layout md-gutter="16" class="resources-list">
-      <md-layout v-for="item in items">
+    <div ref="list" class="resources-list">
+      <div class="resources-list-width"></div>
+      <div class="resources-list-item" v-for="item in items">
         <md-card md-with-hover>
           <md-card-header>
             <md-card-header-text>
@@ -48,19 +49,20 @@
               <md-icon>delete_sweep</md-icon>
             </md-button>
           </md-card-header>
-          <md-card-media v-if="item.image && item.image.preview">
-            <md-image :md-src="item.image.preview"></md-image>
+          <md-card-media v-if="item.image">
+            <resource-image :image="item.image"></resource-image>
           </md-card-media>
           <md-card-content>
             Huhu
           </md-card-content>
         </md-card>
-      </md-layout>
-    </md-layout>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+  import Masonry from 'masonry-layout';
   import sortBy from 'sort-by';
   import Firebase from '../../../firebase';
   import auth from '../../../auth';
@@ -92,6 +94,16 @@
         return this.type.substr(-3) === 'ies' ? this.type.substr(0, l - 3) + 'y' : this.type.substr(0, l - 1);
       }
     },
+    mounted() {
+      this.masonry = new Masonry(this.$refs.list, {
+        itemSelector: '.resources-list-item',
+        columnWidth: '.resources-list-width',
+        percentPosition: true,
+      });
+    },
+    beforeDestroy() {
+      this.masonry.destroy();
+    },
     watch: {
       $route: {
         immediate: true,
@@ -103,6 +115,15 @@
             this.personal = personal;
             this.loadItems();
           }
+        }
+      },
+      items: {
+        deep: true,
+        handler() {
+          this.$nextTick(() => {
+            this.masonry.reloadItems();
+            this.masonry.layout();
+          });
         }
       }
     },
@@ -157,8 +178,16 @@
 
 <style lang="scss" rel="stylesheet/scss">
   .resources-list {
-    .md-card {
-      width: 100%;
+    margin: 0 -8px;
+    .resources-list-item {
+      display: block;
+      > .md-card {
+        margin: 0 8px 16px;
+      }
+    }
+    .resources-list-item,
+    .resources-list-width {
+      width: 20%;
     }
   }
 </style>

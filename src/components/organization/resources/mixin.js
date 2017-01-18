@@ -1,11 +1,13 @@
 import Firebase from '../../../firebase';
+import ResourceImage from './Image';
 
 export default {
-  created() {
-    this.storageRef = Firebase.storage().ref();
-  },
+  components: { ResourceImage },
   methods: {
     createItem(id, data) {
+      if (!this.storageRef) {
+        this.storageRef = Firebase.storage().ref();
+      }
       const item = Object.assign({}, data, { id });
       const createFileObject = (file) => {
         const fileObject = Object.assign({ src: undefined, preview: undefined }, file);

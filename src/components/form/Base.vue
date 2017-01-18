@@ -211,7 +211,7 @@
         const changedKeys = [];
         const isNew = this.isNewFirebaseRef();
         keys.forEach((key) => {
-          if (isNew || this.changed.hasOwnProperty(key)) {
+          if ((isNew && ['created', 'updated'].indexOf(key) > -1) || this.changed.hasOwnProperty(key)) {
             updates[key] = (isNew && key === 'created') || key === 'updated' ? +new Date() : this.values[key];
             changedKeys.push(key);
           }

@@ -136,7 +136,6 @@
             });
             value = this.multiple ? values : values[0];
           }
-
           this.$emit('change', value);
           this.$emit('input', value);
         };
