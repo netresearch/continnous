@@ -63,7 +63,7 @@ module.exports = {
         loaders: ['raw', 'sass-loader']
       },
       {
-        test: /\.json$/,
+        test: /(\.firebaserc|\.json)$/,
         loader: 'json'
       },
       {
