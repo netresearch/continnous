@@ -3,7 +3,7 @@
     <div class="file-list">
       <div v-for="file in files">
         {{file.name}}
-        <img v-if="file.preview" :src="file.preview">
+        <md-image :md-src="file.preview"></md-image>
         <span v-if="file.error">ERROR</span>
       </div>
     </div>
@@ -51,7 +51,8 @@
           if (value) {
             const values = (typeof value === 'object') ? [value] : value;
             values.forEach((v) => {
-              files.push(this.createFileObject(v));
+              const existing = this.files.find(file => file.id === v.id && file.file);
+              files.push(existing || this.createFileObject(v));
             });
           }
           this.files = files;
@@ -59,8 +60,6 @@
       }
     },
     created() {
-      this.newFiles = [];
-      this.deletedFiles = [];
       this.progress = undefined;
 
       this.$on('registered', (form) => {
@@ -112,10 +111,14 @@
             fileObject.file = file;
             if (file.type.substr(0, 6) === 'image/'
               && ['jpeg', 'jpg', 'png', 'gif'].indexOf(file.type.substr(6)) > -1) {
-              this.resizeImage(file, this.previewMaxWidth, this.previewMaxHeight).then((dataUrl) => {
-                fileObject.preview = dataUrl;
-                this.triggerChange();
-              });
+              this.resizeImage(file, this.previewMaxWidth, this.previewMaxHeight).then(
+                (res) => {
+                  fileObject.preview = res.url;
+                  fileObject.width = res.width;
+                  fileObject.height = res.height;
+                  this.triggerChange();
+                }
+              );
             } else if (this.direct) {
               this.triggerChange();
             }
@@ -151,14 +154,21 @@
           deleted: false,
           preview: undefined,
           progress: undefined,
-          error: false
+          error: false,
+          width: undefined,
+          height: undefined
         }, value);
       },
       createValueObject(file) {
-        return {
+        const value = {
           name: file.name,
           id: file.id
         };
+        if (file.width || file.height) {
+          value.width = file.width;
+          value.height = file.height;
+        }
+        return value;
       },
       save(progress) {
         const ref = Firebase.storage().ref();
@@ -238,7 +248,7 @@
             canvas.height = height;
             context.drawImage(img, 0, 0, width, height);
 
-            resolve(canvas.toDataURL('image/png'));
+            resolve({ url: canvas.toDataURL('image/png'), width: img.width, height: img.height });
           };
 
           reader.readAsDataURL(file);

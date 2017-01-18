@@ -70,15 +70,23 @@
         );
       }
     },
-    created() {
-      this.bindToFirebase();
-    },
     watch: {
-      firebasePath: 'bindToFirebase',
-      firebaseBind: 'bindToFirebase',
+      firebasePath: {
+        immediate: true,
+        handler: 'bindToFirebase'
+      },
+      firebaseBind: {
+        immediate: true,
+        handler: 'bindToFirebase'
+      },
       value: {
         deep: true,
         handler: 'takeOverValues'
+      },
+      allKeys() {
+        this.$nextTick(() => {
+          this.takeOverValues(this.object || this.value);
+        });
       }
     },
     methods: {

@@ -21,7 +21,7 @@
 
     <md-layout md-gutter="16" class="resources-list">
       <md-layout v-for="item in items">
-        <md-card>
+        <md-card md-with-hover>
           <md-card-header>
             <md-card-header-text>
               <div class="md-title">{{item.title}}</div>
@@ -49,7 +49,7 @@
             </md-button>
           </md-card-header>
           <md-card-media v-if="item.image && item.image.preview">
-            <img :src="item.image.preview" alt="People">
+            <md-image :md-src="item.image.preview"></md-image>
           </md-card-media>
           <md-card-content>
             Huhu
@@ -79,7 +79,7 @@
     data() {
       return {
         personal: false,
-        items: [],
+        items: undefined,
         auth,
         orderBy: 'updated',
         order: 'desc',
@@ -96,9 +96,13 @@
       $route: {
         immediate: true,
         handler(route) {
-          this.trash = !!route.params.trash;
-          this.personal = !!route.params.personal;
-          this.loadItems();
+          const trash = !!route.params.trash;
+          const personal = !!route.params.personal;
+          if (this.items === undefined || this.trash !== trash || this.personal !== personal) {
+            this.trash = trash;
+            this.personal = personal;
+            this.loadItems();
+          }
         }
       }
     },

@@ -12,6 +12,7 @@
         :firebase-receive="firebaseReceive"
         :value="{creator: auth.user.uid}"
         :keys="id ? ['updated'] : ['creator','created', 'updated']"
+        :validate="{title: validateTitle}"
         ref="form"
         @closed="onClosed"
     >
@@ -59,6 +60,9 @@
       }
     },
     methods: {
+      validateTitle(title) {
+        return title && title.length > 2;
+      },
       firebaseReceive(snapshot) {
         return this.createItem(snapshot.key, snapshot.val());
       },
