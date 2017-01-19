@@ -77,5 +77,14 @@ module.exports = {
       title: 'Personal objectives',
       label: 'This is a personal objective'
     }
+  },
+  fields: {
+    subTitle: {
+      label: 'Subtitle',
+      placeholder: 'Short subtitle to get a quick idea of what this is about'
+    }
+  },
+  file: {
+    placeholder: 'Drag and drop to upload or click here.'
   }
 };

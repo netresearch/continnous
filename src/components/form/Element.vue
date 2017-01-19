@@ -66,3 +66,14 @@
     }
   };
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .form-element {
+    .md-input-container:not(.md-input-inline) label {
+      pointer-events: auto;
+      top: 0;
+      opacity: 1;
+      font-size: 12px;
+    }
+  }
+</style>

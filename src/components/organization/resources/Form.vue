@@ -1,7 +1,7 @@
 <template>
   <div>
     <dialog-form
-        class="form-base-dialog"
+        class="resources-dialog-form"
         v-if="id !== undefined"
         :firebase-path="
           '/resources/organizations/' + organization.key
@@ -23,12 +23,21 @@
       </template>
 
       <template scope="form">
-        <md-checkbox v-if="id === null" v-model="personal">{{$t(type + '.personal.label')}}</md-checkbox>
+        <div class="resources-dialog-form-content">
+          <form-element name="subTitle" :label="$t('fields.subTitle.label')">
+            <md-input :value="form.values.subTitle" :placeholder="$t('fields.subTitle.placeholder')"></md-input>
+          </form-element>
 
-        <form-element naked name="image">
-          <form-file :value="form.values.image"></form-file>
-        </form-element>
+          <form-element label="Image" name="image">
+            <form-file accept="image/png,image/jpeg,image/jpg,image/gif" :value="form.values.image"></form-file>
+          </form-element>
+        </div>
       </template>
+
+      <div slot="leftButtons" style="flex: 1;">
+        <md-checkbox v-if="id === null" v-model="personal">{{$t(type + '.personal.label')}}</md-checkbox>
+      </div>
+      <div slot="centerButtons" style="width: 24px;"></div>
     </dialog-form>
   </div>
 </template>
@@ -79,3 +88,10 @@
     }
   };
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .resources-dialog-form-content {
+    width: 548px;
+    max-width: 100%;
+  }
+</style>

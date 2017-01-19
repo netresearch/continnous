@@ -1,21 +1,29 @@
 <template>
-  <div class="form-file">
-    <div class="file-list">
-      <div v-for="file in files">
-        {{file.name}}
-        <md-image :md-src="file.preview"></md-image>
-        <span v-if="file.error">ERROR</span>
+  <div class="form-file-container">
+    <div class="form-file-list" v-if="numFiles">
+      <div v-for="file in files" v-if="!file.deleted" class="form-file">
+        <div
+            v-if="accept && accept.substr(0, 6) === 'image/' && file.preview"
+            class="form-file-preview"
+            :style="{backgroundImage: 'url(' + file.preview + ')'}"
+        >
+        </div>
+        <div class="form-file-info">
+          <span class="form-file-extension">{{file.name ? file.name.split('.').pop() : ''}}</span>
+          <span class="form-file-name" :title="file.name">{{file.name}}</span>
+          <md-icon @click.native="remove(file)">clear</md-icon>
+        </div>
       </div>
     </div>
-    <div v-if="!files.length || multiple && (!limit || files.length < limit)" class="dropzone" ref="dropzone" @click="$refs.fileInput.click()">
-      <md-icon>cloud_upload</md-icon>&nbsp;&nbsp;Drag and drop to upload or click here.
-    </div>
-    <input
+    <md-file
       type="file"
       :disabled="disabled"
       :multiple="multiple"
       :accept="accept"
-      ref="fileInput">
+      ref="mdFile"
+      v-show="!numFiles || (multiple && (!limit || numFiles < limit))"
+      @selected="acceptFiles($event); $refs.mdFile.filename = undefined;"
+      :placeholder="$t('file.placeholder')"></md-file>
   </div>
 </template>
 
@@ -49,7 +57,7 @@
         handler(value) {
           const files = [];
           if (value) {
-            const values = (typeof value === 'object') ? [value] : value;
+            const values = this.multiple ? value : [value];
             values.forEach((v) => {
               const existing = this.files.find(file => file.id === v.id && file.file);
               files.push(existing || this.createFileObject(v));
@@ -57,6 +65,17 @@
           }
           this.files = files;
         }
+      }
+    },
+    computed: {
+      numFiles() {
+        let numFiles = 0;
+        this.files.forEach((file) => {
+          if (!file.deleted) {
+            numFiles++;
+          }
+        });
+        return numFiles;
       }
     },
     created() {
@@ -69,13 +88,7 @@
       });
     },
     mounted() {
-      const input = this.$refs.fileInput;
-      const dropzone = this.$refs.dropzone;
-
-      // automatically submit the form on file select
-      input.addEventListener('change', (e) => {
-        this.acceptFiles(e.target.files);
-      });
+      const dropzone = this.$refs.mdFile.$el;
 
       ['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach((event) => {
         dropzone.addEventListener(event, (e) => {
@@ -100,6 +113,10 @@
       });
     },
     methods: {
+      remove(file) {
+        file.deleted = true;
+        this.triggerChange();
+      },
       acceptFiles(files) {
         for (let i = 0; i < files.length; i++) {
           ((file) => {
@@ -111,7 +128,7 @@
             fileObject.file = file;
             if (file.type.substr(0, 6) === 'image/'
               && ['jpeg', 'jpg', 'png', 'gif'].indexOf(file.type.substr(6)) > -1) {
-              this.resizeImage(file, this.previewMaxWidth, this.previewMaxHeight).then(
+              this.resizeImage(file).then(
                 (res) => {
                   fileObject.preview = res.url;
                   fileObject.width = res.width;
@@ -132,7 +149,9 @@
           if (this.files.length) {
             const values = [];
             this.files.forEach((fileRecord) => {
-              values.push(this.createValueObject(fileRecord));
+              if (!fileRecord.deleted) {
+                values.push(this.createValueObject(fileRecord));
+              }
             });
             value = this.multiple ? values : values[0];
           }
@@ -232,26 +251,35 @@
             img.src = e.target.result;
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-            let width = img.width;
-            let height = img.height;
 
-            if (width > height && width > maxWidth) {
-              height *= maxWidth / width;
-              width = maxWidth;
-            }
-            if (height > maxHeight) {
-              width *= maxHeight / height;
-              height = maxHeight;
-            }
-            canvas.width = width;
-            canvas.height = height;
-            context.drawImage(img, 0, 0, width, height);
+            const scaled = this.scale(img, maxWidth, maxHeight);
+            canvas.width = scaled.width;
+            canvas.height = scaled.height;
+            context.drawImage(img, 0, 0, scaled.width, scaled.height);
 
             resolve({ url: canvas.toDataURL('image/png'), width: img.width, height: img.height });
           };
 
           reader.readAsDataURL(file);
         });
+      },
+      scale(img, maxWidth, maxHeight) {
+        const max = {
+          width: maxWidth || this.previewMaxWidth,
+          height: maxHeight || this.previewMaxHeight
+        };
+        const newDims = { width: img.width, height: img.height };
+        if (newDims.width && newDims.height) {
+          if (newDims.width > newDims.height && newDims.width > max.width) {
+            newDims.height *= max.width / newDims.width;
+            newDims.width = max.width;
+          }
+          if (newDims.height > max.height) {
+            newDims.width *= max.height / newDims.height;
+            newDims.height = max.height;
+          }
+        }
+        return newDims;
       },
       generateUid() {
         const s4 = () => Math.floor((1 + Math.random()) * 0x10000)
@@ -265,32 +293,88 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-  .form-file {
-    input[type="file"] {
-      width: 1px;
-      height: 1px;
-      margin: -1px;
-      padding: 0;
-      overflow: hidden;
-      position: absolute;
-      clip: rect(0 0 0 0);
-      border: 0;
-    }
-    .dropzone {
-      cursor: pointer;
-      border-radius: 2px;
-      background: #eee;
-      color: #969696;
-      padding: 16px;
-      transition: color 0.4s, box-shadow 0.4s;
-      &:hover {
-        color: inherit;
-        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12);
-      }
+  .md-input-container .form-file-container {
+    padding-top: 4px;
+    flex: 1;
+  }
+  .form-file-container {
+    .md-file {
       &.is-dragover {
         color: inherit;
         border: 2px dashed rgba(#000, 0.5);
-        padding: 14px;
+        background: #fff;
+        overflow: hidden;
+        padding-left: 6px;
+        .md-icon {
+          position: relative;
+        }
+      }
+    }
+    .form-file-list {
+      display: flex;
+      flex-flow: row wrap;
+      margin: 0 -5px;
+    }
+    .form-file {
+      padding: 0 5px;
+      flex: 1;
+      min-width: 150px;
+      max-width: 250px;
+      .form-file-info {
+        padding: 6px;
+        display: flex;
+        flex-flow: row wrap;
+        .form-file-name {
+          flex: 1;
+          margin: 0 6px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .form-file-extension {
+          margin-top: 1px;
+          font-size: 9px;
+          line-height: 18px;
+          border-radius: 1px;
+          text-transform: uppercase;
+          display: inline-block;
+          height: 18px;
+          color: #fff;
+          background: #bbb;
+          width: 28px;
+          text-align: center;
+          overflow: hidden;
+        }
+        .md-icon {
+          position: relative;
+          margin-top: -2px;
+          margin-bottom: 0;
+          cursor: pointer;
+          &:hover {
+            color: #000;
+          }
+        }
+      }
+      .form-file-preview {
+        margin-top: 6px;
+        max-width: 100%;
+        position: relative;
+        background: #eeeeee;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        &:before {
+          content: "";
+          display: block;
+          padding-top: 56.25%;
+        }
+        img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
       }
     }
   }
