@@ -10,8 +10,8 @@
           + '/' + (id || '{new}')"
         firebase-bind
         :firebase-receive="firebaseReceive"
-        :value="{creator: auth.user.uid}"
-        :keys="id ? ['updated'] : ['creator','created', 'updated']"
+        :defaults="{creator: auth.user.uid}"
+        :keys="id ? ['updated'] : ['creator', 'created', 'updated']"
         :validate="{title: validateTitle}"
         ref="form"
         @closed="onClosed"

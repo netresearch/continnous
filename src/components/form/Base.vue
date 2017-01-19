@@ -31,6 +31,7 @@
         default: () => []
       },
       value: Object,
+      defaults: Object,
       firebasePath: {
         type: String,
         required: true
@@ -53,8 +54,8 @@
     },
     data() {
       return {
-        object: Object.assign({}, this.value),
-        values: Object.assign({}, this.value),
+        object: Object.assign({}, this.defaults, this.value),
+        values: Object.assign({}, this.defaults, this.value),
         elementKeys: [],
         changed: {},
         errors: {},
@@ -80,7 +81,6 @@
         handler: 'bindToFirebase'
       },
       value: {
-        deep: true,
         immediate: true,
         handler: 'takeOverValues'
       },
