@@ -81,6 +81,7 @@
       },
       value: {
         deep: true,
+        immediate: true,
         handler: 'takeOverValues'
       },
       allKeys() {
@@ -94,7 +95,7 @@
         this.object = values;
         this.allKeys.forEach((key) => {
           if (!this.changed[key]) {
-            if (values.hasOwnProperty(key)) {
+            if (values && values.hasOwnProperty(key)) {
               this.$set(this.values, key, values[key]);
             } else if (!this.isNewFirebaseRef()) {
               this.$delete(this.values, key);
@@ -211,8 +212,11 @@
         const changedKeys = [];
         const isNew = this.isNewFirebaseRef();
         keys.forEach((key) => {
-          if ((isNew && ['created', 'updated'].indexOf(key) > -1) || this.changed.hasOwnProperty(key)) {
-            updates[key] = (isNew && key === 'created') || key === 'updated' ? +new Date() : this.values[key];
+          const isDateField = (isNew && key === 'created') || key === 'updated';
+          if (isDateField
+            || (isNew && this.values[key] !== undefined)
+            || this.changed.hasOwnProperty(key)) {
+            updates[key] = isDateField ? +new Date() : this.values[key];
             changedKeys.push(key);
           }
         });
