@@ -21,7 +21,7 @@
 
     <div ref="list" class="resources-list">
       <div class="resources-list-width"></div>
-      <div class="resources-list-item" v-for="item in items">
+      <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
         <md-card md-with-hover>
           <md-card-header>
             <md-card-header-text>
@@ -171,7 +171,7 @@
           .then(() => {
             this.getFirebaseRef(this.trash, item.id).remove();
           });
-      }
+      },
     }
   };
 </script>

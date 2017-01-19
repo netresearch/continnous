@@ -64,6 +64,10 @@
 
   const allDeniedPermissions = Config.getAllPermissionsWith(false);
 
+  /* global document */
+  const titleElement = document.querySelector('html > head > title');
+  const defaultTitle = titleElement.innerHTML;
+
   export default {
     components: {
       AccountSwitcher
@@ -76,7 +80,8 @@
         organization: undefined,
         role: undefined,
         permissions: allDeniedPermissions,
-        auth
+        auth,
+        title: undefined
       };
     },
     watch: {
@@ -98,8 +103,11 @@
             if (snapshot.val()) {
               this.organization = new Organization(snapshot.key, snapshot.val());
               this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
+              this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
+              titleElement.innerText = this.title;
             } else {
               this.organization = null;
+              titleElement.innerHTML = defaultTitle;
             }
           },
           () => {
