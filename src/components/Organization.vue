@@ -2,7 +2,7 @@
   <div id="organization">
     <md-app :toolbar-class="{'md-transparent': !organization}">
       <template slot="toolbar">
-        <h2 class="md-title" style="flex: 1">{{organization ? organization.name : ''}}</h2>
+        <h2 class="md-title" style="flex: 1">{{title}}</h2>
         <account-switcher></account-switcher>
       </template>
 
@@ -107,6 +107,7 @@
               titleElement.innerText = this.title;
             } else {
               this.organization = null;
+              this.title = null;
               titleElement.innerHTML = defaultTitle;
             }
           },
