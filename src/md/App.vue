@@ -16,7 +16,7 @@
       <md-backdrop v-if="sidenavActive" class="md-sidenav-backdrop" @close="sidenavActive = false"></md-backdrop>
     </div>
 
-    <div class="md-app-content">
+    <div class="md-app-content" :class="contentClass">
       <slot></slot>
     </div>
   </div>
@@ -27,7 +27,8 @@
 
   export default {
     props: {
-      toolbarClass: [String, Object, Array]
+      toolbarClass: [String, Object, Array],
+      contentClass: [String, Object, Array]
     },
     data() {
       /* global window */

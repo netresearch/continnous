@@ -1,13 +1,13 @@
 <template>
-  <div id="organization">
-    <md-app :toolbar-class="{'md-transparent': !organization}">
+  <div id="organization" class="full-height">
+    <md-app :toolbar-class="{'md-transparent': !organization}" class="scroll-container" content-class="full-height">
       <template slot="toolbar">
         <h2 class="md-title" style="flex: 1">{{title}}</h2>
         <account-switcher></account-switcher>
       </template>
 
       <template v-if="organization">
-        <div class="app-content">
+        <div class="app-content full-height">
           <router-view :organization="organization" :permissions="permissions"></router-view>
         </div>
 
@@ -182,11 +182,7 @@
     background-color: #fafafa;
     border-bottom: 1px solid rgba(0,0,0,0.05);
   }
-  .app-content {
+  .app-content .scroll-content {
     padding: 16px;
-    > div > .md-toolbar,
-    > div .md-tabs {
-      margin:-16px -16px 16px;
-    }
   }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="scroll-container">
     <md-toolbar class="md-dense">
       <h2 class="md-title">{{$tc(singularType, 2)}}</h2>
     </md-toolbar>
@@ -11,6 +11,9 @@
         {{name}}
       </md-button>
       <div style="flex: 1"></div>
+      <md-button class="md-icon-button" @click="masonry = !masonry">
+        <md-icon>{{'view_' + (masonry ? 'stream' : 'quilt')}}</md-icon>
+      </md-button>
       <md-button @click="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '' : '/trash'))" :class="{'md-contrast': trash}">
         <md-icon>delete</md-icon>
         <span>Papierkorb</span>
@@ -19,57 +22,34 @@
 
     <router-view :organization="organization" :type="type"></router-view>
 
-    <div ref="list" class="resources-list">
-      <div class="resources-list-width"></div>
-      <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
-        <md-card md-with-hover>
-          <md-card-header>
-            <md-card-header-text>
-              <div class="md-title">{{item.title}}</div>
-              <div class="md-subhead">{{item.description}}</div>
-            </md-card-header-text>
-            <md-menu v-if="!trash" md-size="4" md-direction="bottom left">
-              <md-button class="md-icon-button" md-menu-trigger>
-                <md-icon>more_vert</md-icon>
-              </md-button>
-              <md-menu-content>
-                <md-menu-item v-if="permissions[type].write && item.creator === auth.user.uid">
-                  <router-link :to="'/' + organization.key + '/' + type + '/' + item.id + '/edit'" exact>
-                    <md-icon>create</md-icon>
-                    <span>{{$t('actions.edit')}}</span>
-                  </router-link>
-                </md-menu-item>
-                <md-menu-item @selected="toggleTrash(item)" v-if="permissions[type].write && item.creator === auth.user.uid">
-                  <md-icon>delete</md-icon>
-                  <span>{{$t('actions.delete')}}</span>
-                </md-menu-item>
-              </md-menu-content>
-            </md-menu>
-            <md-button v-else @click="toggleTrash(item)" :title="$t('actions.restore')" class="md-icon-button">
-              <md-icon>delete_sweep</md-icon>
-            </md-button>
-          </md-card-header>
-          <md-card-media v-if="item.image">
-            <resource-image :image="item.image"></resource-image>
-          </md-card-media>
-          <md-card-content>
-            Huhu
-          </md-card-content>
-        </md-card>
-      </div>
+    <div class="scroll-content">
+      <resource-list :items="items" :masonry="masonry">
+        <template scope="list">
+          <resource-item
+              :item="list.item"
+              :trash="trash"
+              :permissions="permissions"
+              :type="type"
+              :organization="organization"
+              @toggleTrash="toggleTrash"
+          ></resource-item>
+        </template>
+      </resource-list>
     </div>
   </div>
 </template>
 
 <script>
-  import Masonry from 'masonry-layout';
   import sortBy from 'sort-by';
   import Firebase from '../../../firebase';
   import auth from '../../../auth';
   import mixin from './mixin';
+  import ResourceList from './List';
+  import ResourceItem from './Item';
 
   export default {
     mixins: [mixin],
+    components: { ResourceList, ResourceItem },
     props: {
       organization: Object,
       permissions: Object,
@@ -82,10 +62,10 @@
       return {
         personal: false,
         items: undefined,
-        auth,
         orderBy: 'updated',
         order: 'desc',
-        trash: false
+        trash: false,
+        masonry: true
       };
     },
     computed: {
@@ -93,16 +73,6 @@
         const l = this.type.length;
         return this.type.substr(-3) === 'ies' ? this.type.substr(0, l - 3) + 'y' : this.type.substr(0, l - 1);
       }
-    },
-    mounted() {
-      this.masonry = new Masonry(this.$refs.list, {
-        itemSelector: '.resources-list-item',
-        columnWidth: '.resources-list-width',
-        percentPosition: true,
-      });
-    },
-    beforeDestroy() {
-      this.masonry.destroy();
     },
     watch: {
       $route: {
@@ -115,15 +85,6 @@
             this.personal = personal;
             this.loadItems();
           }
-        }
-      },
-      items: {
-        deep: true,
-        handler() {
-          this.$nextTick(() => {
-            this.masonry.reloadItems();
-            this.masonry.layout();
-          });
         }
       }
     },
@@ -175,19 +136,3 @@
     }
   };
 </script>
-
-<style lang="scss" rel="stylesheet/scss">
-  .resources-list {
-    margin: 0 -8px;
-    .resources-list-item {
-      display: block;
-      > .md-card {
-        margin: 0 8px 16px;
-      }
-    }
-    .resources-list-item,
-    .resources-list-width {
-      width: 20%;
-    }
-  }
-</style>

@@ -8,6 +8,7 @@ import VueFire from 'vuefire';
 import Routes from './routes';
 import AdditionalVueMaterial from './md';
 
+import './assets/styles.scss';
 import './locales';
 import './firebase';
 
