@@ -1,29 +1,41 @@
+<!-- This could be contributed to vue-material if the @save method would be extracted -->
+
 <template>
-  <div class="form-file-container">
+  <div
+      :class="['form-file-container', {'form-file-gallery': gallery && numFiles}]">
     <div class="form-file-list" v-if="numFiles">
-      <div v-for="file in files" v-if="!file.deleted" class="form-file">
+      <div v-for="file in files" v-if="!file.deleted" class="form-file" :style="{maxWidth: gallery ? previewMaxWidth + 'px' : 'auto'}">
         <div
-            v-if="accept && accept.substr(0, 6) === 'image/' && file.preview"
+            v-if="gallery && file.preview"
             class="form-file-preview"
             :style="{backgroundImage: 'url(' + file.preview + ')'}"
         >
         </div>
+        <div v-if="gallery && !file.preview" class="form-file-icon">
+          <md-icon>insert_drive_file</md-icon>
+          <span>{{file.name ? file.name.split('.').pop() : ''}}</span>
+        </div>
         <div class="form-file-info">
           <span class="form-file-extension">{{file.name ? file.name.split('.').pop() : ''}}</span>
           <span class="form-file-name" :title="file.name">{{file.name}}</span>
-          <md-icon @click.native="remove(file)">clear</md-icon>
+          <md-icon @click.native="remove(file)" v-if="!disabled">clear</md-icon>
         </div>
       </div>
     </div>
+    <div v-for="(files, type) in errors" class="form-file-error error">
+      {{files.length > 1 ? files.slice(0, files.length - 1).join(', ') + ' ' + $t('and') + ' ' + files[files.length -1] : files[0]}}
+      {{$tc('file.errors.notAdded', files.length)}}:
+      {{$t('file.errors.' + type)}}.
+    </div>
     <md-file
-      type="file"
-      :disabled="disabled"
-      :multiple="multiple"
-      :accept="accept"
-      ref="mdFile"
-      v-show="!numFiles || (multiple && (!limit || numFiles < limit))"
-      @selected="acceptFiles($event); $refs.mdFile.filename = undefined;"
-      :placeholder="$t('file.placeholder')"></md-file>
+        type="file"
+        :disabled="disabled"
+        :multiple="multiple"
+        :accept="accept"
+        ref="mdFile"
+        v-show="!disabled && (!numFiles || (multiple && (!limit || numFiles < limit)))"
+        @selected="acceptFiles($event); $refs.mdFile.filename = undefined;"
+        :placeholder="$t('file.placeholder')"></md-file>
   </div>
 </template>
 
@@ -43,11 +55,13 @@
       limit: { type: Number, default: 10 },
       previewMaxWidth: { type: Number, default: 500 },
       previewMaxHeight: { type: Number, default: 500 },
-      direct: Boolean
+      direct: Boolean,
+      gallery: Boolean
     },
     data() {
       return {
-        files: []
+        files: [],
+        errors: undefined
       };
     },
     watch: {
@@ -76,7 +90,7 @@
           }
         });
         return numFiles;
-      }
+      },
     },
     created() {
       this.progress = undefined;
@@ -88,59 +102,112 @@
       });
     },
     mounted() {
-      const dropzone = this.$refs.mdFile.$el;
-
-      ['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach((event) => {
-        dropzone.addEventListener(event, (e) => {
-          // preventing the unwanted behaviours
-          e.preventDefault();
-          e.stopPropagation();
-        });
-      });
-
-      ['dragover', 'dragenter'].forEach((event) => {
-        dropzone.addEventListener(event, () => {
-          dropzone.classList.add('is-dragover');
-        });
-      });
-      ['dragleave', 'dragend', 'drop'].forEach((event) => {
-        dropzone.addEventListener(event, () => {
-          dropzone.classList.remove('is-dragover');
-        });
-      });
-      dropzone.addEventListener('drop', (e) => {
-        this.acceptFiles(e.dataTransfer.files);
-      });
+      this.addOrRemoveDragListeners('add');
+    },
+    beforeDestroy() {
+      this.addOrRemoveDragListeners('remove');
     },
     methods: {
+      addOrRemoveDragListeners(action) {
+        if (!this.listeners) {
+          this.listeners = {
+            prevent: (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            },
+            over: () => {
+              if (!this.multiple || !this.limit || this.numFiles < this.limit) {
+                this.$el.classList.add('is-dragover');
+              }
+            },
+            out: () => {
+              this.$el.classList.remove('is-dragover');
+            },
+            drop: (e) => {
+              this.acceptFiles(e.dataTransfer.files);
+            },
+            clearErrors: () => {
+              this.errors = undefined;
+            }
+          };
+        }
+        const method = action + 'EventListener';
+        ['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach((event) => {
+          this.$el[method](event, this.listeners.prevent);
+        });
+        ['dragover', 'dragenter'].forEach((event) => {
+          this.$el[method](event, this.listeners.over);
+          this.$el[method](event, this.listeners.clearErrors);
+        });
+        ['dragleave', 'dragend', 'drop'].forEach((event) => {
+          this.$el[method](event, this.listeners.out);
+        });
+        /* global document */
+        document.body[method]('click', this.listeners.clearErrors);
+        this.$el[method]('drop', this.listeners.drop);
+      },
       remove(file) {
         file.deleted = true;
         this.triggerChange();
       },
       acceptFiles(files) {
+        const acceptedFiles = [];
+        const accept = this.accept ? this.accept.split(',') : [];
+        this.errors = {};
+        const addError = (type, file) => {
+          if (!this.errors[type]) {
+            this.errors[type] = [];
+          }
+          this.errors[type].push(file.name);
+        };
         for (let i = 0; i < files.length; i++) {
-          ((file) => {
-            const fileObject = this.createFileObject({
-              name: file.name,
-              id: this.generateUid()
-            });
-            this.files.push(fileObject);
-            fileObject.file = file;
-            if (file.type.substr(0, 6) === 'image/'
-              && ['jpeg', 'jpg', 'png', 'gif'].indexOf(file.type.substr(6)) > -1) {
-              this.resizeImage(file).then(
-                (res) => {
-                  fileObject.preview = res.url;
-                  fileObject.width = res.width;
-                  fileObject.height = res.height;
-                  this.triggerChange();
-                }
-              );
-            } else if (this.direct) {
-              this.triggerChange();
+          let accepted = !accept.length;
+          accept.forEach((mime) => {
+            const requiredParts = mime.split('/');
+            const givenParts = files[i].type.split('/');
+            if (requiredParts[0] === givenParts[0]
+              && (requiredParts[1] === '*' || requiredParts[1] === givenParts[1])) {
+              accepted = true;
             }
-          })(files[i]);
+          });
+          if (accepted) {
+            if (this.multiple) {
+              if (!this.limit || this.numFiles + acceptedFiles.length < this.limit) {
+                acceptedFiles.push(files[i]);
+              } else {
+                addError('limit', files[i]);
+              }
+            } else {
+              this.files.forEach((file) => {
+                file.deleted = true;
+              });
+              acceptedFiles.push(files[i]);
+            }
+          } else {
+            addError('type', files[i]);
+          }
         }
+        acceptedFiles.forEach((file) => {
+          const fileObject = this.createFileObject({
+            name: file.name,
+            id: this.generateUid()
+          });
+          this.files.push(fileObject);
+          fileObject.file = file;
+          if (file.type.substr(0, 6) === 'image/'
+            && ['jpeg', 'jpg', 'png', 'gif'].indexOf(file.type.substr(6)) > -1) {
+            this.resizeImage(file).then(
+              (res) => {
+                fileObject.preview = res.url;
+                fileObject.width = res.width;
+                fileObject.height = res.height;
+                this.triggerChange();
+              }
+            );
+          } else if (this.direct) {
+            this.triggerChange();
+          }
+        });
       },
       triggerChange() {
         const trigger = () => {
@@ -294,36 +361,91 @@
 
 <style lang="scss" rel="stylesheet/scss">
   .md-input-container .form-file-container {
-    padding-top: 4px;
+    margin-top: 4px;
     flex: 1;
   }
   .form-file-container {
-    .md-file {
-      &.is-dragover {
-        color: inherit;
-        border: 2px dashed rgba(#000, 0.5);
-        background: #fff;
-        overflow: hidden;
+    position: relative;
+    &.is-dragover {
+      margin: 2px -2px -2px;
+      border: 2px dashed rgba(#000, 0.5);
+      &.form-file-gallery {
+        margin-top: 8px;
+        .form-file-list {
+          margin-top: -6px;
+        }
+      }
+      .md-file {
         padding-left: 6px;
         .md-icon {
           position: relative;
         }
       }
     }
+    .form-file-error {
+      margin-bottom: 6px;
+    }
     .form-file-list {
+      margin: 0 -5px;
+    }
+    &.form-file-gallery .form-file-list {
       display: flex;
       flex-flow: row wrap;
-      margin: 0 -5px;
     }
     .form-file {
       padding: 0 5px;
       flex: 1;
       min-width: 150px;
-      max-width: 250px;
+      .form-file-icon,
+      .form-file-preview {
+        margin-top: 6px;
+        max-width: 100%;
+        position: relative;
+        background: #eeeeee;
+        &:before {
+          content: "";
+          display: block;
+          padding-top: 56.25%;
+        }
+      }
+      .form-file-icon {
+        cursor: default;
+        .md-icon, span {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+        }
+        .md-icon {
+          font-size: 68px;
+          width: 68px;
+          height: 68px;
+          margin-left: -34px;
+          margin-top: -34px;
+          &:after {
+            display: none;
+          }
+        }
+        span {
+          display: block;
+          color: #eee;
+          text-transform: uppercase;
+          font-size: 12px;
+          width: 36px;
+          margin-left: -18px;
+          margin-top: 12px;
+          line-height: 12px;
+        }
+      }
+      .form-file-preview {
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+      }
       .form-file-info {
         padding: 6px;
         display: flex;
         flex-flow: row wrap;
+        cursor: default;
         .form-file-name {
           flex: 1;
           margin: 0 6px;
@@ -341,7 +463,7 @@
           height: 18px;
           color: #fff;
           background: #bbb;
-          width: 28px;
+          width: 24px;
           text-align: center;
           overflow: hidden;
         }
@@ -353,27 +475,6 @@
           &:hover {
             color: #000;
           }
-        }
-      }
-      .form-file-preview {
-        margin-top: 6px;
-        max-width: 100%;
-        position: relative;
-        background: #eeeeee;
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-position: center;
-        &:before {
-          content: "";
-          display: block;
-          padding-top: 56.25%;
-        }
-        img {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
         }
       }
     }

@@ -82,9 +82,17 @@ module.exports = {
     subTitle: {
       label: 'Subtitle',
       placeholder: 'Short subtitle to get a quick idea of what this is about'
-    }
+    },
+    image: 'Image',
+    attachments: 'Attachments'
   },
   file: {
-    placeholder: 'Drag and drop to upload or click here.'
-  }
+    placeholder: 'Drag and drop to upload or click here.',
+    errors: {
+      notAdded: 'could not be added | could not be added',
+      type: 'Wrong file type',
+      limit: 'Limit exceeded'
+    }
+  },
+  and: 'and'
 };

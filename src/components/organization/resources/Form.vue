@@ -28,9 +28,18 @@
             <md-input :value="form.values.subTitle" :placeholder="$t('fields.subTitle.placeholder')"></md-input>
           </form-element>
 
-          <form-element label="Image" name="image">
-            <form-file accept="image/png,image/jpeg,image/jpg,image/gif" :value="form.values.image"></form-file>
-          </form-element>
+          <md-layout md-gutter="24">
+            <md-layout>
+              <form-element :label="$t('fields.image')" name="image" style="flex: 1; min-width: 180px; max-width: 100%;">
+                <form-file gallery accept="image/png,image/jpeg,image/jpg,image/gif" :value="form.values.image"></form-file>
+              </form-element>
+            </md-layout>
+            <md-layout>
+              <form-element :label="$t('fields.attachments')" name="attachments" style="flex: 1; min-width: 180px;">
+                <form-file multiple :value="form.values.attachments"></form-file>
+              </form-element>
+            </md-layout>
+          </md-layout>
         </div>
       </template>
 
