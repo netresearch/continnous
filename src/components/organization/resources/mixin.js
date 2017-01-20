@@ -1,3 +1,4 @@
+import extend from 'extend';
 import Firebase from '../../../firebase';
 
 export default {
@@ -21,6 +22,17 @@ export default {
         item.image = createFileObject(item.image);
       }
       return item;
+    },
+    prepareItemForFirebase(item) {
+      const fbItem = extend(true, {}, item);
+      const restoreFileObject = (fileObject) => {
+        delete fileObject.preview;
+        delete fileObject.src;
+      };
+      if (item.image) {
+        restoreFileObject(item.image);
+      }
+      return fbItem;
     }
   },
 };

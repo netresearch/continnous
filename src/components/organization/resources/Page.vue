@@ -142,7 +142,7 @@
       },
       toggleTrash(item) {
         this.getFirebaseRef(!this.trash, item.id)
-          .set(item)
+          .set(this.prepareItemForFirebase(item))
           .then(() => {
             this.getFirebaseRef(this.trash, item.id).remove();
           });
