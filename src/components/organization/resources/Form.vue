@@ -24,8 +24,11 @@
 
       <template scope="form">
         <div class="resources-dialog-form-content">
-          <form-element name="subTitle" :label="$t('fields.subTitle.label')">
-            <md-input :value="form.values.subTitle" :placeholder="$t('fields.subTitle.placeholder')"></md-input>
+          <form-element name="subtitle" :label="$t('fields.subtitle.label')">
+            <md-input :value="form.values.subtitle" :placeholder="$t('fields.subtitle.placeholder')"></md-input>
+          </form-element>
+          <form-element name="description" :label="$t('fields.description.label')">
+            <md-textarea :value="form.values.description" :placeholder="$t('fields.description.placeholder')"></md-textarea>
           </form-element>
 
           <md-layout md-gutter="24">

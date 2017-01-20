@@ -81,9 +81,13 @@ module.exports = {
     }
   },
   fields: {
-    subTitle: {
+    subtitle: {
       label: 'Subtitle',
       placeholder: 'Short subtitle to get a quick idea of what this is about'
+    },
+    description: {
+      label: 'Description',
+      placeholder: 'Describe what this is about in detail'
     },
     image: 'Image',
     attachments: 'Attachments'
