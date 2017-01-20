@@ -1,21 +1,46 @@
+<!-- This could be contributed to vue-material if the @save method would be extracted -->
+
 <template>
-  <div class="form-file">
-    <div class="file-list">
-      <div v-for="file in files">
-        {{file.name}}
-        <img v-if="file.preview" :src="file.preview">
-        <span v-if="file.error">ERROR</span>
+  <div
+      :class="['form-file-container', {'form-file-gallery': gallery && numFiles}]">
+    <div class="form-file-list" v-if="numFiles">
+      <div
+          v-for="file in files"
+          v-if="!file.deleted"
+          class="form-file"
+          :style="{maxWidth: gallery ? previewMaxWidth + 'px' : 'auto'}"
+      >
+        <div
+            v-if="gallery && file.preview"
+            class="form-file-preview"
+            :style="{backgroundImage: 'url(' + file.preview + ')'}"
+        >
+        </div>
+        <div v-if="gallery && !file.preview" class="form-file-icon">
+          <md-icon>insert_drive_file</md-icon>
+          <span>{{file.name ? file.name.split('.').pop() : ''}}</span>
+        </div>
+        <div class="form-file-info">
+          <span class="form-file-extension">{{file.name ? file.name.split('.').pop() : ''}}</span>
+          <span @click="download(file)" class="form-file-name md-primary" :title="$t('actions.downloadFile', {file: file.name})">{{file.name}}</span>
+          <md-icon @click.native.stop="remove(file)":title="$t('actions.removeFile', {file: file.name})" class="form-file-clear" v-if="!disabled">clear</md-icon>
+        </div>
       </div>
     </div>
-    <div v-if="!files.length || multiple && (!limit || files.length < limit)" class="dropzone" ref="dropzone" @click="$refs.fileInput.click()">
-      <md-icon>cloud_upload</md-icon>&nbsp;&nbsp;Drag and drop to upload or click here.
+    <div v-for="(files, type) in errors" class="form-file-error error">
+      {{files.length > 1 ? files.slice(0, files.length - 1).join(', ') + ' ' + $t('and') + ' ' + files[files.length -1] : files[0]}}
+      {{$tc('file.errors.notAdded', files.length)}}:
+      {{$t('file.errors.' + type)}}.
     </div>
-    <input
-      type="file"
-      :disabled="disabled"
-      :multiple="multiple"
-      :accept="accept"
-      ref="fileInput">
+    <md-file
+        type="file"
+        :disabled="disabled"
+        :multiple="multiple"
+        :accept="accept"
+        ref="mdFile"
+        v-show="!disabled && (!numFiles || (multiple && (!limit || numFiles < limit)))"
+        @selected="acceptFiles($event); $refs.mdFile.filename = undefined;"
+        :placeholder="$t('file.placeholder')"></md-file>
   </div>
 </template>
 
@@ -35,11 +60,13 @@
       limit: { type: Number, default: 10 },
       previewMaxWidth: { type: Number, default: 500 },
       previewMaxHeight: { type: Number, default: 500 },
-      direct: Boolean
+      direct: Boolean,
+      gallery: Boolean
     },
     data() {
       return {
-        files: []
+        files: [],
+        errors: undefined
       };
     },
     watch: {
@@ -49,18 +76,28 @@
         handler(value) {
           const files = [];
           if (value) {
-            const values = (typeof value === 'object') ? [value] : value;
+            const values = this.multiple ? value : [value];
             values.forEach((v) => {
-              files.push(this.createFileObject(v));
+              const existing = this.files.find(file => file.id === v.id && file.file);
+              files.push(existing || this.createFileObject(v));
             });
           }
           this.files = files;
         }
       }
     },
+    computed: {
+      numFiles() {
+        let numFiles = 0;
+        this.files.forEach((file) => {
+          if (!file.deleted) {
+            numFiles++;
+          }
+        });
+        return numFiles;
+      },
+    },
     created() {
-      this.newFiles = [];
-      this.deletedFiles = [];
       this.progress = undefined;
 
       this.$on('registered', (form) => {
@@ -70,57 +107,133 @@
       });
     },
     mounted() {
-      const input = this.$refs.fileInput;
-      const dropzone = this.$refs.dropzone;
-
-      // automatically submit the form on file select
-      input.addEventListener('change', (e) => {
-        this.acceptFiles(e.target.files);
-      });
-
-      ['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach((event) => {
-        dropzone.addEventListener(event, (e) => {
-          // preventing the unwanted behaviours
-          e.preventDefault();
-          e.stopPropagation();
-        });
-      });
-
-      ['dragover', 'dragenter'].forEach((event) => {
-        dropzone.addEventListener(event, () => {
-          dropzone.classList.add('is-dragover');
-        });
-      });
-      ['dragleave', 'dragend', 'drop'].forEach((event) => {
-        dropzone.addEventListener(event, () => {
-          dropzone.classList.remove('is-dragover');
-        });
-      });
-      dropzone.addEventListener('drop', (e) => {
-        this.acceptFiles(e.dataTransfer.files);
-      });
+      this.addOrRemoveDragListeners('add');
+    },
+    beforeDestroy() {
+      this.addOrRemoveDragListeners('remove');
     },
     methods: {
-      acceptFiles(files) {
-        for (let i = 0; i < files.length; i++) {
-          ((file) => {
-            const fileObject = this.createFileObject({
-              name: file.name,
-              id: this.generateUid()
-            });
-            this.files.push(fileObject);
-            fileObject.file = file;
-            if (file.type.substr(0, 6) === 'image/'
-              && ['jpeg', 'jpg', 'png', 'gif'].indexOf(file.type.substr(6)) > -1) {
-              this.resizeImage(file, this.previewMaxWidth, this.previewMaxHeight).then((dataUrl) => {
-                fileObject.preview = dataUrl;
-                this.triggerChange();
-              });
-            } else if (this.direct) {
-              this.triggerChange();
+      addOrRemoveDragListeners(action) {
+        if (!this.listeners) {
+          this.listeners = {
+            prevent: (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            },
+            over: () => {
+              if (!this.multiple || !this.limit || this.numFiles < this.limit) {
+                this.$el.classList.add('is-dragover');
+              }
+            },
+            out: () => {
+              this.$el.classList.remove('is-dragover');
+            },
+            drop: (e) => {
+              this.acceptFiles(e.dataTransfer.files);
+            },
+            clearErrors: () => {
+              this.errors = undefined;
             }
-          })(files[i]);
+          };
         }
+        const method = action + 'EventListener';
+        ['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach((event) => {
+          this.$el[method](event, this.listeners.prevent);
+        });
+        ['dragover', 'dragenter'].forEach((event) => {
+          this.$el[method](event, this.listeners.over);
+          this.$el[method](event, this.listeners.clearErrors);
+        });
+        ['dragleave', 'dragend', 'drop'].forEach((event) => {
+          this.$el[method](event, this.listeners.out);
+        });
+        /* global document */
+        document.body[method]('click', this.listeners.clearErrors);
+        this.$el[method]('drop', this.listeners.drop);
+      },
+      download(file) {
+        /* global FileReader, document */
+        const download = (src) => {
+          const link = document.createElement('a');
+          link.download = file.name;
+          link.href = src;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        };
+        if (file.file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            download(e.target.result);
+          };
+          reader.readAsDataURL(file.file);
+        } else if (file.src) {
+          download(file.src);
+        }
+      },
+      remove(file) {
+        file.deleted = true;
+        this.triggerChange();
+      },
+      acceptFiles(files) {
+        const acceptedFiles = [];
+        const accept = this.accept ? this.accept.split(',') : [];
+        this.errors = {};
+        const addError = (type, file) => {
+          if (!this.errors[type]) {
+            this.errors[type] = [];
+          }
+          this.errors[type].push(file.name);
+        };
+        for (let i = 0; i < files.length; i++) {
+          let accepted = !accept.length;
+          accept.forEach((mime) => {
+            const requiredParts = mime.split('/');
+            const givenParts = files[i].type.split('/');
+            if (requiredParts[0] === givenParts[0]
+              && (requiredParts[1] === '*' || requiredParts[1] === givenParts[1])) {
+              accepted = true;
+            }
+          });
+          if (accepted) {
+            if (this.multiple) {
+              if (!this.limit || this.numFiles + acceptedFiles.length < this.limit) {
+                acceptedFiles.push(files[i]);
+              } else {
+                addError('limit', files[i]);
+              }
+            } else {
+              this.files.forEach((file) => {
+                file.deleted = true;
+              });
+              acceptedFiles.push(files[i]);
+            }
+          } else {
+            addError('type', files[i]);
+          }
+        }
+        acceptedFiles.forEach((file) => {
+          const fileObject = this.createFileObject({
+            name: file.name,
+            id: this.generateUid()
+          });
+          this.files.push(fileObject);
+          fileObject.file = file;
+          if (file.type.substr(0, 6) === 'image/'
+            && ['jpeg', 'jpg', 'png', 'gif'].indexOf(file.type.substr(6)) > -1) {
+            this.resizeImage(file).then(
+              (res) => {
+                fileObject.preview = res.url;
+                fileObject.width = res.width;
+                fileObject.height = res.height;
+                this.triggerChange();
+              }
+            );
+          } else if (this.direct) {
+            this.triggerChange();
+          }
+        });
       },
       triggerChange() {
         const trigger = () => {
@@ -129,11 +242,12 @@
           if (this.files.length) {
             const values = [];
             this.files.forEach((fileRecord) => {
-              values.push(this.createValueObject(fileRecord));
+              if (!fileRecord.deleted) {
+                values.push(this.createValueObject(fileRecord));
+              }
             });
             value = this.multiple ? values : values[0];
           }
-
           this.$emit('change', value);
           this.$emit('input', value);
         };
@@ -151,14 +265,21 @@
           deleted: false,
           preview: undefined,
           progress: undefined,
-          error: false
+          error: false,
+          width: undefined,
+          height: undefined
         }, value);
       },
       createValueObject(file) {
-        return {
+        const value = {
           name: file.name,
           id: file.id
         };
+        if (file.width || file.height) {
+          value.width = file.width;
+          value.height = file.height;
+        }
+        return value;
       },
       save(progress) {
         const ref = Firebase.storage().ref();
@@ -223,26 +344,35 @@
             img.src = e.target.result;
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-            let width = img.width;
-            let height = img.height;
 
-            if (width > height && width > maxWidth) {
-              height *= maxWidth / width;
-              width = maxWidth;
-            }
-            if (height > maxHeight) {
-              width *= maxHeight / height;
-              height = maxHeight;
-            }
-            canvas.width = width;
-            canvas.height = height;
-            context.drawImage(img, 0, 0, width, height);
+            const scaled = this.scale(img, maxWidth, maxHeight);
+            canvas.width = scaled.width;
+            canvas.height = scaled.height;
+            context.drawImage(img, 0, 0, scaled.width, scaled.height);
 
-            resolve(canvas.toDataURL('image/png'));
+            resolve({ url: canvas.toDataURL('image/png'), width: img.width, height: img.height });
           };
 
           reader.readAsDataURL(file);
         });
+      },
+      scale(img, maxWidth, maxHeight) {
+        const max = {
+          width: maxWidth || this.previewMaxWidth,
+          height: maxHeight || this.previewMaxHeight
+        };
+        const newDims = { width: img.width, height: img.height };
+        if (newDims.width && newDims.height) {
+          if (newDims.width > newDims.height && newDims.width > max.width) {
+            newDims.height *= max.width / newDims.width;
+            newDims.width = max.width;
+          }
+          if (newDims.height > max.height) {
+            newDims.width *= max.height / newDims.height;
+            newDims.height = max.height;
+          }
+        }
+        return newDims;
       },
       generateUid() {
         const s4 = () => Math.floor((1 + Math.random()) * 0x10000)
@@ -256,32 +386,131 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-  .form-file {
-    input[type="file"] {
-      width: 1px;
-      height: 1px;
-      margin: -1px;
-      padding: 0;
-      overflow: hidden;
-      position: absolute;
-      clip: rect(0 0 0 0);
-      border: 0;
-    }
-    .dropzone {
-      cursor: pointer;
-      border-radius: 2px;
-      background: #eee;
-      color: #969696;
-      padding: 16px;
-      transition: color 0.4s, box-shadow 0.4s;
-      &:hover {
-        color: inherit;
-        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12);
+  .md-input-container .form-file-container {
+    margin-top: 4px;
+    flex: 1;
+  }
+  .form-file-container {
+    position: relative;
+    &.is-dragover {
+      margin: 2px -2px -2px;
+      border: 2px dashed rgba(#000, 0.5);
+      &.form-file-gallery {
+        margin-top: 8px;
+        .form-file-list {
+          margin-top: -6px;
+        }
       }
-      &.is-dragover {
-        color: inherit;
-        border: 2px dashed rgba(#000, 0.5);
-        padding: 14px;
+      .md-file {
+        padding-left: 6px;
+        .md-icon {
+          position: relative;
+        }
+      }
+    }
+    .form-file-error {
+      margin-bottom: 6px;
+    }
+    .form-file-list {
+      margin: 0 -5px;
+    }
+    &.form-file-gallery .form-file-list {
+      display: flex;
+      flex-flow: row wrap;
+    }
+    .form-file {
+      padding: 0 5px;
+      flex: 1;
+      min-width: 150px;
+      .form-file-icon,
+      .form-file-preview {
+        margin-top: 6px;
+        max-width: 100%;
+        position: relative;
+        background: #eeeeee;
+        &:before {
+          content: "";
+          display: block;
+          padding-top: 56.25%;
+        }
+      }
+      .form-file-icon {
+        cursor: default;
+        .md-icon, span {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+        }
+        .md-icon {
+          font-size: 68px;
+          width: 68px;
+          height: 68px;
+          margin-left: -34px;
+          margin-top: -34px;
+          &:after {
+            display: none;
+          }
+        }
+        span {
+          display: block;
+          color: #eee;
+          text-transform: uppercase;
+          font-size: 12px;
+          width: 36px;
+          margin-left: -18px;
+          margin-top: 12px;
+          line-height: 12px;
+        }
+      }
+      .form-file-preview {
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+      }
+      .form-file-info {
+        padding: 6px;
+        display: flex;
+        flex-flow: row wrap;
+        cursor: default;
+        .form-file-name {
+          display: inline-block;
+          flex: 1;
+          margin: 0 6px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          position: relative;
+          cursor: pointer;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+        .form-file-extension {
+          margin-top: 1px;
+          font-size: 9px;
+          line-height: 18px;
+          border-radius: 1px;
+          text-transform: uppercase;
+          display: inline-block;
+          height: 18px;
+          color: #fff;
+          background: #bbb;
+          width: 24px;
+          text-align: center;
+          overflow: hidden;
+        }
+        .md-icon {
+          position: relative;
+          margin-bottom: 0;
+          cursor: pointer;
+          margin-top: -2px;
+          &:hover {
+            color: #000;
+          }
+          &.form-file-download {
+            top: 1px;
+          }
+        }
       }
     }
   }

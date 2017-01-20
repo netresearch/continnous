@@ -31,6 +31,7 @@
         default: () => []
       },
       value: Object,
+      defaults: Object,
       firebasePath: {
         type: String,
         required: true
@@ -53,8 +54,8 @@
     },
     data() {
       return {
-        object: Object.assign({}, this.value),
-        values: Object.assign({}, this.value),
+        object: Object.assign({}, this.defaults, this.value),
+        values: Object.assign({}, this.defaults, this.value),
         elementKeys: [],
         changed: {},
         errors: {},
@@ -70,15 +71,23 @@
         );
       }
     },
-    created() {
-      this.bindToFirebase();
-    },
     watch: {
-      firebasePath: 'bindToFirebase',
-      firebaseBind: 'bindToFirebase',
+      firebasePath: {
+        immediate: true,
+        handler: 'bindToFirebase'
+      },
+      firebaseBind: {
+        immediate: true,
+        handler: 'bindToFirebase'
+      },
       value: {
-        deep: true,
+        immediate: true,
         handler: 'takeOverValues'
+      },
+      allKeys() {
+        this.$nextTick(() => {
+          this.takeOverValues(this.object || this.value);
+        });
       }
     },
     methods: {
@@ -86,7 +95,7 @@
         this.object = values;
         this.allKeys.forEach((key) => {
           if (!this.changed[key]) {
-            if (values.hasOwnProperty(key)) {
+            if (values && values.hasOwnProperty(key)) {
               this.$set(this.values, key, values[key]);
             } else if (!this.isNewFirebaseRef()) {
               this.$delete(this.values, key);
@@ -203,8 +212,11 @@
         const changedKeys = [];
         const isNew = this.isNewFirebaseRef();
         keys.forEach((key) => {
-          if (isNew || this.changed.hasOwnProperty(key)) {
-            updates[key] = (isNew && key === 'created') || key === 'updated' ? +new Date() : this.values[key];
+          const isDateField = (isNew && key === 'created') || key === 'updated';
+          if (isDateField
+            || (isNew && this.values[key] !== undefined)
+            || this.changed.hasOwnProperty(key)) {
+            updates[key] = isDateField ? +new Date() : this.values[key];
             changedKeys.push(key);
           }
         });

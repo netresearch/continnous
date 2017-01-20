@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="scroll-container">
     <template v-if="auth.user">
       <md-toolbar class="md-dense">
         <h2 class="md-title">{{$t('settings')}}</h2>
@@ -14,7 +14,7 @@
         </router-link>
       </md-toolbar>
 
-      <router-view :organization="organization"></router-view>
+      <router-view :organization="organization" class="scroll-content"></router-view>
     </template>
   </div>
 </template>

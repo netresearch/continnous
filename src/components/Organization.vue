@@ -1,13 +1,13 @@
 <template>
-  <div id="organization">
-    <md-app :toolbar-class="{'md-transparent': !organization}">
+  <div id="organization" class="full-height">
+    <md-app :toolbar-class="{'md-transparent': !organization}" class="scroll-container" content-class="full-height">
       <template slot="toolbar">
-        <h2 class="md-title" style="flex: 1">{{organization ? organization.name : ''}}</h2>
+        <h2 class="md-title" style="flex: 1">{{title}}</h2>
         <account-switcher></account-switcher>
       </template>
 
       <template v-if="organization">
-        <div class="app-content">
+        <div class="app-content full-height">
           <router-view :organization="organization" :permissions="permissions"></router-view>
         </div>
 
@@ -22,11 +22,11 @@
               </router-link>
             </router-link>
           </md-list-item>
-          <md-list-item v-for="(entry, key) in {objectives: { label: $tc('objective', 2), icon: 'rowing'}, ideas: { label: $tc('idea', 2), icon: 'lightbulb_outline'}}">
+          <md-list-item v-for="(resource, key) in resources">
             <router-link :to="'/' + organization.key + '/' + key">
-              <md-icon>{{entry.icon}}</md-icon>
-              <span>{{entry.label}}</span>
-              <router-link v-if="permissions[key].write || permissions['personal_' + key].write" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
+              <md-icon>{{resource.icon}}</md-icon>
+              <span>{{$t('resources.' + key)}}</span>
+              <router-link v-if="permissions[key].write || permissions['personal_' + key].write || permissions[key].read || permissions['personal_' + key].read" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
                 <md-icon>add</md-icon>
               </router-link>
             </router-link>
@@ -57,12 +57,17 @@
 
 <script>
   import Firebase from 'firebase';
+  import extend from 'extend';
   import auth from '../auth';
   import AccountSwitcher from './AccountSwitcher';
   import Organization from '../models/Organization';
   import Config from '../models/Config';
 
   const allDeniedPermissions = Config.getAllPermissionsWith(false);
+
+  /* global document */
+  const titleElement = document.querySelector('html > head > title');
+  const defaultTitle = titleElement.innerHTML;
 
   export default {
     components: {
@@ -76,7 +81,9 @@
         organization: undefined,
         role: undefined,
         permissions: allDeniedPermissions,
-        auth
+        resources: Config.resources,
+        auth,
+        title: undefined
       };
     },
     watch: {
@@ -98,8 +105,12 @@
             if (snapshot.val()) {
               this.organization = new Organization(snapshot.key, snapshot.val());
               this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
+              this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
+              titleElement.innerText = this.title;
             } else {
               this.organization = null;
+              this.title = null;
+              titleElement.innerHTML = defaultTitle;
             }
           },
           () => {
@@ -133,14 +144,18 @@
               }
             };
 
-            if (this.organization && this.role !== '?' && this.role !== '!' && this.role !== 'admin') {
+            if (this.organization && this.role !== '?' && this.role !== '!') {
               // Load permissions and set role for domain members (for whom snapshot.val() is null)
-              const roles = this.role ? [this.role] : Config.roles.slice(0);
+              const roles = this.role && this.role !== 'admin' ? [this.role] : Config.roles.slice(0);
               const loadPermissions = (role) => {
-                Firebase.database().ref('/security/organizations/' + orgKey + '/permissions/' + role).once('value',
+                const ref = Firebase.database().ref('/security/organizations/' + orgKey + '/permissions/' + role);
+                ref.once('value',
                   (permSnap) => {
-                    this.role = role;
-                    this.permissions = permSnap.val();
+                    this.role = this.role === 'admin' ? this.role : role;
+                    this.permissions = extend(true, {}, allDeniedPermissions, permSnap.val());
+                    ref.on('value', (newPermSnap) => {
+                      this.permissions = extend(true, {}, allDeniedPermissions, newPermSnap.val());
+                    });
                     updateUser();
                   },
                   () => {
@@ -153,9 +168,6 @@
               };
               loadPermissions(roles.shift());
             } else {
-              if (this.role === 'admin') {
-                this.permissions = Config.getAllPermissionsWith(true);
-              }
               updateUser();
             }
           });
@@ -173,11 +185,7 @@
     background-color: #fafafa;
     border-bottom: 1px solid rgba(0,0,0,0.05);
   }
-  .app-content {
+  .app-content .scroll-content {
     padding: 16px;
-    > div > .md-toolbar,
-    > div .md-tabs {
-      margin:-16px -16px 16px;
-    }
   }
 </style>

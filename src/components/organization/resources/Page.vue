@@ -1,62 +1,42 @@
 <template>
-  <div>
+  <div class="scroll-container">
     <md-toolbar class="md-dense">
-      <h2 class="md-title">{{$tc(singularType, 2)}}</h2>
+      <h2 class="md-title">{{$tc('resources.' + type, 2)}}</h2>
     </md-toolbar>
     <md-toolbar class="md-dense md-nav-bar">
       <md-button
-          v-for="(name, path) in {'': organization.name + ' ' + $tc(singularType, 2), '/personal': $t('objectives.personal.title')}"
-          @click="$router.push('/' + organization.key + '/' + type + path)"
+          v-for="(name, path) in {'': organization.name + ' ' + $tc('resources.' + type, 2), 'personal': $t('resources.personal_' + type)}"
+          @click="$router.push('/' + organization.key + '/' + type + (path ? '/' + path : ''))"
+          v-if="permissions[(path ? path + '_' : '') + type].read || permissions[(path ? path + '_' : '') + type].write"
           :class="{'router-link-active': path === '' && !personal || path !== '' && personal}">
         {{name}}
       </md-button>
       <div style="flex: 1"></div>
+      <md-button class="md-icon-button" @click="masonry = !masonry">
+        <md-icon>{{'view_' + (masonry ? 'stream' : 'quilt')}}</md-icon>
+      </md-button>
       <md-button @click="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '' : '/trash'))" :class="{'md-contrast': trash}">
         <md-icon>delete</md-icon>
-        <span>Papierkorb</span>
+        <span>{{$t('trash')}}</span>
       </md-button>
     </md-toolbar>
 
-    <router-view :organization="organization" :type="type"></router-view>
+    <router-view v-if="type" :organization="organization" :type="type"></router-view>
 
-    <md-layout md-gutter="16" class="resources-list">
-      <md-layout v-for="item in items">
-        <md-card>
-          <md-card-header>
-            <md-card-header-text>
-              <div class="md-title">{{item.title}}</div>
-              <div class="md-subhead">{{item.description}}</div>
-            </md-card-header-text>
-            <md-menu v-if="!trash" md-size="4" md-direction="bottom left">
-              <md-button class="md-icon-button" md-menu-trigger>
-                <md-icon>more_vert</md-icon>
-              </md-button>
-              <md-menu-content>
-                <md-menu-item v-if="permissions[type].write && item.creator === auth.user.uid">
-                  <router-link :to="'/' + organization.key + '/' + type + '/' + item.id + '/edit'" exact>
-                    <md-icon>create</md-icon>
-                    <span>{{$t('actions.edit')}}</span>
-                  </router-link>
-                </md-menu-item>
-                <md-menu-item @selected="toggleTrash(item)" v-if="permissions[type].write && item.creator === auth.user.uid">
-                  <md-icon>delete</md-icon>
-                  <span>{{$t('actions.delete')}}</span>
-                </md-menu-item>
-              </md-menu-content>
-            </md-menu>
-            <md-button v-else @click="toggleTrash(item)" :title="$t('actions.restore')" class="md-icon-button">
-              <md-icon>delete_sweep</md-icon>
-            </md-button>
-          </md-card-header>
-          <md-card-media v-if="item.image && item.image.preview">
-            <img :src="item.image.preview" alt="People">
-          </md-card-media>
-          <md-card-content>
-            Huhu
-          </md-card-content>
-        </md-card>
-      </md-layout>
-    </md-layout>
+    <div class="scroll-content">
+      <resource-list :items="items" :masonry="masonry">
+        <template scope="list">
+          <resource-item
+              :item="list.item"
+              :trash="trash"
+              :permissions="permissions"
+              :type="type"
+              :organization="organization"
+              @toggleTrash="toggleTrash"
+          ></resource-item>
+        </template>
+      </resource-list>
+    </div>
   </div>
 </template>
 
@@ -65,40 +45,48 @@
   import Firebase from '../../../firebase';
   import auth from '../../../auth';
   import mixin from './mixin';
+  import ResourceList from './List';
+  import ResourceItem from './Item';
 
   export default {
     mixins: [mixin],
+    components: { ResourceList, ResourceItem },
     props: {
       organization: Object,
       permissions: Object,
-      type: {
-        type: String,
-        required: true
-      }
     },
     data() {
       return {
+        type: undefined,
         personal: false,
-        items: [],
-        auth,
+        items: undefined,
         orderBy: 'updated',
         order: 'desc',
-        trash: false
+        trash: false,
+        masonry: true
       };
-    },
-    computed: {
-      singularType() {
-        const l = this.type.length;
-        return this.type.substr(-3) === 'ies' ? this.type.substr(0, l - 3) + 'y' : this.type.substr(0, l - 1);
-      }
     },
     watch: {
       $route: {
         immediate: true,
         handler(route) {
-          this.trash = !!route.params.trash;
-          this.personal = !!route.params.personal;
-          this.loadItems();
+          const type = route.params.type;
+          const trash = !!route.params.trash;
+          let personal = !!route.params.personal;
+          const personalAllowed = this.permissions['personal_' + type].read || this.permissions['personal_' + type].write;
+          const organizationAllowed = this.permissions[type].read || this.permissions[type].write;
+          if (personal && !personalAllowed && organizationAllowed) {
+            personal = false;
+          } else if (!personal && personalAllowed && !organizationAllowed) {
+            personal = true;
+          }
+          if (this.items === undefined
+            || this.type !== type || this.trash !== trash || this.personal !== personal) {
+            this.type = type;
+            this.trash = trash;
+            this.personal = personal;
+            this.loadItems();
+          }
         }
       }
     },
@@ -146,15 +134,7 @@
           .then(() => {
             this.getFirebaseRef(this.trash, item.id).remove();
           });
-      }
+      },
     }
   };
 </script>
-
-<style lang="scss" rel="stylesheet/scss">
-  .resources-list {
-    .md-card {
-      width: 100%;
-    }
-  }
-</style>

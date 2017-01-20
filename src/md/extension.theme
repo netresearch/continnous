@@ -3,6 +3,10 @@
       color: #{'PRIMARY-COLOR'};
   }
 
+  .error {
+      color: #{'WARN-COLOR'};
+  }
+
   .md-contrast {
     color: #{'PRIMARY-CONTRAST'} !important;
     &.md-spinner {

@@ -1,43 +1,66 @@
 // CommonJS because required on CLI
 
-const resources = {
-  organization: ['read'],
-  objectives: ['read', 'write'],
-  personal_objectives: ['read', 'write'],
-  ideas: ['read', 'write'],
-  personal_ideas: ['read', 'write']
-};
-
-module.exports = {
+const Config = {
   roles: ['member', 'guest', 'anyone'],
+  resources: {
+    objectives: {
+      icon: 'rowing',
+      defaultPermissions: {
+        member: ['read'],
+        guest: [],
+        anyone: []
+      },
+      defaultPersonalPermissions: {
+        member: ['read', 'write'],
+        guest: [],
+        anyone: []
+      }
+    },
+    ideas: {
+      icon: 'lightbulb_outline',
+      defaultPermissions: {
+        member: ['read', 'write'],
+        guest: ['write'],
+        anyone: ['write']
+      },
+      defaultPersonalPermissions: {
+        member: ['read', 'write'],
+        guest: ['read', 'write'],
+        anyone: []
+      }
+    },
+    insights: {
+      icon: 'chat_bubble_outline',
+      defaultPermissions: {
+        member: ['read', 'write'],
+        guest: ['write'],
+        anyone: ['write']
+      },
+      defaultPersonalPermissions: {
+        member: ['read', 'write'],
+        guest: ['read', 'write'],
+        anyone: []
+      }
+    }
+  },
   getDefaultPermissions() {
     const permissions = {};
-    const roles = {
-      member: {
-        objectives: ['read'],
-        personal_objectives: ['read', 'write'],
-        ideas: ['read', 'write'],
-        personal_ideas: ['read', 'write']
-      },
-      guest: {
-        ideas: ['write'],
-        personal_ideas: ['read', 'write']
-      },
-      anyone: {
-        ideas: ['write']
-      }
-    };
 
-    Object.keys(roles).forEach((role) => {
-      permissions[role] = {};
-      Object.keys(resources).forEach((resource) => {
-        permissions[role][resource] = {};
-        resources[resource].forEach((privilege) => {
-          if (roles[role][resource]) {
-            permissions[role][resource][privilege] = roles[role][resource].indexOf(privilege) > -1;
-          } else {
-            permissions[role][resource][privilege] = false;
-          }
+    Config.roles.forEach((role) => {
+      permissions[role] = {
+        organization: {
+          read: role === 'member'
+        }
+      };
+      Object.keys(Config.resources).forEach((resource) => {
+        [false, true].forEach((personal) => {
+          const resourceName = (personal ? 'personal_' : '') + resource;
+          const defaultPriviliges = Config.resources[resource]['default' + (personal ? 'Personal' : '') + 'Permissions'];
+          permissions[role][resourceName] = {};
+          ['read', 'write'].forEach((privilege) => {
+            permissions[role][resourceName][privilege] =
+              defaultPriviliges[role].indexOf(privilege) > -1;
+          });
         });
       });
     });
@@ -45,13 +68,19 @@ module.exports = {
     return permissions;
   },
   getAllPermissionsWith(value) {
-    const permissions = {};
-    Object.keys(resources).forEach((resource) => {
-      permissions[resource] = {};
-      resources[resource].forEach((privilege) => {
-        permissions[resource][privilege] = value;
-      });
+    const permissions = { organization: { read: false } };
+    Object.keys(Config.resources).forEach((resource) => {
+      permissions[resource] = {
+        read: value,
+        write: value
+      };
+      permissions['personal_' + resource] = {
+        read: value,
+        write: value
+      };
     });
     return permissions;
   }
 };
+
+module.exports = Config;
