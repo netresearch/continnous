@@ -30,12 +30,12 @@
             <template v-for="(privileges, resource) in defaultPermissions[roles[0]]">
               <tr class="md-table-row permissions-resource">
                 <td class="md-table-cell" :colspan="roles.length + 1">
-                  <div class="md-table-cell-container">{{$t('permissions.' + resource)}}</div>
+                  <div class="md-table-cell-container">{{$t('resources.' + resource)}}</div>
                 </td>
               </tr>
               <tr class="md-table-row" v-for="(defaultAllowed, privilege) in privileges">
                 <td class="md-table-cell">
-                  <div class="md-table-cell-container">{{$t('permissions.' + privilege)}}</div>
+                  <div class="md-table-cell-container">{{$t('actions.' + privilege)}}</div>
                 </td>
                 <td class="md-table-cell" v-for="role in roles">
                   <div class="md-table-cell-container">

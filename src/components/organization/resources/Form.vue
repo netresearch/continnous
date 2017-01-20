@@ -17,7 +17,7 @@
         @closed="onClosed"
     >
       <template slot="title" scope="form">
-        <form-element name="title" md-inline :label="$t(type + '.title.placeholder')">
+        <form-element name="title" md-inline :label="$t(type + '.title')">
           <md-input :value="form.values.title"></md-input>
         </form-element>
       </template>
@@ -30,6 +30,8 @@
           <form-element name="description" :label="$t('fields.description.label')">
             <md-textarea :value="form.values.description" :placeholder="$t('fields.description.placeholder')"></md-textarea>
           </form-element>
+
+          <component :is="type + '-form'"></component>
 
           <md-layout md-gutter="24">
             <md-layout>
@@ -47,7 +49,7 @@
       </template>
 
       <div slot="leftButtons" style="flex: 1;">
-        <md-checkbox v-if="id === null" v-model="personal">{{$t(type + '.personal.label')}}</md-checkbox>
+        <md-checkbox v-if="id === null" :value="personal" @click.native="personal = !personal">{{$t(type + '.personal')}}</md-checkbox>
       </div>
       <div slot="centerButtons" style="width: 24px;"></div>
     </dialog-form>
@@ -58,11 +60,19 @@
   import DialogForm from '../../form/Dialog';
   import auth from '../../../auth';
   import mixin from './mixin';
+  import Config from '../../../models/Config';
+
+  const components = { DialogForm };
+
+  /* eslint-disable global-require, import/no-dynamic-require */
+  Object.keys(Config.resources).forEach((resource) => {
+    components[resource + '-form'] = require('./' + resource + '/Form');
+  });
 
   export default {
     mixins: [mixin],
     props: ['organization', 'type'],
-    components: { DialogForm },
+    components,
     data() {
       return {
         auth,

@@ -1,12 +1,13 @@
 <template>
   <div class="scroll-container">
     <md-toolbar class="md-dense">
-      <h2 class="md-title">{{$tc(singularType, 2)}}</h2>
+      <h2 class="md-title">{{$tc('resources.' + type, 2)}}</h2>
     </md-toolbar>
     <md-toolbar class="md-dense md-nav-bar">
       <md-button
-          v-for="(name, path) in {'': organization.name + ' ' + $tc(singularType, 2), '/personal': $t('objectives.personal.title')}"
-          @click="$router.push('/' + organization.key + '/' + type + path)"
+          v-for="(name, path) in {'': organization.name + ' ' + $tc('resources.' + type, 2), 'personal': $t('resources.personal_' + type)}"
+          @click="$router.push('/' + organization.key + '/' + type + (path ? '/' + path : ''))"
+          v-if="permissions[(path ? path + '_' : '') + type].read || permissions[(path ? path + '_' : '') + type].write"
           :class="{'router-link-active': path === '' && !personal || path !== '' && personal}">
         {{name}}
       </md-button>
@@ -16,11 +17,11 @@
       </md-button>
       <md-button @click="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '' : '/trash'))" :class="{'md-contrast': trash}">
         <md-icon>delete</md-icon>
-        <span>Papierkorb</span>
+        <span>{{$t('trash')}}</span>
       </md-button>
     </md-toolbar>
 
-    <router-view :organization="organization" :type="type"></router-view>
+    <router-view v-if="type" :organization="organization" :type="type"></router-view>
 
     <div class="scroll-content">
       <resource-list :items="items" :masonry="masonry">
@@ -53,13 +54,10 @@
     props: {
       organization: Object,
       permissions: Object,
-      type: {
-        type: String,
-        required: true
-      }
     },
     data() {
       return {
+        type: undefined,
         personal: false,
         items: undefined,
         orderBy: 'updated',
@@ -68,19 +66,23 @@
         masonry: true
       };
     },
-    computed: {
-      singularType() {
-        const l = this.type.length;
-        return this.type.substr(-3) === 'ies' ? this.type.substr(0, l - 3) + 'y' : this.type.substr(0, l - 1);
-      }
-    },
     watch: {
       $route: {
         immediate: true,
         handler(route) {
+          const type = route.params.type;
           const trash = !!route.params.trash;
-          const personal = !!route.params.personal;
-          if (this.items === undefined || this.trash !== trash || this.personal !== personal) {
+          let personal = !!route.params.personal;
+          const personalAllowed = this.permissions['personal_' + type].read || this.permissions['personal_' + type].write;
+          const organizationAllowed = this.permissions[type].read || this.permissions[type].write;
+          if (personal && !personalAllowed && organizationAllowed) {
+            personal = false;
+          } else if (!personal && personalAllowed && !organizationAllowed) {
+            personal = true;
+          }
+          if (this.items === undefined
+            || this.type !== type || this.trash !== trash || this.personal !== personal) {
+            this.type = type;
             this.trash = trash;
             this.personal = personal;
             this.loadItems();

@@ -22,11 +22,11 @@
               </router-link>
             </router-link>
           </md-list-item>
-          <md-list-item v-for="(entry, key) in {objectives: { label: $tc('objective', 2), icon: 'rowing'}, ideas: { label: $tc('idea', 2), icon: 'lightbulb_outline'}}">
+          <md-list-item v-for="(resource, key) in resources">
             <router-link :to="'/' + organization.key + '/' + key">
-              <md-icon>{{entry.icon}}</md-icon>
-              <span>{{entry.label}}</span>
-              <router-link v-if="permissions[key].write || permissions['personal_' + key].write" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
+              <md-icon>{{resource.icon}}</md-icon>
+              <span>{{$t('resources.' + key)}}</span>
+              <router-link v-if="permissions[key].write || permissions['personal_' + key].write || permissions[key].read || permissions['personal_' + key].read" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
                 <md-icon>add</md-icon>
               </router-link>
             </router-link>
@@ -57,6 +57,7 @@
 
 <script>
   import Firebase from 'firebase';
+  import extend from 'extend';
   import auth from '../auth';
   import AccountSwitcher from './AccountSwitcher';
   import Organization from '../models/Organization';
@@ -80,6 +81,7 @@
         organization: undefined,
         role: undefined,
         permissions: allDeniedPermissions,
+        resources: Config.resources,
         auth,
         title: undefined
       };
@@ -142,14 +144,18 @@
               }
             };
 
-            if (this.organization && this.role !== '?' && this.role !== '!' && this.role !== 'admin') {
+            if (this.organization && this.role !== '?' && this.role !== '!') {
               // Load permissions and set role for domain members (for whom snapshot.val() is null)
-              const roles = this.role ? [this.role] : Config.roles.slice(0);
+              const roles = this.role && this.role !== 'admin' ? [this.role] : Config.roles.slice(0);
               const loadPermissions = (role) => {
-                Firebase.database().ref('/security/organizations/' + orgKey + '/permissions/' + role).once('value',
+                const ref = Firebase.database().ref('/security/organizations/' + orgKey + '/permissions/' + role);
+                ref.once('value',
                   (permSnap) => {
-                    this.role = role;
-                    this.permissions = permSnap.val();
+                    this.role = this.role === 'admin' ? this.role : role;
+                    this.permissions = extend(true, {}, allDeniedPermissions, permSnap.val());
+                    ref.on('value', (newPermSnap) => {
+                      this.permissions = extend(true, {}, allDeniedPermissions, newPermSnap.val());
+                    });
                     updateUser();
                   },
                   () => {
@@ -162,9 +168,6 @@
               };
               loadPermissions(roles.shift());
             } else {
-              if (this.role === 'admin') {
-                this.permissions = Config.getAllPermissionsWith(true);
-              }
               updateUser();
             }
           });

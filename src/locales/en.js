@@ -15,8 +15,6 @@ module.exports = {
   },
   settings: 'Settings',
   overview: 'Overview',
-  objective: 'Objective | Objectives',
-  idea: 'Idea | Ideas',
   organization: {
     info: 'Organization information',
     domains: 'Organization domains'
@@ -42,14 +40,14 @@ module.exports = {
     denied: 'Denied'
   },
   changeStatus: 'Change status',
-  permissions: {
+  resources: {
     organization: 'Organization',
     objectives: 'Objectives',
     personal_objectives: 'Personal objectives',
     ideas: 'Ideas',
     personal_ideas: 'Personal ideas',
-    read: 'View',
-    write: 'Write'
+    insights: 'Insights',
+    personal_insights: 'Personal insights'
   },
   actions: {
     edit: 'Edit',
@@ -60,7 +58,9 @@ module.exports = {
     save: 'Save',
     restore: 'Restore',
     downloadFile: 'Download {file}',
-    removeFile: 'Remove {file}'
+    removeFile: 'Remove {file}',
+    read: 'View',
+    write: 'Write'
   },
   vision: {
     label: 'Vision statement',
@@ -71,14 +71,16 @@ module.exports = {
     placeholder: 'Provide a clear mission statement'
   },
   objectives: {
-    title: {
-      label: 'Objective title',
-      placeholder: 'Short title of the objective'
-    },
-    personal: {
-      title: 'Personal objectives',
-      label: 'This is a personal objective'
-    }
+    title: 'Short title of the objective',
+    personal: 'This is a personal objective'
+  },
+  ideas: {
+    title: 'Short title of the idea',
+    personal: 'This is a personal idea'
+  },
+  insights: {
+    title: 'Short title of the insight',
+    personal: 'This is a personal insight'
   },
   fields: {
     subtitle: {
@@ -100,5 +102,6 @@ module.exports = {
       limit: 'Limit exceeded'
     }
   },
-  and: 'and'
+  and: 'and',
+  trash: 'Trash'
 };
