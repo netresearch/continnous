@@ -58,7 +58,9 @@ module.exports = {
     resetToDefaults: 'Reset to defaults',
     cancel: 'Cancel',
     save: 'Save',
-    restore: 'Restore'
+    restore: 'Restore',
+    downloadFile: 'Download {file}',
+    removeFile: 'Remove {file}'
   },
   vision: {
     label: 'Vision statement',

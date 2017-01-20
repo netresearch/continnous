@@ -4,7 +4,12 @@
   <div
       :class="['form-file-container', {'form-file-gallery': gallery && numFiles}]">
     <div class="form-file-list" v-if="numFiles">
-      <div v-for="file in files" v-if="!file.deleted" class="form-file" :style="{maxWidth: gallery ? previewMaxWidth + 'px' : 'auto'}">
+      <div
+          v-for="file in files"
+          v-if="!file.deleted"
+          class="form-file"
+          :style="{maxWidth: gallery ? previewMaxWidth + 'px' : 'auto'}"
+      >
         <div
             v-if="gallery && file.preview"
             class="form-file-preview"
@@ -17,8 +22,8 @@
         </div>
         <div class="form-file-info">
           <span class="form-file-extension">{{file.name ? file.name.split('.').pop() : ''}}</span>
-          <span class="form-file-name" :title="file.name">{{file.name}}</span>
-          <md-icon @click.native="remove(file)" v-if="!disabled">clear</md-icon>
+          <span @click="download(file)" class="form-file-name md-primary" :title="$t('actions.downloadFile', {file: file.name})">{{file.name}}</span>
+          <md-icon @click.native.stop="remove(file)":title="$t('actions.removeFile', {file: file.name})" class="form-file-clear" v-if="!disabled">clear</md-icon>
         </div>
       </div>
     </div>
@@ -145,6 +150,27 @@
         /* global document */
         document.body[method]('click', this.listeners.clearErrors);
         this.$el[method]('drop', this.listeners.drop);
+      },
+      download(file) {
+        /* global FileReader, document */
+        const download = (src) => {
+          const link = document.createElement('a');
+          link.download = file.name;
+          link.href = src;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        };
+        if (file.file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            download(e.target.result);
+          };
+          reader.readAsDataURL(file.file);
+        } else if (file.src) {
+          download(file.src);
+        }
       },
       remove(file) {
         file.deleted = true;
@@ -447,11 +473,17 @@
         flex-flow: row wrap;
         cursor: default;
         .form-file-name {
+          display: inline-block;
           flex: 1;
           margin: 0 6px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          position: relative;
+          cursor: pointer;
+          &:hover {
+            text-decoration: underline;
+          }
         }
         .form-file-extension {
           margin-top: 1px;
@@ -469,11 +501,14 @@
         }
         .md-icon {
           position: relative;
-          margin-top: -2px;
           margin-bottom: 0;
           cursor: pointer;
+          margin-top: -2px;
           &:hover {
             color: #000;
+          }
+          &.form-file-download {
+            top: 1px;
           }
         }
       }
