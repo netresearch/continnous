@@ -1,8 +1,15 @@
 <template>
   <div id="organization" class="full-height">
-    <md-app :toolbar-class="{'md-transparent': !organization}" class="scroll-container" content-class="full-height">
-      <template slot="toolbar">
-        <h2 class="md-title" style="flex: 1">{{title}}</h2>
+    <md-app
+        :toolbar-class="{'md-transparent': !organization}" class="scroll-container" content-class="full-height"
+        :search="$t('actions.search')"
+        @search="handleSearch"
+        :q="$route.query.q"
+    >
+      <template slot="title">
+        <h2 class="md-title">{{title}}</h2>
+      </template>
+      <template slot="actions">
         <account-switcher></account-switcher>
       </template>
 
@@ -199,6 +206,19 @@
       },
       requestMembership() {
         this.orgUsersRef.set('?');
+      },
+      handleSearch(search) {
+        const path = '/' + this.organization.key + '/search';
+        if (search === true) {
+          if (!this.previousPath) {
+            this.previousPath = this.$route.path;
+          }
+          this.$router.push(path);
+        } else if (search === false && this.previousPath) {
+          this.$router.replace(this.previousPath);
+        } else {
+          this.$router.replace({ path, query: { q: search } });
+        }
       }
     }
   };

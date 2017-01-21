@@ -60,7 +60,8 @@ module.exports = {
     downloadFile: 'Download {file}',
     removeFile: 'Remove {file}',
     read: 'View',
-    write: 'Write'
+    write: 'Write',
+    search: 'Search'
   },
   vision: {
     label: 'Vision statement',

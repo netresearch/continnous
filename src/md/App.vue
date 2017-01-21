@@ -5,7 +5,14 @@
         <md-button v-if="isMobile" class="md-icon-button md-sidenav-trigger" @click="sidenavActive = true">
           <md-icon>menu</md-icon>
         </md-button>
-        <slot name="toolbar"></slot>
+        <slot name="title"></slot>
+        <div v-if="search" :class="{'md-app-search': true, 'md-app-search-focus': searchFocus}">
+          <md-icon>search</md-icon>
+          <input type="text" :value="q" :placeholder="search" @focus="searchFocus = true" @blur="searchFocus = false" @input="$emit('search', $event.target.value)">
+          <md-icon>clear</md-icon>
+        </div>
+        <div style="flex: 1"></div>
+        <slot name="actions"></slot>
       </md-toolbar>
     </md-whiteframe>
 
@@ -28,14 +35,22 @@
   export default {
     props: {
       toolbarClass: [String, Object, Array],
-      contentClass: [String, Object, Array]
+      contentClass: [String, Object, Array],
+      search: String,
+      q: String
     },
     data() {
       /* global window */
       return {
         sidenavActive: false,
-        isMobile: window.innerWidth < minWidth
+        isMobile: window.innerWidth < minWidth,
+        searchFocus: false
       };
+    },
+    watch: {
+      searchFocus(search) {
+        this.$emit('search', search);
+      }
     },
     created() {
       /* global window */
@@ -52,6 +67,49 @@
 <style lang="scss" rel="stylesheet/scss">
   $minWidth: 928px;
   .md-app {
+    .md-app-search {
+      background: rgba(#fff, 0.3);
+      border-radius: 3px;
+      height: 44px;
+      margin-left: 24px;
+      display: flex;
+      flex-flow: row;
+      flex: 1;
+      transition: background 100ms ease-in,width 100ms ease-out;
+      .md-icon {
+        margin-left: 16px;
+        margin-right: 16px;
+      }
+      input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        font-size: inherit;
+        &:focus {
+          border:none;
+          outline: none;
+        }
+        color: inherit !important;
+        &::-webkit-input-placeholder {
+          color: inherit !important;
+        }
+        &:-moz-placeholder {
+          color: inherit !important;
+        }
+        &::-moz-placeholder {
+          color: inherit !important;
+        }
+        &:-ms-input-placeholder {
+          color: inherit !important;
+        }
+      }
+      &.md-app-search-focus {
+        background: #fff;
+        color: rgba(#000, 0.6);
+        box-shadow: 0 1px 1px rgba(0,0,0,0.24);
+        border: 1px solid rgba(0,0,0,0.12);
+      }
+    }
     > .md-whiteframe {
       z-index: 2;
     }

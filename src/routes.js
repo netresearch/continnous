@@ -7,6 +7,7 @@ import OrganizationSettingsPermissions from './components/organization/settings/
 import OrganizationSettingsUsers from './components/organization/settings/Users';
 import OrganizationResourcesPage from './components/organization/resources/Page';
 import OrganizationResourcesForm from './components/organization/resources/Form';
+import OrganizationResourcesSearch from './components/organization/resources/Search';
 
 import Config from './models/Config';
 
@@ -23,6 +24,10 @@ const organizationRoute = {
         { path: 'permissions', component: OrganizationSettingsPermissions },
         { path: 'users', component: OrganizationSettingsUsers }
       ]
+    },
+    {
+      path: 'search',
+      component: OrganizationResourcesSearch
     }
   ]
 };
