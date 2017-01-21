@@ -14,6 +14,8 @@ const Config = {
         member: ['read', 'write'],
         guest: [],
         anyone: []
+      },
+      flashlight: {
       }
     },
     ideas: {
@@ -27,6 +29,8 @@ const Config = {
         member: ['read', 'write'],
         guest: ['read', 'write'],
         anyone: []
+      },
+      flashlight: {
       }
     },
     insights: {
@@ -40,6 +44,8 @@ const Config = {
         member: ['read', 'write'],
         guest: ['read', 'write'],
         anyone: []
+      },
+      flashlight: {
       }
     }
   },

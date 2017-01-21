@@ -136,11 +136,35 @@
 
             const updateUser = () => {
               if (this.role || this.organization) {
+                // Update user
                 Firebase.database().ref('/organizations/' + orgKey + '/users/' + user.uid).update({
                   email: user.email,
                   displayName: user.displayName,
                   photoURL: user.photoURL
                 });
+
+                // Update flashlight index paths
+                const flashlightKeys = [user.uid];
+                if (this.role === 'admin') {
+                  flashlightKeys.push('organization');
+                }
+                const paths = {};
+                Object.keys(Config.resources).forEach((resource) => {
+                  flashlightKeys.forEach((key) => {
+                    const pathKey = 'organization-' + orgKey + '-' + key + '-' + resource;
+                    const type = (key === 'organization' ? '' : 'personal_') + resource;
+                    // TODO: Check permissions here and set paths[pathKey] if organization
+                    // resource is not allowed to anyone or if personal resource is not
+                    // allowed to user
+                    paths[pathKey] = {
+                      path: '/resources/organizations/' + orgKey + '/' + key + '/' + resource,
+                      index: orgKey,
+                      type,
+                      fields: Config.resources[resource].flashlight.fields || null
+                    };
+                  });
+                });
+                Firebase.database().ref(Config.flashlight.paths.paths).update(paths);
               }
             };
 

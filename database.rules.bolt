@@ -50,6 +50,16 @@ path /security/organizations/{oid}/users/{uid} {
     delete() { isAuthenticated() && isAdmin(oid) }
 }
 
+path /flashlight/paths/{pid} {
+    read() { false }
+    write() {
+        isAuthenticated() && (
+            isAdmin(this.index)
+            || pid.contains('-' + this.index + '-' + auth.uid + '-') && isAllowed(this.type, 'read', this.index)
+        )
+    }
+}
+
 path /organizations/{oid} is Any {
     read() { isAuthenticated() && (isAllowed('organization', 'read', oid) || isAdmin(oid)) }
     write() { isAuthenticated() && isAdmin(oid) }
