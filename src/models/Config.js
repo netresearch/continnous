@@ -43,6 +43,13 @@ const Config = {
       }
     }
   },
+  flashlight: {
+    paths: {
+      paths: '/flashlight/paths',
+      queries: '/flashlight/queries',
+      results: '/flashlight/results'
+    }
+  },
   getDefaultPermissions() {
     const permissions = {};
 

@@ -1,0 +1,18 @@
+version: '2'
+services:
+  elastic:
+    image: elasticsearch
+  flashlight:
+    image: netresearch/flashlight
+    cap_add:
+      - SYS_TIME
+      - SYS_NICE
+    links:
+      - elastic
+    environment:
+      ES_HOST: "elastic"
+    volumes:
+      - ./flashlight.js:/opt/app/config.js
+      - ./src/models/Config.js:/opt/app/src/models/Config.js
+      - ./.firebaserc:/opt/app/.firebaserc
+      - ./service-account.json:/opt/app/service-account.json
