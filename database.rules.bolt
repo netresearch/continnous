@@ -61,6 +61,8 @@ path /flashlight/paths/{pid} {
             )
             ||
             this == null && (
+                prior(this) == null
+                ||
                 isAdmin(prior(this.index))
                 ||
                 pid.contains('-' + prior(this.index) + '-' + auth.uid + '-')
