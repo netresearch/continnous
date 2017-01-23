@@ -56,44 +56,6 @@ const Config = {
       results: '/flashlight/results'
     }
   },
-  getDefaultPermissions() {
-    const permissions = {};
-
-    Config.roles.forEach((role) => {
-      permissions[role] = {
-        organization: {
-          read: role === 'member'
-        }
-      };
-      Object.keys(Config.resources).forEach((resource) => {
-        [false, true].forEach((personal) => {
-          const resourceName = (personal ? 'personal_' : '') + resource;
-          const defaultPriviliges = Config.resources[resource]['default' + (personal ? 'Personal' : '') + 'Permissions'];
-          permissions[role][resourceName] = {};
-          ['read', 'write'].forEach((privilege) => {
-            permissions[role][resourceName][privilege] =
-              defaultPriviliges[role].indexOf(privilege) > -1;
-          });
-        });
-      });
-    });
-
-    return permissions;
-  },
-  getAllPermissionsWith(value) {
-    const permissions = { organization: { read: false } };
-    Object.keys(Config.resources).forEach((resource) => {
-      permissions[resource] = {
-        read: value,
-        write: value
-      };
-      permissions['personal_' + resource] = {
-        read: value,
-        write: value
-      };
-    });
-    return permissions;
-  }
 };
 
 module.exports = Config;

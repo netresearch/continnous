@@ -4,4 +4,4 @@ const config = require('../.firebaserc').config;
 
 Firebase.initializeApp(config);
 
-export default Firebase;
+module.exports = Firebase;

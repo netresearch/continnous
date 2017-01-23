@@ -8,6 +8,7 @@
         :firebase-bind="true"
         :firebase-receive="firebaseReceive"
         :keys="roles"
+        @saved="onSaved"
     >
       <template scope="form">
         <div class="md-table">
@@ -48,7 +49,7 @@
           </table>
         </div>
       </template>
-      
+
       <md-button slot="secondaryButtons" @click="resetPermissionsToDefaults()" class="md-dense">{{$t('actions.resetToDefaults')}}</md-button>
     </card-form>
   </div>
@@ -58,6 +59,8 @@
   import extend from 'extend';
   import CardForm from '../../../form/Card';
   import Config from '../../../../models/Config';
+  import Permissions from '../../../../models/Permissions';
+  import Flashlight from '../../../../models/Flashlight';
 
   export default {
     components: {
@@ -65,7 +68,7 @@
     },
     props: ['organization'],
     data() {
-      const defaultPermissions = Config.getDefaultPermissions();
+      const defaultPermissions = Permissions.getDefaults();
       return {
         defaultPermissions,
         roles: Config.roles
@@ -89,6 +92,21 @@
           form.onChange(role, newVal);
           form.values[role] = newVal;
         });
+      },
+      onSaved() {
+        const flashlightPermissions = {};
+        const permissions = this.$refs.form.values;
+        Object.keys(permissions).forEach((group) => {
+          Object.keys(permissions[group]).forEach((resource) => {
+            if (!flashlightPermissions.hasOwnProperty(resource)) {
+              flashlightPermissions[resource] = { read: false };
+            }
+            if (permissions[group][resource].read) {
+              flashlightPermissions[resource].read = true;
+            }
+          });
+        });
+        Flashlight.updatePaths(this.organization.key, 'organization', flashlightPermissions);
       }
     }
   };

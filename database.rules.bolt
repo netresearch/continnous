@@ -54,8 +54,17 @@ path /flashlight/paths/{pid} {
     read() { false }
     write() {
         isAuthenticated() && (
-            isAdmin(this.index)
-            || pid.contains('-' + this.index + '-' + auth.uid + '-') && isAllowed(this.type, 'read', this.index)
+            this != null && (
+                isAdmin(this.index)
+                ||
+                pid.contains('-' + this.index + '-' + auth.uid + '-') && isAllowed(this.type, 'read', this.index)
+            )
+            ||
+            this == null && (
+                isAdmin(prior(this.index))
+                ||
+                pid.contains('-' + prior(this.index) + '-' + auth.uid + '-')
+            )
         )
     }
 }

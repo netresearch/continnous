@@ -29,11 +29,11 @@
               </router-link>
             </router-link>
           </md-list-item>
-          <md-list-item v-for="(resource, key) in resources">
+          <md-list-item v-for="(resource, key) in resources" v-if="permissions[key].write || permissions['personal_' + key].write || permissions[key].read || permissions['personal_' + key].read">
             <router-link :to="'/' + organization.key + '/' + key">
               <md-icon>{{resource.icon}}</md-icon>
               <span>{{$t('resources.' + key)}}</span>
-              <router-link v-if="permissions[key].write || permissions['personal_' + key].write || permissions[key].read || permissions['personal_' + key].read" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
+              <router-link v-if="permissions[key].write || permissions['personal_' + key].write" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
                 <md-icon>add</md-icon>
               </router-link>
             </router-link>
@@ -64,13 +64,12 @@
 
 <script>
   import Firebase from 'firebase';
-  import extend from 'extend';
   import auth from '../auth';
   import AccountSwitcher from './AccountSwitcher';
   import Organization from '../models/Organization';
   import Config from '../models/Config';
-
-  const allDeniedPermissions = Config.getAllPermissionsWith(false);
+  import Permissions from '../models/Permissions';
+  import Flashlight from '../models/Flashlight';
 
   /* global document */
   const titleElement = document.querySelector('html > head > title');
@@ -87,7 +86,7 @@
       return {
         organization: undefined,
         role: undefined,
-        permissions: allDeniedPermissions,
+        permissions: new Permissions(),
         resources: Config.resources,
         auth,
         title: undefined
@@ -127,82 +126,25 @@
         );
       },
       fetchRoleAndPermissions() {
-        const user = this.auth.user;
-        const orgKey = this.$route.params.organization_key;
-        if (this.orgUsersRef) {
-          this.orgUsersRef.off('value');
-        }
-        this.role = undefined;
-        this.permissions = allDeniedPermissions;
-        if (user) {
-          this.orgUsersRef = Firebase.database().ref(
-            '/security/organizations/' + orgKey + '/users/' + user.uid
-          );
-          this.orgUsersRef.on('value', (snapshot) => {
-            this.role = snapshot.val();
-
-            const updateUser = () => {
-              if (this.role || this.organization) {
-                // Update user
-                Firebase.database().ref('/organizations/' + orgKey + '/users/' + user.uid).update({
-                  email: user.email,
-                  displayName: user.displayName,
-                  photoURL: user.photoURL
-                });
-
-                // Update flashlight index paths
-                const flashlightKeys = [user.uid];
-                if (this.role === 'admin') {
-                  flashlightKeys.push('organization');
-                }
-                const paths = {};
-                Object.keys(Config.resources).forEach((resource) => {
-                  flashlightKeys.forEach((key) => {
-                    const pathKey = 'organization-' + orgKey + '-' + key + '-' + resource;
-                    const type = (key === 'organization' ? '' : 'personal_') + resource;
-                    // TODO: Check permissions here and set paths[pathKey] if organization
-                    // resource is not allowed to anyone or if personal resource is not
-                    // allowed to user
-                    paths[pathKey] = {
-                      path: '/resources/organizations/' + orgKey + '/' + key + '/' + resource,
-                      index: orgKey,
-                      type,
-                      fields: Config.resources[resource].flashlight.fields || null
-                    };
-                  });
-                });
-                Firebase.database().ref(Config.flashlight.paths.paths).update(paths);
-              }
-            };
-
-            if (this.organization && this.role !== '?' && this.role !== '!') {
-              // Load permissions and set role for domain members (for whom snapshot.val() is null)
-              const roles = this.role && this.role !== 'admin' ? [this.role] : Config.roles.slice(0);
-              const loadPermissions = (role) => {
-                const ref = Firebase.database().ref('/security/organizations/' + orgKey + '/permissions/' + role);
-                ref.once('value',
-                  (permSnap) => {
-                    this.role = this.role === 'admin' ? this.role : role;
-                    this.permissions = extend(true, {}, allDeniedPermissions, permSnap.val());
-                    ref.on('value', (newPermSnap) => {
-                      this.permissions = extend(true, {}, allDeniedPermissions, newPermSnap.val());
-                    });
-                    updateUser();
-                  },
-                  () => {
-                    if (roles.length) {
-                      loadPermissions(roles.shift());
-                    } else {
-                      updateUser();
-                    }
-                  });
-              };
-              loadPermissions(roles.shift());
-            } else {
-              updateUser();
+        this.$nextTick(() => {
+          const user = this.auth.user;
+          const orgKey = this.$route.params.organization_key;
+          this.permissions.bind(this.organization, user, () => {
+            this.role = this.permissions.role;
+            if (this.role || this.organization) {
+              // Update user
+              Firebase.database().ref('/organizations/' + orgKey + '/users/' + user.uid).update({
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL
+              });
+            }
+            if (this.organization && user) {
+              // Update flashlight index paths
+              Flashlight.updatePaths(orgKey, user.uid, this.permissions);
             }
           });
-        }
+        });
       },
       requestMembership() {
         this.orgUsersRef.set('?');
