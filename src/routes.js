@@ -42,6 +42,10 @@ Object.keys(Config.resources).forEach((resource) => {
       { path: 'edit', component: OrganizationResourcesForm }
     ]
   });
+  organizationRoute.children.push({
+    path: 'search/:type(' + resource + ')?/:personal(personal)?',
+    component: OrganizationResourcesSearch
+  });
 });
 
 export default {

@@ -1,11 +1,21 @@
 import extend from 'extend';
 import Firebase from '../../../firebase';
+import auth from '../../../auth';
 import ResourceImage from './Image';
 
 export default {
   components: { ResourceImage },
   methods: {
-    createItem(id, data) {
+    getFirebaseRef(trash, id) {
+      return Firebase.database().ref(
+        '/' + (trash ? 'trash' : 'resources')
+        + '/organizations/' + this.organization.key
+        + '/' + (this.personal ? auth.user.uid : 'organization')
+        + '/' + this.type
+        + (id ? '/' + id : '')
+      );
+    },
+    createItem(id, data, resource, personal) {
       if (!this.storageRef) {
         this.storageRef = Firebase.storage().ref();
       }
@@ -23,6 +33,12 @@ export default {
       if (item.image) {
         item.image = createFileObject(item.image);
       }
+      if (resource) {
+        item.resource = resource;
+      }
+      if (personal !== undefined) {
+        item.personal = personal;
+      }
       return item;
     },
     prepareItemForFirebase(item) {
@@ -34,6 +50,8 @@ export default {
       if (item.image) {
         restoreFileObject(item.image);
       }
+      delete item.resource;
+      delete item.personal;
       return fbItem;
     }
   },

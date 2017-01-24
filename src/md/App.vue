@@ -6,10 +6,10 @@
           <md-icon>menu</md-icon>
         </md-button>
         <slot name="title"></slot>
-        <div v-if="search" :class="{'md-app-search': true, 'md-app-search-focus': searchFocus}">
+        <div v-if="search" @click="$refs.searchInput.focus()" :class="{'md-app-search': true, 'md-app-search-focus': searchFocus || q}">
           <md-icon>search</md-icon>
-          <input type="text" :value="q" :placeholder="search" @focus="searchFocus = true" @blur="searchFocus = false" @input="$emit('search', $event.target.value)">
-          <md-icon>clear</md-icon>
+          <input ref="searchInput" type="text" :value="q" :placeholder="search" @focus="searchFocus = true && $emit('search', $event.target.value)" @blur="searchFocus = false" @input="$emit('search', $event.target.value)">
+          <md-icon @click.native.stop="$emit('search', false)">clear</md-icon>
         </div>
         <div style="flex: 1"></div>
         <slot name="actions"></slot>
@@ -47,11 +47,6 @@
         searchFocus: false
       };
     },
-    watch: {
-      searchFocus(search) {
-        this.$emit('search', search);
-      }
-    },
     created() {
       /* global window */
       window.addEventListener('resize', () => {
@@ -76,6 +71,7 @@
       flex-flow: row;
       flex: 1;
       transition: background 100ms ease-in,width 100ms ease-out;
+      cursor: pointer;
       .md-icon {
         margin-left: 16px;
         margin-right: 16px;
@@ -85,6 +81,7 @@
         background: transparent;
         border: none;
         font-size: inherit;
+        cursor: text;
         &:focus {
           border:none;
           outline: none;

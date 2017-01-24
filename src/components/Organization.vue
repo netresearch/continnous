@@ -151,15 +151,21 @@
       },
       handleSearch(search) {
         const path = '/' + this.organization.key + '/search';
-        if (search === true) {
-          if (!this.previousPath) {
-            this.previousPath = this.$route.path;
-          }
-          this.$router.push(path);
-        } else if (search === false && this.previousPath) {
-          this.$router.replace(this.previousPath);
+        if (search === false) {
+          this.$router.replace(this.previousRoute || '/' + this.organization.key);
         } else {
-          this.$router.replace({ path, query: { q: search } });
+          const query = Object.assign({}, this.$route.query);
+          if (search) {
+            query.q = search;
+          } else if (query.q) {
+            delete query.q;
+          }
+          if (this.$route.path.substr(0, path.length) !== path) {
+            this.previousRoute = { path: this.$route.path, query: this.$route.query };
+            this.$router.push({ path, query });
+          } else {
+            this.$router.replace({ query });
+          }
         }
       }
     }

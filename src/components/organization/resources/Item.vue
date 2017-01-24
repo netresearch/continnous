@@ -16,13 +16,13 @@
               <span>{{$t('actions.edit')}}</span>
             </router-link>
           </md-menu-item>
-          <md-menu-item @selected="$emit('toggleTrash', item)" v-if="permissions[type].write && item.creator === auth.user.uid">
+          <md-menu-item @selected="toggleTrash" v-if="permissions[type].write && item.creator === auth.user.uid">
             <md-icon>delete</md-icon>
             <span>{{$t('actions.delete')}}</span>
           </md-menu-item>
         </md-menu-content>
       </md-menu>
-      <md-button v-else @click="$emit('toggleTrash', item)" :title="$t('actions.restore')" class="md-icon-button">
+      <md-button v-else @click="toggleTrash" :title="$t('actions.restore')" class="md-icon-button">
         <md-icon>delete_sweep</md-icon>
       </md-button>
     </md-card-header>
@@ -37,9 +37,11 @@
 
 <script>
   import auth from '../../../auth';
+  import mixin from './mixin';
   import ResourceImage from './Image';
 
   export default {
+    mixins: [mixin],
     components: { ResourceImage },
     props: {
       item: Object,
@@ -52,6 +54,15 @@
       return {
         auth
       };
+    },
+    methods: {
+      toggleTrash() {
+        this.getFirebaseRef(!this.trash, this.item.id)
+          .set(this.prepareItemForFirebase(this.item))
+          .then(() => {
+            this.getFirebaseRef(this.trash, this.item.id).remove();
+          });
+      }
     }
   };
 </script>

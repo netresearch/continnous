@@ -93,7 +93,10 @@ module.exports = {
       placeholder: 'Describe what this is about in detail'
     },
     image: 'Image',
-    attachments: 'Attachments'
+    attachments: 'Attachments',
+    created: 'Created',
+    updated: 'Updated',
+    _score: 'Relevance'
   },
   file: {
     placeholder: 'Drag and drop to upload or click here.',
@@ -103,6 +106,13 @@ module.exports = {
       limit: 'Limit exceeded'
     }
   },
+  search: 'Search',
   and: 'and',
-  trash: 'Trash'
+  trash: 'Trash',
+  sort: {
+    sort: 'Sort by',
+    order: 'Order',
+    asc: 'Ascending',
+    desc: 'Descending'
+  }
 };

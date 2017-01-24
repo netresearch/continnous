@@ -71,6 +71,21 @@ path /flashlight/paths/{pid} {
     }
 }
 
+path /flashlight/queries/{qid} {
+    write() {
+        isAuthenticated() && (prior(this) == null && isAllowed(this.type, 'read', this.index) || this == null)
+    }
+}
+
+path /flashlight/results/{qid} {
+    read() {
+        isAuthenticated()
+    }
+    write() {
+        isAuthenticated() && this == null
+    }
+}
+
 path /organizations/{oid} is Any {
     read() { isAuthenticated() && (isAllowed('organization', 'read', oid) || isAdmin(oid)) }
     write() { isAuthenticated() && isAdmin(oid) }

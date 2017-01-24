@@ -1,24 +1,114 @@
 <template>
-  <div :class="['resources-list', 'resources-list-' + (masonry ? 'masonry' : 'stream')]">
-    <div class="resources-list-width"></div>
-    <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
-      <slot :item="item"></slot>
+
+  <div class="scroll-container">
+    <md-toolbar class="md-dense">
+      <h2 class="md-title">{{title}}</h2>
+    </md-toolbar>
+    <md-toolbar class="md-dense md-nav-bar">
+      <slot name="buttons"></slot>
+      <div style="flex: 1"></div>
+      <md-menu md-direction="bottom left" md-size="4">
+        <md-button md-menu-trigger>
+          <template v-for="field in sortFields" v-if="field.current">
+            <md-icon>arrow_{{reverseOrderQuery.order !== 'desc' ? 'down' : 'up'}}ward</md-icon>
+            {{$t('fields.' + field.name)}}
+          </template>
+        </md-button>
+        <md-menu-content>
+          <md-subheader>{{$t('sort.sort')}}</md-subheader>
+          <md-menu-item
+              v-for="field in sortFields"
+              @selected="$router.replace({query: field.query})"
+              :disabled="field.current"
+          >{{$t('fields.' + field.name)}}</md-menu-item>
+          <md-divider></md-divider>
+          <md-subheader>{{$t('sort.order')}}</md-subheader>
+          <md-menu-item
+              v-for="order in ['asc', 'desc']"
+              @selected="$router.replace({query: reverseOrderQuery})"
+              :disabled="reverseOrderQuery.order !== order"
+          >
+            <span>{{$t('sort.' + order)}}</span>
+            <md-icon>arrow_{{order === 'desc' ? 'down' : 'up'}}ward</md-icon>
+          </md-menu-item>
+        </md-menu-content>
+      </md-menu>
+      <md-button class="md-icon-button" @click="masonry = !masonry">
+        <md-icon>{{'view_' + (masonry ? 'stream' : 'quilt')}}</md-icon>
+      </md-button>
+      <md-button v-if="trashEnabled" @click="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '' : '/trash'))" :class="{'md-contrast': trash}">
+        <md-icon>delete</md-icon>
+        <span>{{$t('trash')}}</span>
+      </md-button>
+    </md-toolbar>
+
+    <slot></slot>
+
+    <div class="scroll-content">
+      <div ref="list" :class="['resources-list', 'resources-list-' + (masonry ? 'masonry' : 'stream')]">
+        <div class="resources-list-width"></div>
+        <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
+          <resource-item
+              :item="item"
+              :trash="trash"
+              :personal="item.hasOwnProperty('personal') ? item.personal : personal"
+              :permissions="permissions"
+              :type="item.resource || type"
+              :organization="organization"
+          ></resource-item>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
   import Masonry from 'masonry-layout';
+  import ResourceItem from './Item';
 
   export default {
+    components: { ResourceItem },
     props: {
       items: [Array, Object],
-      masonry: Boolean,
+      title: String,
+      organization: Object,
+      type: String,
+      permissions: Object,
+      trash: Boolean,
+      trashEnabled: Boolean,
+      personal: Boolean,
+      sort: String,
+      order: String,
+      additionalSort: [String, Array]
     },
     data() {
       return {
-        mounted: false
+        mounted: false,
+        masonry: true
       };
+    },
+    computed: {
+      reverseOrderQuery() {
+        const query = Object.assign({}, this.$route.query);
+        const current = this.order || this.$route.query.order || 'desc';
+        query.order = current === 'desc' ? 'asc' : 'desc';
+        return query;
+      },
+      sortFields() {
+        let fields = ['created', 'updated'];
+        const addFields = this.additionalSort;
+        if (addFields) {
+          fields = (typeof addFields === 'string' ? addFields.split(',') : addFields)
+            .concat(fields);
+        }
+        const current = this.sort || this.$route.query.sort || fields[0];
+        fields.forEach((name, i) => {
+          const query = Object.assign({}, this.$route.query);
+          query.sort = name;
+          fields[i] = { query, name, current: name === current };
+        });
+        return fields;
+      }
     },
     mounted() {
       this.mounted = true;
@@ -50,7 +140,7 @@
           this.msnry.destroy();
           delete this.msnry;
         } else if (this.masonry && !this.msnry && this.mounted) {
-          this.msnry = new Masonry(this.$el, {
+          this.msnry = new Masonry(this.$refs.list, {
             itemSelector: '.resources-list-item',
             columnWidth: '.resources-list-width',
             percentPosition: true,

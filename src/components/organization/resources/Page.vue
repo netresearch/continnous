@@ -1,56 +1,35 @@
 <template>
-  <div class="scroll-container">
-    <md-toolbar class="md-dense">
-      <h2 class="md-title">{{$tc('resources.' + type, 2)}}</h2>
-    </md-toolbar>
-    <md-toolbar class="md-dense md-nav-bar">
-      <md-button
-          v-for="(name, path) in {'': organization.name + ' ' + $tc('resources.' + type, 2), 'personal': $t('resources.personal_' + type)}"
-          @click="$router.push('/' + organization.key + '/' + type + (path ? '/' + path : ''))"
-          v-if="permissions[(path ? path + '_' : '') + type].read || permissions[(path ? path + '_' : '') + type].write"
-          :class="{'router-link-active': path === '' && !personal || path !== '' && personal}">
-        {{name}}
-      </md-button>
-      <div style="flex: 1"></div>
-      <md-button class="md-icon-button" @click="masonry = !masonry">
-        <md-icon>{{'view_' + (masonry ? 'stream' : 'quilt')}}</md-icon>
-      </md-button>
-      <md-button @click="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '' : '/trash'))" :class="{'md-contrast': trash}">
-        <md-icon>delete</md-icon>
-        <span>{{$t('trash')}}</span>
-      </md-button>
-    </md-toolbar>
+  <resource-list
+      :title="$tc('resources.' + type, 2)"
+      :organization="organization"
+      :permissions="permissions"
+      :type="type"
+      :trash="trash"
+      :items="items"
+      :personal="personal"
+      trash-enabled
+  >
+    <md-button
+        slot="buttons"
+        v-for="(name, path) in {'': organization.name + ' ' + $tc('resources.' + type, 2), 'personal': $t('resources.personal_' + type)}"
+        @click="$router.push('/' + organization.key + '/' + type + (path ? '/' + path : ''))"
+        v-if="permissions[(path ? path + '_' : '') + type].read || permissions[(path ? path + '_' : '') + type].write"
+        :class="{'router-link-active': path === '' && !personal || path !== '' && personal}">
+      {{name}}
+    </md-button>
 
     <router-view v-if="type" :organization="organization" :type="type"></router-view>
-
-    <div class="scroll-content">
-      <resource-list :items="items" :masonry="masonry">
-        <template scope="list">
-          <resource-item
-              :item="list.item"
-              :trash="trash"
-              :permissions="permissions"
-              :type="type"
-              :organization="organization"
-              @toggleTrash="toggleTrash"
-          ></resource-item>
-        </template>
-      </resource-list>
-    </div>
-  </div>
+  </resource-list>
 </template>
 
 <script>
   import sortBy from 'sort-by';
-  import Firebase from '../../../firebase';
-  import auth from '../../../auth';
   import mixin from './mixin';
   import ResourceList from './List';
-  import ResourceItem from './Item';
 
   export default {
     mixins: [mixin],
-    components: { ResourceList, ResourceItem },
+    components: { ResourceList },
     props: {
       organization: Object,
       permissions: Object,
@@ -62,8 +41,7 @@
         items: undefined,
         orderBy: 'updated',
         order: 'desc',
-        trash: false,
-        masonry: true
+        trash: false
       };
     },
     watch: {
@@ -91,15 +69,6 @@
       }
     },
     methods: {
-      getFirebaseRef(trash, id) {
-        return Firebase.database().ref(
-          '/' + (trash ? 'trash' : 'resources')
-          + '/organizations/' + this.organization.key
-          + '/' + (this.personal ? auth.user.uid : 'organization')
-          + '/' + this.type
-          + (id ? '/' + id : '')
-        );
-      },
       loadItems() {
         if (this.itemsRef) {
           this.itemsRef.off('child_added');
@@ -127,13 +96,6 @@
         this.itemsRef.on('child_removed', (item) => {
           this.items = this.items.filter(presentItem => presentItem.id !== item.key);
         });
-      },
-      toggleTrash(item) {
-        this.getFirebaseRef(!this.trash, item.id)
-          .set(this.prepareItemForFirebase(item))
-          .then(() => {
-            this.getFirebaseRef(this.trash, item.id).remove();
-          });
       },
     }
   };

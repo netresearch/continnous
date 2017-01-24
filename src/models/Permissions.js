@@ -2,6 +2,15 @@
 
 const Config = require('./Config');
 
+const refs = {
+  get(path) {
+    /* eslint-disable global-require */
+    const Firebase = require('../firebase');
+    /* eslint-enable global-require */
+    return Firebase.database().ref(path);
+  }
+};
+
 module.exports = class Permissions {
   constructor(permissions, defaultPermission) {
     this.organization = { read: false };
@@ -29,38 +38,34 @@ module.exports = class Permissions {
   }
 
   bind(organization, user, callback) {
-    /* eslint-disable global-require */
-    const Firebase = require('../firebase');
-    /* eslint-enable global-require */
-
-    if (this.orgUsersRef) {
-      this.orgUsersRef.off('value');
+    if (refs.user) {
+      refs.user.off('value');
     }
-    if (this.permissionsRef) {
-      this.permissionsRef.off('value');
+    if (refs.permissions) {
+      refs.permissions.off('value');
     }
     this.role = undefined;
     if (organization && user) {
       const orgKey = organization.key;
-      this.orgUsersRef = Firebase.database().ref(
+      refs.user = refs.get(
         '/security/organizations/' + orgKey + '/users/' + user.uid
       );
-      this.orgUsersRef.on('value', (snapshot) => {
+      refs.user.on('value', (snapshot) => {
         this.role = snapshot.val();
 
         if (organization && this.role !== '?' && this.role !== '!') {
           // Load permissions and set role for domain members (for whom snapshot.val() is null)
           const roles = this.role && this.role !== 'admin' ? [this.role] : Config.roles.slice(0);
           const loadPermissions = (role) => {
-            if (this.permissionsRef) {
-              this.permissionsRef.off('value');
+            if (refs.permissions) {
+              refs.permissions.off('value');
             }
-            this.permissionsRef = Firebase.database().ref('/security/organizations/' + orgKey + '/permissions/' + role);
-            this.permissionsRef.once('value',
+            refs.permissions = refs.get('/security/organizations/' + orgKey + '/permissions/' + role);
+            refs.permissions.once('value',
               (permSnap) => {
                 this.role = this.role === 'admin' ? this.role : role;
                 this.set(permSnap.val());
-                this.permissionsRef.on('value', (newPermSnap) => {
+                refs.permissions.on('value', (newPermSnap) => {
                   this.set(newPermSnap.val());
                 });
                 callback();

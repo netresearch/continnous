@@ -24,8 +24,11 @@
   .md-toolbar.md-nav-bar > .md-button {
     color: #{'PRIMARY-CONTRAST-0.54'};
   }
-  .md-toolbar > .router-link-active {
+  .md-toolbar .router-link-active {
     color: #{'PRIMARY-CONTRAST'} !important;
+      > .md-icon {
+        color: #{'PRIMARY-CONTRAST'};
+      }
   }
   .md-nav-bar > .md-button {
     &.md-active,

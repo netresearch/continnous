@@ -50,6 +50,7 @@ const Config = {
     }
   },
   flashlight: {
+    timeout: 3000,
     paths: {
       paths: '/flashlight/paths',
       queries: '/flashlight/queries',
