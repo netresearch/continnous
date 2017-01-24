@@ -21,7 +21,8 @@
         color: #{'PRIMARY-COLOR'};
       }
   }
-  .md-toolbar.md-nav-bar > .md-button {
+  .md-toolbar.md-nav-bar > .md-button,
+   .md-toolbar.md-nav-bar > .md-menu > .md-button{
     color: #{'PRIMARY-CONTRAST-0.54'};
   }
   .md-toolbar .router-link-active {

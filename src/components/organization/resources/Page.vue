@@ -39,7 +39,7 @@
         type: undefined,
         personal: false,
         items: undefined,
-        orderBy: 'updated',
+        sort: 'updated',
         order: 'desc',
         trash: false
       };
@@ -48,21 +48,28 @@
       $route: {
         immediate: true,
         handler(route) {
-          const type = route.params.type;
-          const trash = !!route.params.trash;
-          let personal = !!route.params.personal;
-          const personalAllowed = this.permissions['personal_' + type].read || this.permissions['personal_' + type].write;
-          const organizationAllowed = this.permissions[type].read || this.permissions[type].write;
-          if (personal && !personalAllowed && organizationAllowed) {
-            personal = false;
-          } else if (!personal && personalAllowed && !organizationAllowed) {
-            personal = true;
+          const p = {
+            type: route.params.type || this.type,
+            trash: !!route.params.trash,
+            personal: !!route.params.personal,
+            sort: route.query.sort || this.sort,
+            order: route.query.order || this.order,
+          };
+          const personalAllowed = this.permissions['personal_' + p.type].read || this.permissions['personal_' + p.type].write;
+          const organizationAllowed = this.permissions[p.type].read || this.permissions[p.type].write;
+          if (p.personal && !personalAllowed && organizationAllowed) {
+            p.personal = false;
+          } else if (!p.personal && personalAllowed && !organizationAllowed) {
+            p.personal = true;
           }
-          if (this.items === undefined
-            || this.type !== type || this.trash !== trash || this.personal !== personal) {
-            this.type = type;
-            this.trash = trash;
-            this.personal = personal;
+          let load = this.items === undefined;
+          ['type', 'trash', 'personal', 'order', 'sort'].forEach((key) => {
+            if (p[key] !== this[key]) {
+              this[key] = p[key];
+              load = true;
+            }
+          });
+          if (load) {
             this.loadItems();
           }
         }
@@ -77,11 +84,11 @@
           this.itemsRef.off('child_removed');
         }
         this.itemsRef = this.getFirebaseRef(this.trash)
-          .orderByChild('updated')['limitTo' + (this.order === 'desc' ? 'Last' : 'First')](100);
+          .orderByChild(this.sort)['limitTo' + (this.order === 'desc' ? 'Last' : 'First')](100);
         this.items = [];
         this.itemsRef.on('child_added', (item) => {
           this.items.push(this.createItem(item.key, item.val()));
-          this.items.sort(sortBy((this.order === 'desc' ? '-' : '') + this.orderBy));
+          this.items.sort(sortBy((this.order === 'desc' ? '-' : '') + this.sort));
         });
         this.itemsRef.on('child_changed', (item) => {
           for (let i = 0; i < this.items.length; i++) {
@@ -91,7 +98,7 @@
           }
         });
         this.itemsRef.on('child_moved', () => {
-          this.items.sort(sortBy((this.order === 'desc' ? '-' : '') + this.orderBy));
+          this.items.sort(sortBy((this.order === 'desc' ? '-' : '') + this.sort));
         });
         this.itemsRef.on('child_removed', (item) => {
           this.items = this.items.filter(presentItem => presentItem.id !== item.key);

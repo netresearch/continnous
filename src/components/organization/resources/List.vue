@@ -95,7 +95,7 @@
         return query;
       },
       sortFields() {
-        let fields = ['created', 'updated'];
+        let fields = ['updated', 'created'];
         const addFields = this.additionalSort;
         if (addFields) {
           fields = (typeof addFields === 'string' ? addFields.split(',') : addFields)
