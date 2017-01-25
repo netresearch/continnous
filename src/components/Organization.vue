@@ -10,6 +10,14 @@
         <h2 class="md-title">{{title}}</h2>
       </template>
       <template slot="actions">
+        <md-menu md-size="6" md-direction="bottom left">
+          <md-button class="md-icon-button" md-menu-trigger>
+            <md-icon>whatshot</md-icon>
+          </md-button>
+          <md-menu-content class="md-dense">
+            <journal :organization="organization" :permissions="permissions"></journal>
+          </md-menu-content>
+        </md-menu>
         <account-switcher></account-switcher>
       </template>
 
@@ -66,6 +74,7 @@
   import Firebase from 'firebase';
   import auth from '../auth';
   import AccountSwitcher from './AccountSwitcher';
+  import Journal from './organization/Journal';
   import Organization from '../models/Organization';
   import Config from '../models/Config';
   import Permissions from '../models/Permissions';
@@ -77,7 +86,8 @@
 
   export default {
     components: {
-      AccountSwitcher
+      AccountSwitcher,
+      Journal
     },
     created() {
       this.fetchOrganization();
@@ -107,22 +117,22 @@
         }
         this.orgsRef = Firebase.database().ref('organizations/' + this.$route.params.organization_key);
         this.orgsRef.on('value',
-          (snapshot) => {
-            if (snapshot.val()) {
-              this.organization = new Organization(snapshot.key, snapshot.val());
-              this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
-              this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
-              titleElement.innerText = this.title;
-            } else {
-              this.organization = null;
-              this.title = null;
-              titleElement.innerHTML = defaultTitle;
+            (snapshot) => {
+              if (snapshot.val()) {
+                this.organization = new Organization(snapshot.key, snapshot.val());
+                this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
+                this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
+                titleElement.innerText = this.title;
+              } else {
+                this.organization = null;
+                this.title = null;
+                titleElement.innerHTML = defaultTitle;
+              }
+            },
+            () => {
+              this.organization = false;
+              this.fetchOrganization();
             }
-          },
-          () => {
-            this.organization = false;
-            this.fetchOrganization();
-          }
         );
       },
       fetchRoleAndPermissions() {

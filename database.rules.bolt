@@ -50,6 +50,13 @@ path /security/organizations/{oid}/users/{uid} {
     delete() { isAuthenticated() && isAdmin(oid) }
 }
 
+path /journals/organizations/{oid} {
+    read() { isAuthenticated() && isAllowed('organization', 'read', oid) }
+}
+path /journals/organizations/{oid}/{eid} {
+    write() { isAuthenticated() && isAllowed(this.resource, 'write', oid) }
+}
+
 path /flashlight/paths/{pid} {
     read() { false }
     write() {

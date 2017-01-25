@@ -73,15 +73,18 @@ module.exports = {
   },
   objectives: {
     title: 'Short title of the objective',
-    personal: 'This is a personal objective'
+    personal: 'This is a personal objective',
+    accusative: 'objective | objectives'
   },
   ideas: {
     title: 'Short title of the idea',
-    personal: 'This is a personal idea'
+    personal: 'This is a personal idea',
+    accusative: 'idea | ideas'
   },
   insights: {
     title: 'Short title of the insight',
-    personal: 'This is a personal insight'
+    personal: 'This is a personal insight',
+    accusative: 'insight | insights'
   },
   fields: {
     subtitle: {
@@ -114,5 +117,13 @@ module.exports = {
     order: 'Order',
     asc: 'Ascending',
     desc: 'Descending'
+  },
+  journal: {
+    update: 'updated',
+    create: 'added',
+    remove: 'removed',
+    restore: 'restored',
+    user: '{user} {action} {resource}',
+    you: 'You {action} {resource}'
   }
 };

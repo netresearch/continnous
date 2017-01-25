@@ -15,6 +15,7 @@
         :validate="{title: validateTitle}"
         ref="form"
         @closed="onClosed"
+        @saved="onSaved"
     >
       <template slot="title" scope="form">
         <form-element name="title" md-inline :label="$t(type + '.title')">
@@ -106,6 +107,16 @@
           path += '/' + this.$refs.form.firebaseRef.key;
         }
         this.$router.push(path);
+      },
+      onSaved(updates, ref) {
+        if (!this.personal) {
+          if (this.id) {
+            const keys = Object.keys(updates).filter(field => field !== 'updated');
+            this.organization.journal.addEntry(this.type, this.id, 'update', keys);
+          } else {
+            this.organization.journal.addEntry(this.type, ref.key, 'create');
+          }
+        }
       }
     }
   };

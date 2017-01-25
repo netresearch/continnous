@@ -57,6 +57,7 @@
         this.getFirebaseRef(!this.trash, this.item.id)
           .set(this.prepareItemForFirebase(this.item))
           .then(() => {
+            this.organization.journal.addEntry(this.type, this.item.id, this.trash ? 'restore' : 'remove');
             this.getFirebaseRef(this.trash, this.item.id).remove();
           });
       }

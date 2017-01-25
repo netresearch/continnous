@@ -67,7 +67,7 @@
     computed: {
       allKeys() {
         return this.keys.concat(this.elementKeys).filter(
-          (key, index, self) => self.indexOf(key) === index
+            (key, index, self) => self.indexOf(key) === index
         );
       }
     },
@@ -111,12 +111,12 @@
           if (this.firebasePath && this.firebaseBind) {
             this.firebaseRef = this.getFirebaseRef();
             this.firebaseRef.on('value',
-              (snapshot) => {
-                this.takeOverValues(this.firebaseReceive.call(this.$parent, snapshot));
-              },
-              () => {
-                this.status = -1;
-              }
+                (snapshot) => {
+                  this.takeOverValues(this.firebaseReceive.call(this.$parent, snapshot));
+                },
+                () => {
+                  this.status = -1;
+                }
             );
           }
         });
@@ -214,8 +214,8 @@
         keys.forEach((key) => {
           const isDateField = (isNew && key === 'created') || key === 'updated';
           if (isDateField
-            || (isNew && this.values[key] !== undefined)
-            || this.changed.hasOwnProperty(key)) {
+              || (isNew && this.values[key] !== undefined)
+              || this.changed.hasOwnProperty(key)) {
             updates[key] = isDateField ? +new Date() : this.values[key];
             changedKeys.push(key);
           }
@@ -241,7 +241,7 @@
                 tick: (tick) => {
                   progress.done += tick - done;
                   this.progress = (progress.total && progress.total > progress.done)
-                    ? ((progress.done / progress.total) * 100) : false;
+                      ? ((progress.done / progress.total) * 100) : false;
                   done = tick;
                 }
               };
@@ -251,18 +251,19 @@
           this.$emit('before-save', beforeSave, progress);
           Promise.all(beforeSave).then(() => {
             this.progress = false;
-            (this.firebaseRef || this.getFirebaseRef()).update(updates).then(
-              () => {
-                this.status = 1;
-                changedKeys.forEach((key) => {
-                  this.$delete(this.changed, key);
-                });
-                this.$emit('saved', updates);
-              },
-              () => {
-                this.status = -1;
-                this.$emit('save-error', updates);
-              }
+            const ref = this.firebaseRef || this.getFirebaseRef();
+            ref.update(updates).then(
+                () => {
+                  this.status = 1;
+                  changedKeys.forEach((key) => {
+                    this.$delete(this.changed, key);
+                  });
+                  this.$emit('saved', updates, ref);
+                },
+                () => {
+                  this.status = -1;
+                  this.$emit('save-error', updates);
+                }
             );
           });
         }
