@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <dialog-form
-        class="resources-dialog-form"
+  <div class="resources-card-form-container">
+    <card-form
+        class="resources-card-form"
         v-if="id !== undefined"
         :firebase-path="
           '/resources/organizations/' + organization.key
@@ -23,7 +23,7 @@
       </template>
 
       <template scope="form">
-        <div class="resources-dialog-form-content">
+        <div class="resources-card-form-content">
           <form-element name="subtitle" :label="$t('fields.subtitle.label')">
             <md-input :value="form.values.subtitle" :placeholder="$t('fields.subtitle.placeholder')"></md-input>
           </form-element>
@@ -52,17 +52,17 @@
         <md-checkbox v-if="id === null" :value="personal" @click.native="personal = !personal">{{$t(type + '.personal')}}</md-checkbox>
       </div>
       <div slot="centerButtons" style="width: 24px;"></div>
-    </dialog-form>
+    </card-form>
   </div>
 </template>
 
 <script>
-  import DialogForm from '../../form/Dialog';
+  import CardForm from '../../form/Card';
   import auth from '../../../auth';
   import mixin from './mixin';
   import Config from '../../../models/Config';
 
-  const components = { DialogForm };
+  const components = { CardForm };
 
   /* eslint-disable global-require, import/no-dynamic-require */
   Object.keys(Config.resources).forEach((resource) => {
@@ -112,8 +112,36 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-  .resources-dialog-form-content {
-    width: 548px;
-    max-width: 100%;
+  .resources-list-container .resources-card-form-container {
+    padding: 16px 16px 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    position: relative;
+    max-width: 632px;
+    &:before,
+    &:after {
+      display: block;
+      content: "";
+      width: 0;
+      height: 0;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-right:10px solid rgba(#000, 0.2);
+      position: absolute;
+      left: 6px;
+      top: 50px;
+    }
+    &:after {
+      border-top-width: 9px;
+      border-bottom-width: 9px;
+      border-right: 9px solid #fff;
+      margin-left: 1px;
+      margin-top: 1px;
+      z-index: 2;
+    }
+    .md-card {
+      width: 100%;
+      height: 100%;
+    }
   }
 </style>

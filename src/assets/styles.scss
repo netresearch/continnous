@@ -12,6 +12,17 @@ body, html {
   height: 100%;
   > div {
     flex: 0 1 auto;
+    &.scroll-container-hgroup {
+      flex: 1 1 auto;
+      display: flex;
+      flex-flow: row;
+      > div {
+        flex: 1 0 50%;
+        &.scroll-content {
+          overflow: auto;
+        }
+      }
+    }
     &.scroll-content {
       flex: 1 1 auto;
       overflow: auto;

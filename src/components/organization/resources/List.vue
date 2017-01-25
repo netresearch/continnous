@@ -1,6 +1,5 @@
 <template>
-
-  <div class="scroll-container">
+  <div class="scroll-container resources-list-container">
     <md-toolbar class="md-dense">
       <h2 class="md-title">{{title}}</h2>
     </md-toolbar>
@@ -42,22 +41,23 @@
       </md-button>
     </md-toolbar>
 
-    <slot></slot>
-
-    <div class="scroll-content">
-      <div ref="list" :class="['resources-list', 'resources-list-' + (masonry ? 'masonry' : 'stream')]">
-        <div class="resources-list-width"></div>
-        <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
-          <resource-item
-              :item="item"
-              :trash="trash"
-              :personal="item.hasOwnProperty('personal') ? item.personal : personal"
-              :permissions="permissions"
-              :type="item.resource || type"
-              :organization="organization"
-          ></resource-item>
+    <div class="scroll-container-hgroup">
+      <div class="scroll-content">
+        <div ref="list" :class="['resources-list', 'resources-list-' + (masonry ? 'masonry' : 'stream'), 'resources-list-' + rows + '-rows']">
+          <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
+            <resource-item
+                :item="item"
+                :trash="trash"
+                :personal="item.hasOwnProperty('personal') ? item.personal : personal"
+                :permissions="permissions"
+                :type="item.resource || type"
+                :organization="organization"
+            ></resource-item>
+          </div>
         </div>
       </div>
+
+      <slot></slot>
     </div>
   </div>
 </template>
@@ -79,12 +79,17 @@
       personal: Boolean,
       sort: String,
       order: String,
-      additionalSort: [String, Array]
+      additionalSort: [String, Array],
+      masonryItemMinWidth: {
+        type: Number,
+        default: 300
+      }
     },
     data() {
       return {
         mounted: false,
-        masonry: true
+        masonry: true,
+        rows: 1
       };
     },
     computed: {
@@ -112,15 +117,34 @@
     },
     mounted() {
       this.mounted = true;
-      this.updateMasonry();
+      /* global window */
+      window.addEventListener('resize', this.updateRows);
+      this.updateRows();
+      this.$nextTick(() => {
+        this.updateMasonry();
+      });
     },
     beforeDestroy() {
       this.mounted = false;
+      /* global window */
+      window.removeEventListener('resize', this.updateRows);
       this.updateMasonry();
     },
     watch: {
       masonry() {
         this.$nextTick(this.updateMasonry);
+      },
+      $route() {
+        this.$nextTick(() => {
+          this.updateRows();
+        });
+      },
+      rows() {
+        this.$nextTick(() => {
+          if (this.msnry) {
+            this.msnry.layout();
+          }
+        });
       },
       items: {
         deep: true,
@@ -141,12 +165,15 @@
           delete this.msnry;
         } else if (this.masonry && !this.msnry && this.mounted) {
           this.msnry = new Masonry(this.$refs.list, {
-            itemSelector: '.resources-list-item',
-            columnWidth: '.resources-list-width',
             percentPosition: true,
           });
           this.msnry.layout();
         }
+      },
+      updateRows() {
+        const list = this.$refs.list;
+        const rect = list.getBoundingClientRect();
+        this.rows = Math.max(0, Math.floor(rect.width / this.masonryItemMinWidth));
       }
     }
   };
@@ -159,6 +186,9 @@
       margin: 32px auto 0;
       width: 100%;
       max-width: 500px;
+      &:first-child {
+        margin-top: 16px;
+      }
     }
   }
   .resources-list-masonry {
@@ -169,21 +199,20 @@
         margin: 0 8px 16px;
       }
     }
-    .resources-list-item,
-    .resources-list-width {
+    .resources-list-item {
       width: 100%;
-      @media (min-width: 600px) {
-        width: 50%;
-      }
-      @media (min-width: 1300px) {
-        width: 33.333%;
-      }
-      @media (min-width: 1300px) {
-        width: 25%;
-      }
-      @media (min-width: 1600px) {
-        width: 20%;
-      }
+    }
+    &.resources-list-2-rows .resources-list-item {
+      width: 50%;
+    }
+    &.resources-list-3-rows .resources-list-item {
+      width: 33.3333%;
+    }
+    &.resources-list-4-rows .resources-list-item {
+      width: 25%;
+    }
+    &.resources-list-5-rows .resources-list-item {
+      width: 20%;
     }
   }
 </style>
