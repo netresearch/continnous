@@ -1,5 +1,5 @@
 <template>
-  <div class="scroll-container resources-list-container">
+  <div :class="['scroll-container', 'resources-list-container', 'resources-list-' + (masonry ? 'masonry' : 'stream'), 'resources-list-' + rows + '-rows']">
     <md-toolbar class="md-dense">
       <h2 class="md-title">{{title}}</h2>
     </md-toolbar>
@@ -43,8 +43,21 @@
 
     <div class="scroll-container-hgroup">
       <div class="scroll-content">
-        <div ref="list" :class="['resources-list', 'resources-list-' + (masonry ? 'masonry' : 'stream'), 'resources-list-' + rows + '-rows']">
-          <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
+        <div v-if="preview.item" class="resources-list-edit-item">
+          <div class="resources-list-item">
+            <resource-item
+                :item="preview.item"
+                :trash="false"
+                :personal="personal"
+                :permissions="permissions"
+                :type="type"
+                :organization="organization"
+                normalize
+            ></resource-item>
+          </div>
+        </div>
+        <div ref="list" :class="['resources-list']">
+          <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items" v-if="!preview.item || preview.id !== item.id">
             <resource-item
                 :item="item"
                 :trash="trash"
@@ -65,6 +78,7 @@
 <script>
   import Masonry from 'masonry-layout';
   import ResourceItem from './Item';
+  import Bus from '../../../bus';
 
   export default {
     components: { ResourceItem },
@@ -89,7 +103,12 @@
       return {
         mounted: false,
         masonry: true,
-        rows: 1
+        rows: 1,
+        preview: {
+          id: undefined,
+          item: undefined,
+          action: undefined
+        }
       };
     },
     computed: {
@@ -114,6 +133,26 @@
         });
         return fields;
       }
+    },
+    created() {
+      const listener = (action, id, item) => {
+        const preview = this.preview;
+        const reloadItems = (preview.action === 'edit' || action === 'edit')
+          && (!preview.item || preview.id !== id);
+        preview.action = action;
+        preview.id = id;
+        preview.item = item;
+        if (reloadItems) {
+          this.$nextTick(() => {
+            if (this.msnry) {
+              this.msnry.reloadItems();
+              this.msnry.layout();
+            }
+          });
+        }
+      };
+      Bus.$on('edit-resource', listener.bind(this, 'edit'));
+      Bus.$on('create-resource', listener.bind(this, 'create'));
     },
     mounted() {
       this.mounted = true;
@@ -196,6 +235,18 @@
     .resources-list-item {
       display: block;
       > .md-card {
+        margin: 0 8px 16px;
+      }
+    }
+    .resources-list-edit-item {
+      .resources-list-item {
+        margin: 0 auto;
+      }
+      &:after {
+        content: "";
+        display: block;
+        height: 1px;
+        background: rgba(#000, 0.15);
         margin: 0 8px 16px;
       }
     }

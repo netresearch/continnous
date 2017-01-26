@@ -46,7 +46,6 @@
 
 <script>
   import Child from './child';
-  import Firebase from '../../firebase';
 
   export default {
     extends: Child,
@@ -61,7 +60,11 @@
       previewMaxWidth: { type: Number, default: 500 },
       previewMaxHeight: { type: Number, default: 500 },
       direct: Boolean,
-      gallery: Boolean
+      gallery: Boolean,
+      getPreviewUrl: Function,
+      registerPreviewUrl: Function,
+      getUrl: Function,
+      saveFile: Function
     },
     data() {
       return {
@@ -96,15 +99,6 @@
         });
         return numFiles;
       },
-    },
-    created() {
-      this.progress = undefined;
-
-      this.$on('registered', (form) => {
-        form.$on('before-save', (beforeSave, progress) => {
-          beforeSave.push(this.save(progress));
-        });
-      });
     },
     mounted() {
       this.addOrRemoveDragListeners('add');
@@ -168,8 +162,10 @@
             download(e.target.result);
           };
           reader.readAsDataURL(file.file);
-        } else if (file.src) {
-          download(file.src);
+        } else if (this.getUrl) {
+          this.getUrl(file, (src) => {
+            download(src);
+          });
         }
       },
       remove(file) {
@@ -224,13 +220,16 @@
             && ['jpeg', 'jpg', 'png', 'gif'].indexOf(file.type.substr(6)) > -1) {
             this.resizeImage(file).then(
               (res) => {
+                if (this.registerPreviewUrl) {
+                  this.registerPreviewUrl(fileObject, res.url);
+                }
                 fileObject.preview = res.url;
                 fileObject.width = res.width;
                 fileObject.height = res.height;
                 this.triggerChange();
               }
             );
-          } else if (this.direct) {
+          } else {
             this.triggerChange();
           }
         });
@@ -258,7 +257,7 @@
         }
       },
       createFileObject(value) {
-        return Object.assign({
+        const file = Object.assign({
           name: undefined,
           id: undefined,
           src: undefined,
@@ -269,6 +268,12 @@
           width: undefined,
           height: undefined
         }, value);
+        if (!value.preview && this.gallery && this.getPreviewUrl) {
+          this.getPreviewUrl(file, (src) => {
+            file.preview = src;
+          });
+        }
+        return file;
       },
       createValueObject(file) {
         const value = {
@@ -281,57 +286,38 @@
         }
         return value;
       },
-      save(progress) {
-        const ref = Firebase.storage().ref();
+      save(saveFile) {
+        const callback = saveFile || this.saveFile;
         const promises = [];
-        this.files = this.files.filter((file) => {
-          if (file.deleted) {
-            if (!file.file) {
-              const children = [file.id];
-              if (file.preview) {
-                children.push(file.id + '_preview');
+        this.files.forEach((file) => {
+          if (file.deleted && file.file) {
+            this.files = this.files.filter(f => f.id !== file.id);
+          } else if (file.deleted || file.file) {
+            const promise = new Promise((resolve, reject) => {
+              const res = callback(file);
+              if (res === undefined || res === true) {
+                resolve();
+              } else if (res === false || typeof res === 'string') {
+                reject(res || true);
+              } else if (typeof res === 'object' && typeof res.then === 'function') {
+                res.then(resolve, reject);
               }
-              children.forEach((child) => {
-                promises.push(new Promise((resolve, reject) => {
-                  ref.child(child).delete().then(resolve).catch(reject);
-                }));
-              });
-            }
-            return false;
-          } else if (file.file) {
-            let totalBytes = 0;
-            const monitorUpload = (task) => {
-              promises.push(new Promise((resolve, reject) => {
-                let totalBytesAdded = false;
-                const fileProgress = progress ? progress.get() : null;
-                task.on('state_changed', (snapshot) => {
-                  if (!totalBytesAdded) {
-                    totalBytesAdded = true;
-                    totalBytes += snapshot.totalBytes;
-                    if (fileProgress) {
-                      fileProgress.setTotal(snapshot.totalBytes);
-                    }
-                  }
-                  file.progress = (snapshot.bytesTransferred / totalBytes) * 100;
-                  if (fileProgress) {
-                    fileProgress.tick(snapshot.bytesTransferred);
-                  }
-                }, (error) => {
-                  file.error = error;
-                  reject(error);
-                }, resolve);
-              }));
-            };
-            monitorUpload(ref.child(file.id).put(file.file));
-            if (file.preview) {
-              monitorUpload(ref.child(file.id + '_preview').putString(
-                file.preview.split(',').pop(), 'base64', {
-                  contentType: 'image/png',
+            });
+            promise.then(
+              () => {
+                file.file = undefined;
+                if (file.deleted) {
+                  this.files = this.files.filter(f => f.id !== file.id);
                 }
-              ));
-            }
+              },
+              (error) => {
+                file.error = error;
+                file.deleted = false;
+              }
+            );
+            promises.push(promise);
           }
-          return true;
+          return file.deleted;
         });
         return Promise.all(promises);
       },

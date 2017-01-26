@@ -22,6 +22,4 @@ if (available.indexOf(lang) > -1 && lang !== 'en') {
   Vue.config.fallbackLang = 'en';
 }
 
-console.log(Vue.config.i18nFormatter);
-
 export default {};

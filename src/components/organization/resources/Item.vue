@@ -2,7 +2,7 @@
   <md-card md-with-hover>
     <md-card-header>
       <md-card-header-text>
-        <div class="md-title">{{item.title}}</div>
+        <div class="md-title">{{item.title || 'Your new objective'}}</div>
         <div class="md-subhead">{{item.description}}</div>
       </md-card-header-text>
       <md-menu v-if="!trash && permissions[type].write && item.creator === auth.user.uid" md-size="4" md-direction="bottom left">

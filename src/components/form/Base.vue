@@ -152,8 +152,11 @@
             this.$delete(this.changed, key);
             this.$set(this.errors, key, true);
           }
-        } else if (this.changed.hasOwnProperty(key)) {
-          this.$delete(this.changed, key);
+        } else {
+          this.$set(this.values, key, present);
+          if (this.changed.hasOwnProperty(key)) {
+            this.$delete(this.changed, key);
+          }
         }
       },
       filterOrValidate(type, key, incomingValue) {
