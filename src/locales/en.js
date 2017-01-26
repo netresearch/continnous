@@ -95,6 +95,7 @@ module.exports = {
       label: 'Description',
       placeholder: 'Describe what this is about in detail'
     },
+    title: 'Title',
     image: 'Image',
     attachments: 'Attachments',
     created: 'Created',

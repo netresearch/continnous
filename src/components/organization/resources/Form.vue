@@ -20,8 +20,8 @@
     >
       <template scope="form">
 
-        <form-element name="title" md-inline :label="$t(type + '.title')">
-          <md-input :value="form.values.title"></md-input>
+        <form-element name="title" :label="$t('fields.title')">
+          <md-input :value="form.values.title" :placeholder="$t(type + '.title')"></md-input>
         </form-element>
 
         <div class="resources-card-form-content">
