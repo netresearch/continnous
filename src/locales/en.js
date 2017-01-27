@@ -61,7 +61,8 @@ module.exports = {
     removeFile: 'Remove {file}',
     read: 'View',
     write: 'Write',
-    search: 'Search'
+    search: 'Search',
+    abort: 'Abort'
   },
   vision: {
     label: 'Vision statement',
@@ -126,5 +127,11 @@ module.exports = {
     restore: 'restored',
     user: '{user} {action} {resource}',
     you: 'You {action} {resource}'
-  }
+  },
+  unload: {
+    confirm: 'You have unsaved changes - do you want to leave without saving?',
+    text: 'You have unsaved changes - what do you want to do?',
+    continue: 'Continue without saving',
+    save: 'Save and continue'
+  },
 };

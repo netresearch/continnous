@@ -138,7 +138,7 @@
       const listener = (action, id, item) => {
         const preview = this.preview;
         const reloadItems = (preview.action === 'edit' || action === 'edit')
-          && (!preview.item || preview.id !== id);
+          && (action === 'close' || !preview.item || preview.id !== id);
         preview.action = action;
         preview.id = id;
         preview.item = item;
@@ -151,8 +151,9 @@
           });
         }
       };
-      Bus.$on('edit-resource', listener.bind(this, 'edit'));
-      Bus.$on('create-resource', listener.bind(this, 'create'));
+      Bus.$on('resource-form-edit', listener.bind(this, 'edit'));
+      Bus.$on('resource-form-create', listener.bind(this, 'create'));
+      Bus.$on('resource-form-destroy', listener.bind(this, 'close'));
     },
     mounted() {
       this.mounted = true;

@@ -95,7 +95,9 @@
         personal: false,
         id: undefined,
         item: null,
-        File
+        File,
+        unloadChoice: undefined,
+        unloadTo: undefined
       };
     },
     watch: {
@@ -107,13 +109,16 @@
         }
       }
     },
+    beforeDestroy() {
+      Bus.$emit('resource-form-destroy');
+    },
     methods: {
       validateTitle(title) {
         return title && title.length > 2;
       },
       firebaseReceive(snapshot) {
         const item = this.createItem(snapshot.key, snapshot.val());
-        Bus.$emit((this.id ? 'edit' : 'create') + '-resource', snapshot.key, this.$refs.form.values);
+        Bus.$emit('resource-form-' + (this.id ? 'edit' : 'create'), snapshot.key, this.$refs.form.values);
         return item;
       },
       onClosed(saved) {

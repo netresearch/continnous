@@ -12,6 +12,7 @@
       <slot name="secondaryButtons"></slot>
     </md-card-actions>
     <md-message :status="status" :progress="progress"></md-message>
+    <form-unload-protect v-if="protectUnload"></form-unload-protect>
   </md-card>
 </template>
 
