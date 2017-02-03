@@ -70,7 +70,9 @@
     watch: {
       open(open) {
         if (!open) {
-          this.$refs.dialog.close();
+          if (this.$refs.dialog) {
+            this.$refs.dialog.close();
+          }
         } else {
           this.$nextTick(() => {
             this.$nextTick(() => {

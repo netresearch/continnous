@@ -36,3 +36,9 @@
     margin: 0;
   }
 }
+
+// Workaround for vue-material#160
+.md-input-container input,
+.md-input-container textarea {
+  transition: all 0s;
+}

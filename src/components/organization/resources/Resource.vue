@@ -1,71 +1,71 @@
 <template>
-  <div class="resources-card-form-container">
-    <card-form
-        class="resources-card-form"
-        v-if="id !== undefined"
-        :firebase-path="
+  <div class="resource scroll-container">
+    <md-toolbar class="md-dense">
+      <h2 class="md-title">{{$tc('resources.' + type, 2)}}</h2>
+    </md-toolbar>
+    <div class="scroll-content">
+      <card-form
+          class="resources-card-form"
+          v-if="id !== undefined"
+          :firebase-path="
           '/resources/organizations/' + organization.key
           + '/' + (personal ? auth.user.uid : 'organization')
           + '/' + type
           + '/' + (id || '{new}')"
-        firebase-bind
-        :firebase-receive="firebaseReceive"
-        :defaults="{creator: auth.user.uid}"
-        :keys="id ? ['updated'] : ['creator', 'created', 'updated']"
-        :validate="{title: validateTitle}"
-        ref="form"
-        @closed="onClosed"
-        @saved="onSaved"
-        @before-save="saveFiles"
-    >
-      <template scope="form">
+          firebase-bind
+          :firebase-receive="firebaseReceive"
+          :defaults="{creator: auth.user.uid}"
+          :keys="id ? ['updated'] : ['creator', 'created', 'updated']"
+          :validate="{title: validateTitle}"
+          ref="form"
+          @saved="onSaved"
+          @before-save="saveFiles"
+          md-inline
+      >
 
-        <form-element name="title" :label="$t('fields.title')">
-          <md-input :value="form.values.title" :placeholder="$t(type + '.title')"></md-input>
+        <form-element class="resource-title" type="md-textarea" md-inline name="title" :label="$t('fields.title')" :placeholder="$t(type + '.title')">
         </form-element>
 
-        <div class="resources-card-form-content">
-          <form-element name="subtitle" :label="$t('fields.subtitle.label')">
-            <md-input :value="form.values.subtitle" :placeholder="$t('fields.subtitle.placeholder')"></md-input>
-          </form-element>
-          <form-element name="description" :label="$t('fields.description.label')">
-            <md-textarea :value="form.values.description" :placeholder="$t('fields.description.placeholder')"></md-textarea>
-          </form-element>
+        <form-element class="resource-subtitle" type="md-textarea" name="subtitle" :label="$t('fields.subtitle.label')" :placeholder="$t('fields.subtitle.placeholder')">
+        </form-element>
 
-          <component :is="type + '-form'"></component>
+        <form-element
+            type="form-file"
+            name="image"
+            :label="$t('fields.image')"
+            style="flex: 1; min-width: 180px; max-width: 100%;"
+            ref="image"
+            gallery
+            accept="image/png,image/jpeg,image/jpg,image/gif"
+            :inline="!!id"
+            :get-url="File.getURL"
+            :get-preview-url="File.getPreviewURL"
+            :register-preview-url="File.registerPreviewURL"
+            :preview-max-width="600"
+            :preview-max-height="1200">
+        </form-element>
 
-          <md-layout md-gutter="24">
-            <md-layout>
-              <form-element :label="$t('fields.image')" name="image" style="flex: 1; min-width: 180px; max-width: 100%;">
-                <form-file
-                    ref="image"
-                    gallery
-                    accept="image/png,image/jpeg,image/jpg,image/gif"
-                    :value="form.values.image"
-                    :get-url="File.getURL"
-                    :get-preview-url="File.getPreviewURL"
-                    :register-preview-url="File.registerPreviewURL"
-                ></form-file>
-              </form-element>
-            </md-layout>
-            <md-layout>
-              <form-element :label="$t('fields.attachments')" name="attachments" style="flex: 1; min-width: 180px;">
-                <form-file
-                    ref="attachments"
-                    multiple
-                    :value="form.values.attachments"
-                    :get-url="File.getURL"></form-file>
-              </form-element>
-            </md-layout>
-          </md-layout>
+        <form-element type="md-textarea" name="description" :label="$t('fields.description.label')" :placeholder="$t('fields.description.placeholder')">
+        </form-element>
+
+        <component :is="type + '-form'"></component>
+
+        <form-element
+            type="form-file"
+            :label="$t('fields.attachments')"
+            name="attachments"
+            style="flex: 1; min-width: 180px;"
+            ref="attachments"
+            multiple
+            :get-url="File.getURL">
+        </form-element>
+
+        <div slot="leftButtons" style="flex: 1;">
+          <md-checkbox v-if="id === null" :value="personal" @click.native="personal = !personal">{{$t(type + '.personal')}}</md-checkbox>
         </div>
-      </template>
-
-      <div slot="leftButtons" style="flex: 1;">
-        <md-checkbox v-if="id === null" :value="personal" @click.native="personal = !personal">{{$t(type + '.personal')}}</md-checkbox>
-      </div>
-      <div slot="centerButtons" style="width: 24px;"></div>
-    </card-form>
+        <div slot="centerButtons" style="width: 24px;"></div>
+      </card-form>
+    </div>
   </div>
 </template>
 
@@ -77,8 +77,10 @@
   import Bus from '../../../bus';
   import File from '../../../models/File';
   import Firebase from '../../../firebase';
+  import Avatar from '../../Avatar';
+  import BetterElement from '../../form/BetterElement';
 
-  const components = { CardForm };
+  const components = { CardForm, Avatar, BetterElement };
 
   /* eslint-disable global-require, import/no-dynamic-require */
   Object.keys(Config.resources).forEach((resource) => {
@@ -87,30 +89,30 @@
 
   export default {
     mixins: [mixin],
-    props: ['organization', 'type'],
+    props: ['organization', 'permissions'],
     components,
     data() {
       return {
         auth,
+        type: undefined,
         personal: false,
         id: undefined,
         item: null,
-        File,
-        unloadChoice: undefined,
-        unloadTo: undefined
+        File
       };
+    },
+    beforeDestroy() {
+      Bus.$emit('resource-form-destroy');
     },
     watch: {
       $route: {
         immediate: true,
         handler(route) {
           this.personal = !!route.params.personal;
+          this.type = route.params.type;
           this.id = route.params.id || null;
         }
       }
-    },
-    beforeDestroy() {
-      Bus.$emit('resource-form-destroy');
     },
     methods: {
       validateTitle(title) {
@@ -119,17 +121,8 @@
       firebaseReceive(snapshot) {
         const item = this.createItem(snapshot.key, snapshot.val());
         Bus.$emit('resource-form-' + (this.id ? 'edit' : 'create'), snapshot.key, this.$refs.form.values);
+        this.item = item;
         return item;
-      },
-      onClosed(saved) {
-        let path = '/' + this.organization.key + '/' + this.type;
-        if (this.id || saved) {
-          if (this.personal) {
-            path += '/personal';
-          }
-          path += '/' + this.$refs.form.firebaseRef.key;
-        }
-        this.$router.push(path);
       },
       onSaved(updates, ref) {
         if (!this.personal) {
@@ -140,11 +133,19 @@
             this.organization.journal.addEntry(this.type, ref.key, 'create');
           }
         }
+        if (!this.id) {
+          let path = '/' + this.organization.key + '/' + this.type;
+          if (this.personal) {
+            path += '/personal';
+          }
+          path += '/' + this.$refs.form.firebaseRef.key;
+          this.$router.replace(path);
+        }
       },
       saveFiles(beforeSave, progress) {
         const ref = Firebase.storage().ref();
         ['image', 'attachments'].forEach((field) => {
-          this.$refs[field].save((file) => {
+          this.$refs[field].$refs.el.save((file) => {
             const promises = [];
             if (file.deleted) {
               const children = [file.id];
@@ -198,36 +199,32 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-  .resources-list-container .resources-card-form-container {
-    padding: 16px 16px 0;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    position: relative;
-    max-width: 632px;
-    &:before,
-    &:after {
-      display: block;
-      content: "";
-      width: 0;
-      height: 0;
-      border-top: 10px solid transparent;
-      border-bottom: 10px solid transparent;
-      border-right:10px solid rgba(#000, 0.2);
-      position: absolute;
-      left: 6px;
-      top: 50px;
+  .resource .md-card {
+    max-width: 616px;
+    .resource-title textarea {
+      font-size: 24px;
     }
-    &:after {
-      border-top-width: 9px;
-      border-bottom-width: 9px;
-      border-right: 9px solid #fff;
-      margin-left: 1px;
-      margin-top: 1px;
-      z-index: 2;
+    .resource-subtitle textarea {
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.54);
     }
-    .md-card {
-      width: 100%;
-      height: 100%;
+
+    .md-input-container.md-input-inline {
+      background: #fff;
+      padding: 0;
+      min-height: 0;
+      margin: 6px 0 0;
+      &:after {
+        opacity: 0;
+      }
+      &:hover,
+      &.md-input-focused {
+        margin-top: -6px;
+        padding-top: 12px;
+        &:after {
+          opacity: 1;
+        }
+      }
     }
   }
 </style>

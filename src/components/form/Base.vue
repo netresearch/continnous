@@ -2,6 +2,7 @@
   <div class="form">
     <slot :values="values" :errors="errors"></slot>
     <md-message :status="status" :progress="progress"></md-message>
+    <form-unload-protect v-if="protectUnload"></form-unload-protect>
   </div>
 </template>
 
@@ -11,12 +12,14 @@
   import Element from './Element';
   import Button from './Button';
   import File from './File';
+  import Theme from './Theme';
   import UnloadProtect from './UnloadProtect';
 
   Vue.use((vm) => {
     vm.component('form-element', Element);
     vm.component('form-button', Button);
     vm.component('form-file', File);
+    vm.component('form-theme', Theme);
     vm.component('form-unload-protect', UnloadProtect);
   });
 
@@ -57,6 +60,7 @@
        fieldKey => ['method', function(value) {}]
        } */
       filter: Object,
+      mdInline: Boolean
     },
     data() {
       return {
@@ -283,7 +287,6 @@
       _registerFormElement(element) {
         if (element.name) {
           this.elementKeys.push(element.name);
-          element.$on('input', this.onChange);
         }
       }
     }

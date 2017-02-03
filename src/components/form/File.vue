@@ -2,7 +2,7 @@
 
 <template>
   <div
-      :class="['form-file-container', {'form-file-gallery': gallery && numFiles}]">
+      :class="['form-file-container', {'form-file-gallery': gallery && numFiles, 'form-file-inline': inline}]">
     <div class="form-file-list" v-if="numFiles">
       <div
           v-for="file in files"
@@ -64,7 +64,8 @@
       getPreviewUrl: Function,
       registerPreviewUrl: Function,
       getUrl: Function,
-      saveFile: Function
+      saveFile: Function,
+      inline: Boolean
     },
     data() {
       return {
@@ -377,6 +378,9 @@
     flex: 1;
   }
   .form-file-container {
+    .md-icon:after {
+      display: none;
+    }
     position: relative;
     &.is-dragover {
       margin: 2px -2px -2px;
@@ -404,6 +408,25 @@
       display: flex;
       flex-flow: row wrap;
     }
+    &.form-file-gallery.form-file-inline {
+      .form-file {
+        position: relative;
+        .form-file-info {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(#fff, 0.8);
+          padding-left: 12px;
+          padding-right: 8px;
+          opacity: 0;
+          transition: opacity 0.5s;
+        }
+        &:hover .form-file-info {
+          opacity: 1;
+        }
+      }
+    }
     .form-file {
       padding: 0 5px;
       flex: 1;
@@ -414,6 +437,9 @@
         max-width: 100%;
         position: relative;
         background: #eeeeee;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
         &:before {
           content: "";
           display: block;
@@ -447,11 +473,6 @@
           margin-top: 12px;
           line-height: 12px;
         }
-      }
-      .form-file-preview {
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-position: center;
       }
       .form-file-info {
         padding: 6px;

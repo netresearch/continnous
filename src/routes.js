@@ -6,8 +6,8 @@ import OrganizationSettingsGeneral from './components/organization/settings/Gene
 import OrganizationSettingsPermissions from './components/organization/settings/Permissions';
 import OrganizationSettingsUsers from './components/organization/settings/Users';
 import OrganizationResourcesPage from './components/organization/resources/Page';
-import OrganizationResourcesForm from './components/organization/resources/Form';
 import OrganizationResourcesSearch from './components/organization/resources/Search';
+import OrganizationResourcesResource from './components/organization/resources/Resource';
 
 import Config from './models/Config';
 
@@ -34,13 +34,16 @@ const organizationRoute = {
 
 Object.keys(Config.resources).forEach((resource) => {
   organizationRoute.children.push({
-    path: ':type(' + resource + ')/:personal(personal)?/:trash(trash)?/:id(-.+)?',
-    name: resource,
-    component: OrganizationResourcesPage,
-    children: [
-      { path: 'create', component: OrganizationResourcesForm },
-      { path: 'edit', component: OrganizationResourcesForm }
-    ]
+    path: ':type(' + resource + ')/:personal(personal)?/:trash(trash)?',
+    component: OrganizationResourcesPage
+  });
+  organizationRoute.children.push({
+    path: ':type(' + resource + ')/:id(-[^/]+)',
+    component: OrganizationResourcesResource
+  });
+  organizationRoute.children.push({
+    path: ':type(' + resource + ')/create',
+    component: OrganizationResourcesResource
   });
   organizationRoute.children.push({
     path: 'search/:type(' + resource + ')?/:personal(personal)?',

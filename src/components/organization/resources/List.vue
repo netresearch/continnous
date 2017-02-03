@@ -1,5 +1,10 @@
 <template>
-  <div :class="['scroll-container', 'resources-list-container', 'resources-list-' + (masonry ? 'masonry' : 'stream'), 'resources-list-' + rows + '-rows']">
+  <div :class="[
+    'scroll-container',
+    'resources-list-container',
+    'resources-list-' + (masonry ? 'masonry' : 'stream'),
+    'resources-list-' + rows + '-rows'
+    ]">
     <md-toolbar class="md-dense">
       <h2 class="md-title">{{title}}</h2>
     </md-toolbar>
@@ -41,44 +46,27 @@
       </md-button>
     </md-toolbar>
 
-    <div class="scroll-container-hgroup">
-      <div class="scroll-content">
-        <div v-if="preview.item" class="resources-list-edit-item">
-          <div class="resources-list-item">
-            <resource-item
-                :item="preview.item"
-                :trash="false"
-                :personal="personal"
-                :permissions="permissions"
-                :type="type"
-                :organization="organization"
-                normalize
-            ></resource-item>
-          </div>
-        </div>
-        <div ref="list" :class="['resources-list']">
-          <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items" v-if="!preview.item || preview.id !== item.id">
-            <resource-item
-                :item="item"
-                :trash="trash"
-                :personal="item.hasOwnProperty('personal') ? item.personal : personal"
-                :permissions="permissions"
-                :type="item.resource || type"
-                :organization="organization"
-            ></resource-item>
-          </div>
+    <div class="scroll-content">
+      <div ref="list" :class="['resources-list']">
+        <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
+          <resource-item
+              :item="item"
+              :trash="trash"
+              :personal="item.hasOwnProperty('personal') ? item.personal : personal"
+              :permissions="permissions"
+              :type="item.resource || type"
+              :organization="organization"
+              @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal/' : '/') + item.id)"
+          ></resource-item>
         </div>
       </div>
-
-      <slot></slot>
     </div>
   </div>
 </template>
 
 <script>
   import Masonry from 'masonry-layout';
-  import ResourceItem from './Item';
-  import Bus from '../../../bus';
+  import ResourceItem from './ListItem';
 
   export default {
     components: { ResourceItem },
@@ -103,12 +91,7 @@
       return {
         mounted: false,
         masonry: true,
-        rows: 1,
-        preview: {
-          id: undefined,
-          item: undefined,
-          action: undefined
-        }
+        rows: 1
       };
     },
     computed: {
@@ -133,27 +116,6 @@
         });
         return fields;
       }
-    },
-    created() {
-      const listener = (action, id, item) => {
-        const preview = this.preview;
-        const reloadItems = (preview.action === 'edit' || action === 'edit')
-          && (action === 'close' || !preview.item || preview.id !== id);
-        preview.action = action;
-        preview.id = id;
-        preview.item = item;
-        if (reloadItems) {
-          this.$nextTick(() => {
-            if (this.msnry) {
-              this.msnry.reloadItems();
-              this.msnry.layout();
-            }
-          });
-        }
-      };
-      Bus.$on('resource-form-edit', listener.bind(this, 'edit'));
-      Bus.$on('resource-form-create', listener.bind(this, 'create'));
-      Bus.$on('resource-form-destroy', listener.bind(this, 'close'));
     },
     mounted() {
       this.mounted = true;
@@ -213,7 +175,9 @@
       updateRows() {
         const list = this.$refs.list;
         const rect = list.getBoundingClientRect();
-        this.rows = Math.max(0, Math.floor(rect.width / this.masonryItemMinWidth));
+        this.rows = Math.max(0, Math.floor(
+          rect.width / this.masonryItemMinWidth
+        ));
       }
     }
   };
@@ -232,7 +196,9 @@
     }
   }
   .resources-list-masonry {
-    margin: 0 -8px;
+    .resources-list {
+      margin: 0 -8px;
+    }
     .resources-list-item {
       display: block;
       > .md-card {

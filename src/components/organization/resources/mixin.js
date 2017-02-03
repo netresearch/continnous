@@ -1,4 +1,5 @@
 import extend from 'extend';
+import moment from 'moment';
 import Firebase from '../../../firebase';
 import auth from '../../../auth';
 import ResourceImage from './Image';
@@ -30,6 +31,9 @@ export default {
       delete item.resource;
       delete item.personal;
       return fbItem;
+    },
+    moment(time) {
+      return moment(time);
     }
   },
 };

@@ -1,67 +1,54 @@
-<template>
-  <div class="form-element">
-    <md-input-container
-        v-if="!naked"
-        ref="inputContainer"
-        :md-inline="mdInline"
-        :md-has-password="mdHasPassword"
-        :class="{'md-input-invalid': name && form && form.errors[name]}"
-    >
-      <label v-if="label">{{label}}</label>
-      <slot></slot>
-    </md-input-container>
-    <template v-else>
-      <slot></slot>
-    </template>
-  </div>
-</template>
-
 <script>
   import Child from './child';
 
   export default {
     extends: Child,
     props: {
-      name: String,
+      type: { type: String, required: true },
+      name: { type: String, required: true },
       label: String,
       mdInline: Boolean,
       mdHasPassword: Boolean,
       naked: Boolean
     },
-    data() {
-      return { input: undefined };
-    },
     mounted() {
-      this.$nextTick(() => {
-        (this.naked ? this : this.$refs.inputContainer).$children.forEach((child) => {
-          if (child.hasOwnProperty('value')) {
-            if (this.input) {
-              throw new Error('Form element may contain exactly one input child');
-            }
-            this.input = child;
-          }
-        });
-        if (!this.input) {
-          throw new Error('Form element must contain exactly one input child');
-        }
-        this.input.$on('input', this.forwardEvent.bind(this, 'input'));
-        this.input.$on('change', this.forwardEvent.bind(this, 'change'));
-
-        /* eslint-disable no-underscore-dangle */
-        this.form._registerFormElement(this);
-        /* eslint-enable no-underscore-dangle */
-
-        this.input.$emit('registered', this.form);
-      });
+      /* eslint-disable no-underscore-dangle */
+      this.form._registerFormElement(this);
+      /* eslint-enable no-underscore-dangle */
+    },
+    render(h) {
+      const element = h(
+        this.type,
+        {
+          on: {
+            input: this.forwardEvent
+          },
+          props: Object.assign({}, this.$vnode.data.attrs,
+            { value: this.form && this.name ? this.form.values[this.name] : undefined }),
+          ref: 'el'
+        },
+        this.$slots.default
+      );
+      return h(
+        'div',
+        { class: 'form-element' },
+        [
+          this.naked ? element : h(
+            'md-input-container',
+            {
+              props: {
+                mdInline: this.mdInline || (this.form && this.form.mdInline),
+                mdHasPassword: this.mdHasPassword
+              }
+            },
+            this.label ? [h('label', this.label), element] : [element]
+          )
+        ]
+      );
     },
     methods: {
-      forwardEvent(...args) {
-        const event = args.shift();
-        if (this.name) {
-          args.unshift(this.name);
-        }
-        args.unshift(event);
-        this.$emit(...args);
+      forwardEvent(value) {
+        this.form.onChange(this.name, value);
       }
     }
   };
@@ -69,7 +56,9 @@
 
 <style lang="scss" rel="stylesheet/scss">
   .form-element {
-    .md-input-container:not(.md-input-inline) label {
+    .md-input-container:not(.md-input-inline) label,
+    .md-input-container.md-input-inline.md-input-focused label,
+    .md-input-container.md-input-inline:hover label {
       pointer-events: auto;
       top: 0;
       opacity: 1;
