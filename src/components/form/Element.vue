@@ -9,29 +9,61 @@
       label: String,
       mdInline: Boolean,
       mdHasPassword: Boolean,
-      naked: Boolean
+      naked: Boolean,
+      disabled: Boolean
     },
     mounted() {
       /* eslint-disable no-underscore-dangle */
       this.form._registerFormElement(this);
       /* eslint-enable no-underscore-dangle */
+      if (this.type === 'md-textarea') {
+        this.$nextTick(() => {
+          /* global document, window */
+          const evt = document.createEvent('Event');
+          evt.initEvent('autosize:update', true, false);
+          window.setTimeout(() => {
+            this.$refs.el.$el.dispatchEvent(evt);
+          }, 1000);
+        });
+      }
     },
     render(h) {
+      const disabled = this.disabled || (this.form && this.form.disabled);
+      const value = this.form && this.name ? this.form.values[this.name] : undefined;
+      const hasValue = value
+        && this.form.values.hasOwnProperty
+        && (value.hasOwnProperty('pop') ? value.length : Boolean(value));
+      if (disabled && !hasValue) {
+        return undefined;
+      }
       const element = h(
         this.type,
         {
           on: {
             input: this.forwardEvent
           },
-          props: Object.assign({}, this.$vnode.data.attrs,
-            { value: this.form && this.name ? this.form.values[this.name] : undefined }),
+          props: Object.assign({}, this.$vnode.data.attrs, {
+            value,
+            disabled
+          }),
           ref: 'el'
         },
         this.$slots.default
       );
+      // this.$vnode.data.attrs = {};
       return h(
         'div',
-        { class: 'form-element' },
+        {
+          class: [
+            'form-element',
+            'form-element-' + this.name,
+            {
+              'form-element-disabled': disabled,
+              'form-element-has-value': hasValue
+            }
+          ],
+          attrs: {}
+        },
         [
           this.naked ? element : h(
             'md-input-container',

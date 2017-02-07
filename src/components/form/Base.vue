@@ -60,7 +60,11 @@
        fieldKey => ['method', function(value) {}]
        } */
       filter: Object,
-      mdInline: Boolean
+      mdInline: Boolean,
+      disabled: Boolean
+    },
+    created() {
+      this.elements = [];
     },
     data() {
       return {
@@ -285,6 +289,7 @@
         }
       },
       _registerFormElement(element) {
+        this.elements.push(element);
         if (element.name) {
           this.elementKeys.push(element.name);
         }

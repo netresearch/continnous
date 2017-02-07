@@ -125,6 +125,7 @@ module.exports = {
     create: 'added',
     remove: 'removed',
     restore: 'restored',
+    like: 'liked',
     user: '{user} {action} {resource}',
     you: 'You {action} {resource}'
   },

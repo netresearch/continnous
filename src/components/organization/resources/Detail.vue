@@ -83,7 +83,7 @@
           this.itemsRef.off('child_moved');
           this.itemsRef.off('child_removed');
         }
-        this.itemsRef = this.getFirebaseRef(this.trash)
+        this.itemsRef = this.getFirebaseRef(this.trash ? 'trash' : 'resources')
           .orderByChild(this.sort)['limitTo' + (this.order === 'desc' ? 'Last' : 'First')](100);
         this.items = [];
         this.itemsRef.on('child_added', (item) => {

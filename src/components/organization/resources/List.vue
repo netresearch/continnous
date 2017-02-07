@@ -1,9 +1,13 @@
+<!--
+@TODO: Exchange masonry with a column based grid (simply distribute items to columns)
+-->
+
 <template>
   <div :class="[
     'scroll-container',
     'resources-list-container',
     'resources-list-' + (masonry ? 'masonry' : 'stream'),
-    'resources-list-' + rows + '-rows'
+    'resources-list-' + columns + '-columns'
     ]">
     <md-toolbar class="md-dense">
       <h2 class="md-title">{{title}}</h2>
@@ -56,7 +60,7 @@
               :permissions="permissions"
               :type="item.resource || type"
               :organization="organization"
-              @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal/' : '/') + item.id)"
+              @resource-image-shown="updateMasonry"
           ></resource-item>
         </div>
       </div>
@@ -91,7 +95,7 @@
       return {
         mounted: false,
         masonry: true,
-        rows: 1
+        columns: 1
       };
     },
     computed: {
@@ -120,8 +124,8 @@
     mounted() {
       this.mounted = true;
       /* global window */
-      window.addEventListener('resize', this.updateRows);
-      this.updateRows();
+      window.addEventListener('resize', this.updateColumns);
+      this.updateColumns();
       this.$nextTick(() => {
         this.updateMasonry();
       });
@@ -129,7 +133,7 @@
     beforeDestroy() {
       this.mounted = false;
       /* global window */
-      window.removeEventListener('resize', this.updateRows);
+      window.removeEventListener('resize', this.updateColumns);
       this.updateMasonry();
     },
     watch: {
@@ -138,10 +142,10 @@
       },
       $route() {
         this.$nextTick(() => {
-          this.updateRows();
+          this.updateColumns();
         });
       },
-      rows() {
+      columns() {
         this.$nextTick(() => {
           if (this.msnry) {
             this.msnry.layout();
@@ -165,17 +169,19 @@
         if ((!this.masonry || !this.mounted) && this.msnry) {
           this.msnry.destroy();
           delete this.msnry;
-        } else if (this.masonry && !this.msnry && this.mounted) {
-          this.msnry = new Masonry(this.$refs.list, {
-            percentPosition: true,
-          });
+        } else if (this.masonry) {
+          if (!this.msnry && this.mounted) {
+            this.msnry = new Masonry(this.$refs.list, {
+              percentPosition: true,
+            });
+          }
           this.msnry.layout();
         }
       },
-      updateRows() {
+      updateColumns() {
         const list = this.$refs.list;
         const rect = list.getBoundingClientRect();
-        this.rows = Math.max(0, Math.floor(
+        this.columns = Math.max(0, Math.floor(
           rect.width / this.masonryItemMinWidth
         ));
       }
@@ -189,7 +195,7 @@
     .resources-list-item {
       margin: 32px auto 0;
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       &:first-child {
         margin-top: 16px;
       }
@@ -201,35 +207,25 @@
     }
     .resources-list-item {
       display: block;
+      padding: 0 8px;
+      margin-bottom: 16px;
       > .md-card {
-        margin: 0 8px 16px;
-      }
-    }
-    .resources-list-edit-item {
-      .resources-list-item {
-        margin: 0 auto;
-      }
-      &:after {
-        content: "";
         display: block;
-        height: 1px;
-        background: rgba(#000, 0.15);
-        margin: 0 8px 16px;
       }
     }
     .resources-list-item {
       width: 100%;
     }
-    &.resources-list-2-rows .resources-list-item {
+    &.resources-list-2-columns .resources-list-item {
       width: 50%;
     }
-    &.resources-list-3-rows .resources-list-item {
+    &.resources-list-3-columns .resources-list-item {
       width: 33.3333%;
     }
-    &.resources-list-4-rows .resources-list-item {
+    &.resources-list-4-columns .resources-list-item {
       width: 25%;
     }
-    &.resources-list-5-rows .resources-list-item {
+    &.resources-list-5-columns .resources-list-item {
       width: 20%;
     }
   }

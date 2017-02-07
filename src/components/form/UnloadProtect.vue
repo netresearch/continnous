@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="display: none">
     <md-dialog
         ref="dialog"
         :md-click-outside-to-close="false"

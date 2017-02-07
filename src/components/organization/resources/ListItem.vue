@@ -1,34 +1,39 @@
 <template>
-  <md-card md-with-hover>
+  <md-card md-with-hover @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal/' : '/') + item.id)">
     <md-card-header>
       <md-card-header-text>
         <div class="md-title">{{item.title}}</div>
-        <div class="md-subhead">{{item.subtitle}}</div>
+        <div class="md-subhead" v-if="item.subtitle">{{item.subtitle}}</div>
       </md-card-header-text>
-      <md-menu v-if="!trash && permissions[type].write && item.creator === auth.user.uid" md-size="4" md-direction="bottom left">
+    </md-card-header>
+    <md-card-media v-if="item.image">
+      <resource-image :image="item.image" @resource-image-shown="$emit('resource-image-shown')"></resource-image>
+    </md-card-media>
+    <md-card-actions>
+      <template v-if="trash">
+        <md-button v-if="trash" @click.stop="toggleTrash(trash, item)" :title="$t('actions.restore')" class="md-icon-button">
+          <md-icon>delete_sweep</md-icon>
+        </md-button>
+        <div style="flex: 1"></div>
+      </template>
+      <md-button @click.stop="setLike(item, !like)" :class="['md-icon-button', {'md-accent': like}]">
+        <md-icon>favorite</md-icon>
+      </md-button>
+      <md-button class="md-icon-button">
+        <md-icon>share</md-icon>
+      </md-button>
+      <md-menu @click.native.stop="" v-if="!trash && permissions[type].write && item.creator === auth.user.uid" md-size="4">
         <md-button class="md-icon-button" md-menu-trigger>
           <md-icon>more_vert</md-icon>
         </md-button>
         <md-menu-content>
-          <md-menu-item v-if="permissions[type].write && item.creator === auth.user.uid">
-            <router-link :to="'/' + organization.key + '/' + type + '/' + item.id + '/edit'" exact>
-              <md-icon>create</md-icon>
-              <span>{{$t('actions.edit')}}</span>
-            </router-link>
-          </md-menu-item>
-          <md-menu-item @selected="toggleTrash" v-if="permissions[type].write && item.creator === auth.user.uid">
+          <md-menu-item @selected="toggleTrash(trash, item)" v-if="!trash && permissions[type].write && item.creator === auth.user.uid">
             <md-icon>delete</md-icon>
             <span>{{$t('actions.delete')}}</span>
           </md-menu-item>
         </md-menu-content>
       </md-menu>
-      <md-button v-else-if="trash" @click="toggleTrash" :title="$t('actions.restore')" class="md-icon-button">
-        <md-icon>delete_sweep</md-icon>
-      </md-button>
-    </md-card-header>
-    <md-card-media v-if="item.image">
-      <resource-image :image="item.image"></resource-image>
-    </md-card-media>
+    </md-card-actions>
   </md-card>
 </template>
 
@@ -41,6 +46,7 @@
     mixins: [mixin],
     components: { ResourceImage },
     props: {
+      personal: Boolean,
       item: Object,
       type: String,
       trash: Boolean,
@@ -49,17 +55,21 @@
     },
     data() {
       return {
-        auth
+        auth,
+        like: false
       };
     },
-    methods: {
-      toggleTrash() {
-        this.getFirebaseRef(!this.trash, this.item.id)
-          .set(this.prepareItemForFirebase(this.item))
-          .then(() => {
-            this.organization.journal.addEntry(this.type, this.item.id, this.trash ? 'restore' : 'remove');
-            this.getFirebaseRef(this.trash, this.item.id).remove();
-          });
+    watch: {
+      item: {
+        immediate: true,
+        handler(item) {
+          this.like = false;
+          if (item) {
+            this.getLikesRef(item).on('value', (snapshot) => {
+              this.like = !!snapshot.val();
+            });
+          }
+        }
       }
     }
   };

@@ -26,6 +26,13 @@
           } else {
             this.preview = undefined;
           }
+          if (image) {
+            this.$nextTick(() => {
+              this.$nextTick(() => {
+                this.$emit('resource-image-shown');
+              });
+            });
+          }
         }
       }
     }

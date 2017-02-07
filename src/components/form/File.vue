@@ -7,7 +7,7 @@
       <div
           v-for="file in files"
           v-if="!file.deleted"
-          class="form-file"
+          :class="['form-file', {'form-file-with-preview': gallery && file.preview}]"
           :style="{maxWidth: gallery ? previewMaxWidth + 'px' : 'auto'}"
       >
         <div
@@ -374,7 +374,6 @@
 
 <style lang="scss" rel="stylesheet/scss">
   .md-input-container .form-file-container {
-    margin-top: 4px;
     flex: 1;
   }
   .form-file-container {
@@ -402,7 +401,7 @@
       margin-bottom: 6px;
     }
     .form-file-list {
-      margin: 0 -5px;
+      margin: 4px -5px 0;
     }
     &.form-file-gallery .form-file-list {
       display: flex;
@@ -428,7 +427,9 @@
       }
     }
     .form-file {
-      padding: 0 5px;
+      &.form-file-with-preview {
+        padding: 0 5px;
+      }
       flex: 1;
       min-width: 150px;
       .form-file-icon,
@@ -494,14 +495,14 @@
         }
         .form-file-extension {
           margin-top: 1px;
-          font-size: 9px;
+          font-size: 8px;
           line-height: 18px;
           border-radius: 1px;
           text-transform: uppercase;
           display: inline-block;
           height: 18px;
           color: #fff;
-          background: #bbb;
+          background: rgba(#000, 0.4);
           width: 24px;
           text-align: center;
           overflow: hidden;

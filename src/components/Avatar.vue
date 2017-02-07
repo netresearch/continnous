@@ -30,5 +30,9 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-
+  .avatar {
+    .md-avatar {
+      margin-right: 6px;
+    }
+  }
 </style>

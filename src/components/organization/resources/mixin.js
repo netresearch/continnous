@@ -7,9 +7,9 @@ import ResourceImage from './Image';
 export default {
   components: { ResourceImage },
   methods: {
-    getFirebaseRef(trash, id) {
+    getFirebaseRef(branch, id) {
       return Firebase.database().ref(
-        '/' + (trash ? 'trash' : 'resources')
+        '/' + branch
         + '/organizations/' + this.organization.key
         + '/' + (this.personal ? auth.user.uid : 'organization')
         + '/' + this.type
@@ -34,6 +34,36 @@ export default {
     },
     moment(time) {
       return moment(time);
+    },
+    toggleTrash(trash, item) {
+      this.getFirebaseRef(!trash ? 'trash' : 'resources', item.id)
+        .set(this.prepareItemForFirebase(item))
+        .then(() => {
+          this.organization.journal.addEntry(this.type, item.id, trash ? 'restore' : 'remove');
+          this.getFirebaseRef(trash ? 'trash' : 'resources', item.id).remove();
+        });
+    },
+    getLikesRef(item) {
+      return Firebase.database().ref(
+        '/likes/organizations/' + this.organization.key + '/' + auth.user.uid + '/' + item.id
+      );
+    },
+    setLike(item, like) {
+      const ref = this.getLikesRef(item);
+      return (like ? ref.set(true) : ref.remove()).then(() => {
+        if (like) {
+          this.organization.journal.addEntry(this.type, item.id, 'like');
+        } else {
+          this.organization.journal.getRef().orderByChild('id').equalTo(item.id).once('value', (snapshot) => {
+            snapshot.forEach((childSnapshot) => {
+              const entry = childSnapshot.val();
+              if (entry.uid === auth.user.uid && entry.action === 'like') {
+                childSnapshot.ref.remove();
+              }
+            });
+          });
+        }
+      });
     }
   },
 };

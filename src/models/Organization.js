@@ -20,10 +20,11 @@ export default class Organization {
           time: +new Date(),
           uid: auth.user.uid
         });
-      }
+      },
+      getRef: () => journalRef
     };
     journalRef.orderByChild('time').limitToLast(10).on('child_added', (snapshot) => {
-      const entry = Object.assign({}, snapshot.val());
+      const entry = Object.assign({ journalId: snapshot.key }, snapshot.val());
       const path = '/' + (entry.action === 'remove' ? 'trash' : 'resources')
         + '/organizations/' + key
         + '/organization/' + entry.resource
@@ -36,6 +37,13 @@ export default class Organization {
           this.journal.entries.sort(sortBy('-time'));
         }
       }, () => {});
+    });
+    journalRef.on('child_removed', (snapshot) => {
+      this.journal.entries.forEach((entry, i) => {
+        if (entry.journalId === snapshot.key) {
+          this.journal.entries.splice(i, 1);
+        }
+      });
     });
   }
 }

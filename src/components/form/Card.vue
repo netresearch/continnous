@@ -1,9 +1,9 @@
 <template>
-  <md-card>
+  <md-card class="card-form">
     <md-card-content>
       <slot :values="values" :errors="errors"></slot>
     </md-card-content>
-    <md-card-actions>
+    <md-card-actions v-if="!disabled">
       <slot name="buttons">
         <form-button action="save" class="md-primary"></form-button>
         <form-button action="reset"></form-button>
@@ -23,3 +23,12 @@
     extends: Base
   };
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .card-form {
+    .md-card-actions {
+      padding-top: 0;
+      margin-top: -16px;
+    }
+  }
+</style>
