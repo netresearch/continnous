@@ -1,109 +1,165 @@
 <template>
-  <resource-list
-      :title="$tc('resources.' + type, 2)"
-      :organization="organization"
-      :permissions="permissions"
-      :type="type"
-      :trash="trash"
-      :items="items"
-      :personal="personal"
-      trash-enabled
-  >
-    <md-button
-        slot="buttons"
-        v-for="(name, path) in {'': organization.name + ' ' + $tc('resources.' + type, 2), 'personal': $t('resources.personal_' + type)}"
-        @click="$router.push('/' + organization.key + '/' + type + (path ? '/' + path : ''))"
-        v-if="permissions[(path ? path + '_' : '') + type].read || permissions[(path ? path + '_' : '') + type].write"
-        :class="{'router-link-active': path === '' && !personal || path !== '' && personal}">
-      {{name}}
-    </md-button>
-
-    <router-view v-if="type" :organization="organization" :type="type"></router-view>
-  </resource-list>
+  <div :class="['scroll-container', 'resource', 'resource-' + (this.id ? 'edit' : 'create')]">
+    <md-toolbar class="md-dense">
+      <h2 class="md-title">{{$tc('resources.' + type, 2)}}</h2>
+    </md-toolbar>
+    <base-form
+        class="scroll-container-hgroup"
+        v-if="id !== undefined"
+        :firebase-path="
+            '/resources/organizations/' + organization.key
+            + '/' + (personal ? auth.user.uid : 'organization')
+            + '/' + type
+            + '/' + (id || '{new}')"
+        firebase-bind
+        :firebase-receive="firebaseReceive"
+        :defaults="{creator: auth.user.uid}"
+        :keys="id ? ['updated'] : ['creator', 'created', 'updated']"
+        :validate="{title: validateTitle}"
+        ref="form"
+        @saved="onSaved"
+        @before-save="saveFiles"
+        :disabled="!mayEdit">
+      <template v-if="item">
+        <div class="scroll-content">
+          <avatar :uid="item.creator || auth.user.uid" :organization="organization"></avatar>
+        </div>
+        <div class="scroll-content resources-card-form-container">
+          <resource-main :is-new="!id" :type="type"></resource-main>
+        </div>
+        <div class="scroll-content">
+          <form-button action="save" class="md-primary"></form-button>
+          <form-button action="reset"></form-button>
+        </div>
+      </template>
+    </base-form>
+  </div>
 </template>
 
 <script>
-  import sortBy from 'sort-by';
+  import BaseForm from '../../form/Base';
+  import FormButton from '../../form/Button';
+  import auth from '../../../auth';
   import mixin from './mixin';
-  import ResourceList from './List';
+  import Firebase from '../../../firebase';
+  import Avatar from '../../Avatar';
+  import ResourceMain from './detail/Main';
 
   export default {
     mixins: [mixin],
-    components: { ResourceList },
-    props: {
-      organization: Object,
-      permissions: Object,
-    },
+    props: ['organization', 'permissions'],
+    components: { BaseForm, Avatar, ResourceMain, FormButton },
     data() {
       return {
+        auth,
         type: undefined,
         personal: false,
-        items: undefined,
-        sort: 'updated',
-        order: 'desc',
-        trash: false
+        id: undefined,
+        item: null,
+        mayEdit: false
       };
     },
     watch: {
       $route: {
         immediate: true,
         handler(route) {
-          const p = {
-            type: route.params.type || this.type,
-            trash: !!route.params.trash,
-            personal: !!route.params.personal,
-            sort: route.query.sort || this.sort,
-            order: route.query.order || this.order,
-          };
-          const personalAllowed = this.permissions['personal_' + p.type].read || this.permissions['personal_' + p.type].write;
-          const organizationAllowed = this.permissions[p.type].read || this.permissions[p.type].write;
-          if (p.personal && !personalAllowed && organizationAllowed) {
-            p.personal = false;
-          } else if (!p.personal && personalAllowed && !organizationAllowed) {
-            p.personal = true;
-          }
-          let load = this.items === undefined;
-          ['type', 'trash', 'personal', 'order', 'sort'].forEach((key) => {
-            if (p[key] !== this[key]) {
-              this[key] = p[key];
-              load = true;
-            }
-          });
-          if (load) {
-            this.loadItems();
-          }
+          this.personal = !!route.params.personal;
+          this.type = route.params.type;
+          this.id = route.params.id || null;
         }
       }
     },
     methods: {
-      loadItems() {
-        if (this.itemsRef) {
-          this.itemsRef.off('child_added');
-          this.itemsRef.off('child_changed');
-          this.itemsRef.off('child_moved');
-          this.itemsRef.off('child_removed');
-        }
-        this.itemsRef = this.getFirebaseRef(this.trash ? 'trash' : 'resources')
-          .orderByChild(this.sort)['limitTo' + (this.order === 'desc' ? 'Last' : 'First')](100);
-        this.items = [];
-        this.itemsRef.on('child_added', (item) => {
-          this.items.push(this.createItem(item.key, item.val()));
-          this.items.sort(sortBy((this.order === 'desc' ? '-' : '') + this.sort));
-        });
-        this.itemsRef.on('child_changed', (item) => {
-          for (let i = 0; i < this.items.length; i++) {
-            if (this.items[i].id === item.key) {
-              Object.assign(this.items[i], this.createItem(item.key, item.val()));
-            }
-          }
-        });
-        this.itemsRef.on('child_moved', () => {
-          this.items.sort(sortBy((this.order === 'desc' ? '-' : '') + this.sort));
-        });
-        this.itemsRef.on('child_removed', (item) => {
-          this.items = this.items.filter(presentItem => presentItem.id !== item.key);
-        });
+      validateTitle(title) {
+        return title && title.length > 2;
       },
+      firebaseReceive(snapshot) {
+        const item = this.createItem(snapshot.key, snapshot.val());
+        this.item = item;
+        this.mayEdit = !this.id || item.creator === this.auth.user.uid;
+        return item;
+      },
+      onSaved(updates, ref) {
+        if (!this.personal) {
+          if (this.id) {
+            const keys = Object.keys(updates).filter(field => field !== 'updated');
+            this.organization.journal.addEntry(this.type, this.id, 'update', keys);
+          } else {
+            this.organization.journal.addEntry(this.type, ref.key, 'create');
+          }
+        }
+        if (!this.id) {
+          let path = '/' + this.organization.key + '/' + this.type;
+          if (this.personal) {
+            path += '/personal';
+          }
+          path += '/' + this.$refs.form.firebaseRef.key;
+          this.$router.replace(path);
+        }
+      },
+      saveFiles(beforeSave, progress) {
+        const ref = Firebase.storage().ref();
+        this.$refs.form.elements.filter(element => element.type === 'form-file').forEach((element) => {
+          element.$refs.el.save((file) => {
+            const promises = [];
+            if (file.deleted) {
+              const children = [file.id];
+              if (file.preview) {
+                children.push(file.id + '_preview');
+              }
+              children.forEach((child) => {
+                promises.push(new Promise((resolve, reject) => {
+                  ref.child(child).delete().then(resolve).catch(reject);
+                }));
+              });
+            } else {
+              let totalBytes = 0;
+              const monitorUpload = (task) => {
+                promises.push(new Promise((resolve, reject) => {
+                  let totalBytesAdded = false;
+                  const fileProgress = progress ? progress.get() : null;
+                  task.on('state_changed', (snapshot) => {
+                    if (!totalBytesAdded) {
+                      totalBytesAdded = true;
+                      totalBytes += snapshot.totalBytes;
+                      if (fileProgress) {
+                        fileProgress.setTotal(snapshot.totalBytes);
+                      }
+                    }
+                    file.progress = (snapshot.bytesTransferred / totalBytes) * 100;
+                    if (fileProgress) {
+                      fileProgress.tick(snapshot.bytesTransferred);
+                    }
+                  }, (error) => {
+                    file.error = error;
+                    reject(error);
+                  }, resolve);
+                }));
+              };
+              monitorUpload(ref.child(file.id).put(file.file));
+              if (file.preview) {
+                monitorUpload(ref.child(file.id + '_preview').putString(
+                  file.preview.split(',').pop(), 'base64', {
+                    contentType: 'image/png',
+                  }
+                ));
+              }
+            }
+            beforeSave.push(Promise.all(promises));
+          });
+        });
+      }
     }
   };
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .resources-card-form-container {
+    flex-grow: 2 !important;
+    min-width: 300px;
+    max-width: 632px;
+  }
+  .resource .md-card {
+    max-width: 616px;
+  }
+</style>

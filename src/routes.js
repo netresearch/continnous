@@ -5,9 +5,9 @@ import OrganizationSettings from './components/organization/Settings';
 import OrganizationSettingsGeneral from './components/organization/settings/General';
 import OrganizationSettingsPermissions from './components/organization/settings/Permissions';
 import OrganizationSettingsUsers from './components/organization/settings/Users';
-import OrganizationResourcesPage from './components/organization/resources/Detail';
+import OrganizationResourcesPage from './components/organization/resources/Index';
 import OrganizationResourcesSearch from './components/organization/resources/Search';
-import OrganizationResourcesResource from './components/organization/resources/Resource';
+import OrganizationResourcesResource from './components/organization/resources/Detail';
 
 import Config from './models/Config';
 
