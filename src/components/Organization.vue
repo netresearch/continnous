@@ -15,7 +15,7 @@
             <md-icon>whatshot</md-icon>
           </md-button>
           <md-menu-content class="md-dense">
-            <journal :organization="organization" :permissions="permissions"></journal>
+            <journal :organization="organization"></journal>
           </md-menu-content>
         </md-menu>
         <account-switcher></account-switcher>

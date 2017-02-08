@@ -77,19 +77,16 @@ module.exports = {
   objectives: {
     title: 'Short title of the objective',
     personal: 'This is a personal objective',
-    accusative: 'objective | objectives',
     this: 'This objective'
   },
   ideas: {
     title: 'Short title of the idea',
     personal: 'This is a personal idea',
-    accusative: 'idea | ideas',
     this: 'This idea'
   },
   insights: {
     title: 'Short title of the insight',
     personal: 'This is a personal insight',
-    accusative: 'insight | insights',
     this: 'This insight'
   },
   fields: {
@@ -131,9 +128,10 @@ module.exports = {
     remove: 'removed',
     restore: 'restored',
     like: 'liked',
-    user: '{user} {action} {resource}',
-    you: 'You {action} {resource}'
+    user: '{action} {fields}',
+    you: '{action} {fields}'
   },
+  you: 'You',
   detail: {
     created: 'Created {ago}',
     updated: 'Updated {ago}',

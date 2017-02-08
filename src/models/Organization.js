@@ -1,7 +1,6 @@
 import sortBy from 'sort-by';
 import Firebase from '../firebase';
 import auth from '../auth';
-import User from './User';
 
 export default class Organization {
   constructor(key, data) {
@@ -12,14 +11,29 @@ export default class Organization {
     this.journal = {
       entries: [],
       addEntry(resource, personal, id, action, fields) {
-        return journalRef.push({
-          resource,
-          personal,
-          id,
-          action,
-          fields: fields || null,
-          time: +new Date(),
-          uid: auth.user.uid
+        journalRef.orderByChild('id').equalTo(id).limitToLast(1).once('value', (sn) => {
+          sn.forEach((csn) => {
+            const last = csn.val();
+            if (last.action === action && last.uid === auth.user.uid) {
+              if (last.fields) {
+                if (fields) {
+                  fields = fields.concat(last.fields).filter((v, i, a) => a.indexOf(v) === i);
+                } else {
+                  fields = last.fields;
+                }
+              }
+              csn.ref.remove();
+            }
+          });
+          journalRef.push({
+            resource,
+            personal,
+            id,
+            action,
+            fields: fields || null,
+            time: +new Date(),
+            uid: auth.user.uid
+          });
         });
       },
       getRef: () => journalRef
@@ -33,7 +47,6 @@ export default class Organization {
           + '/' + entry.id + '/title';
         Firebase.database().ref(path).once('value', (s) => {
           entry.title = s.val();
-          entry.user = new User(entry.uid, this);
           if (entry.title) {
             this.journal.entries.unshift(entry);
             this.journal.entries.sort(sortBy('-time'));

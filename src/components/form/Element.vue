@@ -16,13 +16,15 @@
       /* eslint-disable no-underscore-dangle */
       this.form._registerFormElement(this);
       /* eslint-enable no-underscore-dangle */
-      if (this.type === 'md-textarea' && this.$refs.el) {
+      if (this.type === 'md-textarea') {
         this.$nextTick(() => {
           /* global document, window */
           const evt = document.createEvent('Event');
           evt.initEvent('autosize:update', true, false);
           window.setTimeout(() => {
-            this.$refs.el.$el.dispatchEvent(evt);
+            if (this.$refs.el) {
+              this.$refs.el.$el.dispatchEvent(evt);
+            }
           }, 1000);
         });
       }

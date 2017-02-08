@@ -44,8 +44,9 @@
             <template v-if="mayEdit">
               <resource-publish-control :is-new="!id"></resource-publish-control>
             </template>
-            <template v-if="id">
-              <hr>
+            <template v-if="item && id">
+              <hr v-if="mayEdit">
+              <resource-timeline :type="type" :organization="organization" :personal="personal" :item="item"></resource-timeline>
             </template>
           </div>
         </div>
@@ -62,11 +63,12 @@
   import ResourceMain from './detail/Main';
   import ResourceInfo from './detail/Info';
   import ResourcePublishControl from './detail/PublishControl';
+  import ResourceTimeline from './detail/Timeline';
 
   export default {
     mixins: [mixin],
     props: ['organization', 'permissions'],
-    components: { BaseForm, ResourceMain, ResourceInfo, ResourcePublishControl },
+    components: { BaseForm, ResourceMain, ResourceInfo, ResourcePublishControl, ResourceTimeline },
     data() {
       return {
         auth,

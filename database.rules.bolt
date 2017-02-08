@@ -54,7 +54,12 @@ path /journals/organizations/{oid} {
     read() { isAuthenticated() && isAllowed('organization', 'read', oid) }
 }
 path /journals/organizations/{oid}/{eid} {
-    write() { isAuthenticated() && isAllowed(this == null ? prior(this.resource) : this.resource, 'write', oid) }
+    write() { isAuthenticated() && isAllowed(
+            this == null ? prior(this.resource) : this.resource,
+            (this == null ? prior(this.action) : this.action) === 'comment' ? 'read' : 'write',
+            oid
+        )
+    }
 }
 
 path /likes/organizations/{oid} {

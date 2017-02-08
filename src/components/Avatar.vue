@@ -5,7 +5,10 @@
         <img :src="userObject.photoURL">
       </md-avatar>
       <div class="avatar-details">
-        <div class="avatar-user-name" v-if="!noName">{{userObject.uid === auth.user.uid && you ? you : userObject.displayName}}</div>
+        <div class="avatar-name-container" v-if="!noName">
+          <span class="avatar-name">{{userObject.uid === auth.user.uid && you ? you : userObject.displayName}}</span>
+          <span v-if="caption" v-html="caption" class="md-caption"></span>
+        </div>
         <slot></slot>
       </div>
     </template>
@@ -23,7 +26,8 @@
       organization: Object,
       big: Boolean,
       noName: Boolean,
-      you: String
+      you: String,
+      caption: String
     },
     data() {
       return {
@@ -56,6 +60,24 @@
       left: 0;
       top: 0;
     }
+    .avatar-details {
+      flex: 1;
+      display: flex;
+      flex-flow: column;
+      padding: 2px 0;
+      > * {
+        margin-left: 8px;
+      }
+      .avatar-name-container {
+        display: flex;
+        flex-flow: row;
+        .avatar-name {
+          flex: 1 0 auto;
+          font-size: 16px;
+          font-weight: 500;
+        }
+      }
+    }
     &.avatar-normal {
       min-width: 30px;
       min-height: 30px;
@@ -67,18 +89,16 @@
         min-height: 30px;
         border-radius: 100%;
       }
-    }
-    .avatar-details {
-      flex: 1;
-      display: flex;
-      flex-flow: column;
-      padding: 2px 0;
-      > * {
-        margin-left: 8px;
-      }
-      .avatar-user-name {
-        font-size: 16px;
-        font-weight: 500;
+      .avatar-details {
+        .avatar-name-container {
+          .avatar-name {
+            font-size: 14px;
+            line-height: 14px;
+          }
+          .md-caption {
+            line-height: 14px;
+          }
+        }
       }
     }
   }
