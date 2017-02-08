@@ -1,5 +1,7 @@
 .THEME_NAME {
-  span.md-primary {
+  span.md-primary,
+  span.md-link,
+  span.md-icon-link {
       color: #{'PRIMARY-COLOR'};
   }
 

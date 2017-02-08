@@ -62,7 +62,9 @@ module.exports = {
     read: 'View',
     write: 'Write',
     search: 'Search',
-    abort: 'Abort'
+    abort: 'Abort',
+    unlike: 'I don\'t like this anymore',
+    like: 'I like this'
   },
   vision: {
     label: 'Vision statement',
@@ -128,6 +130,21 @@ module.exports = {
     like: 'liked',
     user: '{user} {action} {resource}',
     you: 'You {action} {resource}'
+  },
+  detail: {
+    created: 'Created {ago}',
+    updated: 'Updated {ago}',
+    contributedBy: 'Contributed by',
+    you: 'You',
+    likeThis: 'like this',
+    beFirstToLike: 'Be the first one to like this',
+    others: 'others',
+    editHint: 'Edit the fields on the left by clicking right into the text',
+    saveHint: 'You have unsaved changes - click save to publish or reset to withdraw them',
+    newSaveHint: 'Be sure to save when you are ready - otherwise your changes will be lost',
+    motivation: '<strong>Thank you {firstName},</strong><br>we very much appreciate your commitment - we\'re pretty sure it will be worth it!',
+    whatsAhead: 'After you saved this, <strong>you and others</strong> will be able to see, like and comment this - tick the checkbox below to keep this only for you:',
+    whatsAheadPersonal: 'After you saved this, <strong>only you</strong> will be able to see this - untick the checkbox below to make this available to others:',
   },
   unload: {
     confirm: 'You have unsaved changes - do you want to leave without saving?',

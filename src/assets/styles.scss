@@ -1,6 +1,12 @@
 body, html {
   height: 100%;
 }
+hr {
+  height: 0;
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 1em 0;
+}
 #app, .full-height {
   height: 100%;
   overflow: hidden;

@@ -38,11 +38,11 @@ Object.keys(Config.resources).forEach((resource) => {
     component: OrganizationResourcesPage
   });
   organizationRoute.children.push({
-    path: ':type(' + resource + ')/:id(-[^/]+)',
+    path: ':type(' + resource + ')/:personal(personal)?/:id(-[^/]+)',
     component: OrganizationResourcesResource
   });
   organizationRoute.children.push({
-    path: ':type(' + resource + ')/create',
+    path: ':type(' + resource + ')/:personal(personal)?/create',
     component: OrganizationResourcesResource
   });
   organizationRoute.children.push({

@@ -60,7 +60,10 @@ path /journals/organizations/{oid}/{eid} {
 path /likes/organizations/{oid} {
     read() { isAuthenticated() && isAllowed('organization', 'read', oid) }
 }
-path /likes/organizations/{oid}/{uid} {
+path /likes/organizations/{oid}/byUser/{uid}/{rid} {
+    write() { isAuthenticated() && isAllowed('organization', 'read', oid) && uid === auth.uid }
+}
+path /likes/organizations/{oid}/byResource/{rid}/{uid} {
     write() { isAuthenticated() && isAllowed('organization', 'read', oid) && uid === auth.uid }
 }
 

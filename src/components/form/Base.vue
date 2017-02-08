@@ -1,6 +1,6 @@
 <template>
   <div class="form">
-    <slot :values="values" :errors="errors"></slot>
+    <slot :values="values" :errors="errors" :hasChanged="hasChanged"></slot>
     <md-message :status="status" :progress="progress"></md-message>
     <form-unload-protect v-if="protectUnload"></form-unload-protect>
   </div>
@@ -213,12 +213,19 @@
         }
         return false;
       },
-      reset() {
+      reset(clear) {
+        if (clear) {
+          this.changed = {};
+          this.errors = {};
+          this.values = Object.assign({}, this.defaults, this.value);
+          this.object = Object.assign({}, this.defaults, this.value);
+          return;
+        }
         this.allKeys.forEach((key) => {
           this.$delete(this.changed, key);
           this.$delete(this.errors, key);
           this.$delete(this.values, key);
-          if (this.object && this.object.hasOwnProperty(key)) {
+          if (!clear && this.object && this.object.hasOwnProperty(key)) {
             this.$set(this.values, key, this.object[key]);
           }
         });

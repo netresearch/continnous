@@ -16,7 +16,7 @@
       /* eslint-disable no-underscore-dangle */
       this.form._registerFormElement(this);
       /* eslint-enable no-underscore-dangle */
-      if (this.type === 'md-textarea') {
+      if (this.type === 'md-textarea' && this.$refs.el) {
         this.$nextTick(() => {
           /* global document, window */
           const evt = document.createEvent('Event');
@@ -31,7 +31,7 @@
       const disabled = this.disabled || (this.form && this.form.disabled);
       const value = this.form && this.name ? this.form.values[this.name] : undefined;
       const hasValue = value
-        && this.form.values.hasOwnProperty
+        && this.form.values.hasOwnProperty(this.name)
         && (value.hasOwnProperty('pop') ? value.length : Boolean(value));
       if (disabled && !hasValue) {
         return undefined;

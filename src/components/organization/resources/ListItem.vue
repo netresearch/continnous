@@ -65,7 +65,7 @@
         handler(item) {
           this.like = false;
           if (item) {
-            this.getLikesRef(item).on('value', (snapshot) => {
+            this.getLikesRef(item.id).on('value', (snapshot) => {
               this.like = !!snapshot.val();
             });
           }

@@ -15,11 +15,14 @@ export default class User {
         throw new Error('organization is required');
       }
       Firebase.database().ref('/organizations/' + organization.key + '/users/' + data).on('value', (s) => {
-        setData(s.val());
+        setData(Object.assign({ uid: data }, s.val()));
       });
     } else {
       throw new Error('data must be user id or user data object');
     }
+  }
+  toString() {
+    return this.displayName || '?';
   }
   static createFromAuth(authUser) {
     return new User(authUser);

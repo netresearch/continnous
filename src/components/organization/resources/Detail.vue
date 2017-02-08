@@ -20,16 +20,34 @@
         @saved="onSaved"
         @before-save="saveFiles"
         :disabled="!mayEdit">
-      <template v-if="item">
-        <div class="scroll-content">
-          <avatar :uid="item.creator || auth.user.uid" :organization="organization"></avatar>
+      <template scope="form">
+        <div class="scroll-content resources-detail-info-container">
+          <resource-info v-if="item && id" :type="type" :organization="organization" :personal="personal" :item="item"></resource-info>
+          <div v-else-if="!id">
+            <p class="md-caption">
+              <md-icon>thumb_up</md-icon>
+              <span v-html="$t('detail.motivation', {firstName: auth.user.displayName.split(' ').shift(), displayName: auth.user.displayName})"></span>
+            </p>
+            <hr>
+            <p class="md-caption">
+              <md-icon>info_outline</md-icon>
+              <span v-html="$t('detail.whatsAhead' + (personal ? 'Personal' : ''))"></span>
+            </p>
+            <md-checkbox v-model="personal" style="margin: 0 0 0 22px">{{$t(type + '.personal')}}</md-checkbox>
+          </div>
         </div>
         <div class="scroll-content resources-card-form-container">
           <resource-main :is-new="!id" :type="type"></resource-main>
         </div>
-        <div class="scroll-content">
-          <form-button action="save" class="md-primary"></form-button>
-          <form-button action="reset"></form-button>
+        <div class="scroll-content resources-detail-comments-container">
+          <div>
+            <template v-if="mayEdit">
+              <resource-publish-control :is-new="!id"></resource-publish-control>
+            </template>
+            <template v-if="id">
+              <hr>
+            </template>
+          </div>
         </div>
       </template>
     </base-form>
@@ -38,25 +56,25 @@
 
 <script>
   import BaseForm from '../../form/Base';
-  import FormButton from '../../form/Button';
   import auth from '../../../auth';
   import mixin from './mixin';
   import Firebase from '../../../firebase';
-  import Avatar from '../../Avatar';
   import ResourceMain from './detail/Main';
+  import ResourceInfo from './detail/Info';
+  import ResourcePublishControl from './detail/PublishControl';
 
   export default {
     mixins: [mixin],
     props: ['organization', 'permissions'],
-    components: { BaseForm, Avatar, ResourceMain, FormButton },
+    components: { BaseForm, ResourceMain, ResourceInfo, ResourcePublishControl },
     data() {
       return {
         auth,
         type: undefined,
         personal: false,
         id: undefined,
-        item: null,
-        mayEdit: false
+        mayEdit: false,
+        item: undefined
       };
     },
     watch: {
@@ -66,6 +84,9 @@
           this.personal = !!route.params.personal;
           this.type = route.params.type;
           this.id = route.params.id || null;
+          if (this.$refs.form) {
+            this.$refs.form.reset(true);
+          }
         }
       }
     },
@@ -161,5 +182,17 @@
   }
   .resource .md-card {
     max-width: 616px;
+  }
+  .resources-detail-info-container,
+  .resources-detail-comments-container {
+    display: flex;
+    flex-flow: row;
+    &.resources-detail-info-container {
+      justify-content: flex-end;
+    }
+    > div {
+      width: 50%;
+      min-width: 200px;
+    }
   }
 </style>
