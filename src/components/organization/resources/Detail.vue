@@ -104,18 +104,13 @@
         if (!this.personal) {
           if (this.id) {
             const keys = Object.keys(updates).filter(field => field !== 'updated');
-            this.organization.journal.addEntry(this.type, this.id, 'update', keys);
+            this.organization.journal.addEntry(this.type, this.personal, this.id, 'update', keys);
           } else {
-            this.organization.journal.addEntry(this.type, ref.key, 'create');
+            this.organization.journal.addEntry(this.type, this.personal, ref.key, 'create');
           }
         }
         if (!this.id) {
-          let path = '/' + this.organization.key + '/' + this.type;
-          if (this.personal) {
-            path += '/personal';
-          }
-          path += '/' + this.$refs.form.firebaseRef.key;
-          this.$router.replace(path);
+          this.$router.replace(this.getUrlPath(this.$refs.form.firebaseRef.key));
         }
       },
       saveFiles(beforeSave, progress) {

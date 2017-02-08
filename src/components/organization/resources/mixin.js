@@ -7,11 +7,12 @@ import ResourceImage from './Image';
 export default {
   components: { ResourceImage },
   methods: {
-    getFirebaseRef(branch, id) {
+    getFirebaseRef(branch, id, personal) {
+      const p = personal === undefined ? this.personal : personal;
       return Firebase.database().ref(
         '/' + branch
         + '/organizations/' + this.organization.key
-        + '/' + (this.personal ? auth.user.uid : 'organization')
+        + '/' + (p ? auth.user.uid : 'organization')
         + '/' + this.type
         + (id ? '/' + id : '')
       );
@@ -35,11 +36,22 @@ export default {
     moment(time) {
       return moment(time);
     },
+    getUrlPath(id, personal) {
+      const p = personal === undefined ? this.personal : personal;
+      let path = '/' + this.organization.key + '/' + this.type;
+      if (p) {
+        path += '/personal';
+      }
+      if (id) {
+        path += '/' + id;
+      }
+      return path;
+    },
     toggleTrash(trash, item) {
       this.getFirebaseRef(!trash ? 'trash' : 'resources', item.id)
         .set(this.prepareItemForFirebase(item))
         .then(() => {
-          this.organization.journal.addEntry(this.type, item.id, trash ? 'restore' : 'remove');
+          this.organization.journal.addEntry(this.type, this.personal, item.id, trash ? 'restore' : 'remove');
           this.getFirebaseRef(trash ? 'trash' : 'resources', item.id).remove();
         });
     },
@@ -60,7 +72,7 @@ export default {
       (like ? byResourceRef.set(true) : byResourceRef.remove()).then(() => {
         (like ? byUserRef.set(true) : byUserRef.remove()).then(() => {
           if (like) {
-            this.organization.journal.addEntry(this.type, item.id, 'like');
+            this.organization.journal.addEntry(this.type, this.personal, item.id, 'like');
           } else {
             // Remove all like journal entries
             this.organization.journal.getRef().orderByChild('id').equalTo(item.id).once('value', (snapshot) => {
