@@ -24,8 +24,8 @@
       'item.id': {
         immediate: true,
         handler(id) {
-          this.entries = [];
           this.organization.journal.getRef().orderByChild('id').equalTo(id).on('value', (sn) => {
+            this.entries = [];
             sn.forEach((csn) => {
               this.entries.push(csn.val());
             });
