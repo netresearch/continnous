@@ -112,6 +112,10 @@
       }
     }
 
+    .md-input-container > label {
+      text-transform: capitalize;
+    }
+
     &.resource-create {
       .md-input-container.md-input-inline {
         label {
