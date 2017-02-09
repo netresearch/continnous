@@ -66,17 +66,24 @@
           });
           if (this.q) {
             if (search || reason === this.permissions) {
-              this.flashlight.search({ q: this.q, sort: this.sort + ':' + this.order }, '*').then((results) => {
-                this.results = results;
-                if (this.type && !results.find(
-                    result => result.resource === (this.personal ? 'personal_' : '') + this.type
-                  )) {
-                  this.$router.replace({ path: '/' + this.organization.key + '/search', query });
-                  return;
+              this.flashlight.search({ q: this.q, sort: this.sort + ':' + this.order }, '*').then(
+                (results) => {
+                  this.results = results;
+                  if (this.type && !results.find(
+                          result => result.resource === (this.personal ? 'personal_' : '') + this.type
+                      )) {
+                    this.$router.replace({ path: '/' + this.organization.key + '/search', query });
+                    return;
+                  }
+                  this.updateItems();
+                  this.$emit('search-results', results);
+                },
+                (e) => {
+                  if (e.error.indexOf('Failed to parse query') < 0) {
+                    throw e;
+                  }
                 }
-                this.updateItems();
-                this.$emit('search-results', results);
-              });
+              );
             }
           } else {
             this.results = undefined;
