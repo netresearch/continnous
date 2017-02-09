@@ -1,12 +1,12 @@
 <template>
   <div :class="['avatar', {'avatar-normal': !big}]">
-    <template v-if="userObject">
+    <template v-if="user">
       <md-avatar>
-        <img :src="userObject.photoURL">
+        <img :src="user.photoURL">
       </md-avatar>
       <div class="avatar-details" v-if="!noName">
-        <slot :user="userObject">
-          <span class="avatar-name">{{userObject.displayName}}</span>
+        <slot :user="user">
+          <span class="avatar-name">{{user.displayName}}</span>
         </slot>
       </div>
     </template>
@@ -19,7 +19,6 @@
 
   export default {
     props: {
-      user: Object,
       uid: String,
       organization: Object,
       big: Boolean,
@@ -27,15 +26,23 @@
     },
     data() {
       return {
-        auth
+        auth,
+        user: undefined
       };
     },
-    computed: {
-      userObject() {
-        if (this.user) {
-          return this.user instanceof User ? this.user : new User(this.user);
-        }
-        return this.uid && this.organization ? new User(this.uid, this.organization) : undefined;
+    watch: {
+      uid: {
+        immediate: true,
+        handler: 'setUserObject'
+      },
+      organization: 'setUserObject'
+    },
+    methods: {
+      setUserObject() {
+        this.$nextTick(() => {
+          this.user = this.uid && this.organization
+              ? new User(this.uid, this.organization) : undefined;
+        });
       }
     }
   };
