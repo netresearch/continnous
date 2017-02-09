@@ -35,9 +35,6 @@
       const hasValue = value
         && this.form.values.hasOwnProperty(this.name)
         && (value.hasOwnProperty('pop') ? value.length : Boolean(value));
-      if (disabled && !hasValue) {
-        return undefined;
-      }
       const element = h(
         this.type,
         {
@@ -56,6 +53,7 @@
       return h(
         'div',
         {
+          style: disabled && !hasValue ? { display: 'none' } : {},
           class: [
             'form-element',
             'form-element-' + this.name,
@@ -98,5 +96,8 @@
       opacity: 1;
       font-size: 12px;
     }
+  }
+  .md-input-container.md-has-select:not(.md-has-value) .md-select-value {
+    color: rgba(#000, 0.54);
   }
 </style>

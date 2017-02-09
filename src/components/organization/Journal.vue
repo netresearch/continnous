@@ -64,7 +64,6 @@
             }
             if (this.organization) {
               const journalRef = this.organization.journal.getRef();
-              console.log(this.item, this.organization);
               if (this.item) {
                 this.ref = journalRef.orderByChild('id').equalTo(this.item.id);
               } else {

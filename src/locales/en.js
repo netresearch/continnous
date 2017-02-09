@@ -103,6 +103,10 @@ module.exports = {
     attachments: 'attachments',
     created: 'created',
     updated: 'updated',
+    period: {
+      label: 'target period',
+      placeholder: 'Select within which period this should be accomplished'
+    },
     _score: 'relevance'
   },
   file: {
@@ -131,6 +135,7 @@ module.exports = {
     like: 'likes',
   },
   you: 'You',
+  quarter: 'Quarter',
   detail: {
     created: 'Created {ago}',
     updated: 'Updated {ago}',
