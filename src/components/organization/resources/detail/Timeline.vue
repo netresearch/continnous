@@ -1,11 +1,10 @@
 <template>
   <div class="resource-detail-timeline">
-    <journal :organization="organization" :entries="entries" no-resource></journal>
+    <journal :organization="organization" :item="item" no-resource reverse></journal>
   </div>
 </template>
 
 <script>
-  import sortBy from 'sort-by';
   import Journal from '../../Journal';
 
   export default {
@@ -19,20 +18,6 @@
       return {
         entries: []
       };
-    },
-    watch: {
-      'item.id': {
-        immediate: true,
-        handler(id) {
-          this.organization.journal.getRef().orderByChild('id').equalTo(id).on('value', (sn) => {
-            this.entries = [];
-            sn.forEach((csn) => {
-              this.entries.push(csn.val());
-            });
-            this.entries.sort(sortBy('time'));
-          });
-        }
-      }
     }
   };
 </script>

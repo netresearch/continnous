@@ -10,8 +10,13 @@
   }
 }
 span.md-link,
-span.md-icon-link {
+span.md-icon-link,
+a.md-link,
+a.md-icon-link {
+  display: inline-block;
   cursor: pointer;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   &:hover {
     text-decoration: underline;
   }
@@ -39,6 +44,8 @@ span.md-icon-link {
 .md-icon.md-small,
 span.md-icon-link .md-icon,
 span.md-link .md-icon,
+a.md-icon-link .md-icon,
+a.md-link .md-icon,
 .md-caption .md-icon {
   font-size: 16px;
   min-width: 16px;

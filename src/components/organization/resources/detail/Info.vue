@@ -1,13 +1,16 @@
 <template>
   <div class="resource-detail-info">
     <p class="md-caption">{{$t('detail.contributedBy')}}</p>
-    <avatar big :uid="item.creator" :organization="organization" :you="$t('detail.you')">
-      <span class="md-caption">
-        {{moment(item.created).fromNow()}}<br>
-        <span v-if="item.updated > item.created">
-          ({{$t('detail.updated', {ago: moment(item.updated).fromNow()})}})
+    <avatar big :uid="item.creator" :organization="organization">
+      <template scope="avatar">
+        <span class="avatar-name">{{avatar.user.uid === auth.user.uid ? $t('detail.you') : avatar.user.displayName}}</span>
+        <span class="md-caption">
+          {{moment(item.created).fromNow()}}<br>
+          <span v-if="item.updated > item.created">
+            ({{$t('detail.updated', {ago: moment(item.updated).fromNow()})}})
+          </span>
         </span>
-      </span>
+      </template>
     </avatar>
     <hr>
     <template v-if="item.creator === auth.user.uid">

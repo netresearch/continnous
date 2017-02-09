@@ -91,19 +91,19 @@ module.exports = {
   },
   fields: {
     subtitle: {
-      label: 'Subtitle',
+      label: 'subtitle',
       placeholder: 'Short subtitle to get a quick idea of what this is about'
     },
     description: {
-      label: 'Description',
+      label: 'description',
       placeholder: 'Describe what this is about in detail'
     },
-    title: 'Title',
-    image: 'Image',
-    attachments: 'Attachments',
-    created: 'Created',
-    updated: 'Updated',
-    _score: 'Relevance'
+    title: 'title',
+    image: 'image',
+    attachments: 'attachments',
+    created: 'created',
+    updated: 'updated',
+    _score: 'relevance'
   },
   file: {
     placeholder: 'Drag and drop to upload or click here.',
@@ -123,13 +123,12 @@ module.exports = {
     desc: 'Descending'
   },
   journal: {
-    update: 'updated',
+    update: 'updated {fields}',
+    on: 'on',
     create: 'added',
     remove: 'removed',
     restore: 'restored',
-    like: 'liked',
-    user: '{action} {fields}',
-    you: '{action} {fields}'
+    like: 'likes',
   },
   you: 'You',
   detail: {
