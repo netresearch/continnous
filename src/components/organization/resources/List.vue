@@ -15,7 +15,19 @@
     <md-toolbar class="md-dense md-nav-bar">
       <slot name="buttons"></slot>
       <div style="flex: 1"></div>
-      <md-menu md-direction="bottom left" md-size="4">
+      <template v-if="period">
+        <md-button
+            class="md-icon-button resources-list-period-button"
+            @click="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '/trash' : '') + '/' + period.getPrevious().getId())"
+        ><md-icon>chevron_left</md-icon></md-button>
+        <span class="resources-list-period">{{period.format()}}</span>
+        <md-button
+            class="md-icon-button resources-list-period-button"
+            @click="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '/trash' : '') + '/' + period.getNext().getId())"
+        ><md-icon>chevron_right</md-icon></md-button>
+        <div style="flex: 1"></div>
+      </template>
+      <md-menu v-else md-direction="bottom left" md-size="4">
         <md-button md-menu-trigger>
           <template v-for="field in sortFields" v-if="field.current">
             <md-icon>arrow_{{reverseOrderQuery.order !== 'desc' ? 'down' : 'up'}}ward</md-icon>
@@ -86,6 +98,7 @@
       sort: String,
       order: String,
       additionalSort: [String, Array],
+      period: Object,
       masonryItemMinWidth: {
         type: Number,
         default: 300
@@ -191,6 +204,12 @@
 
 
 <style lang="scss" rel="stylesheet/scss">
+  .resources-list-period {
+    text-transform: uppercase;
+  }
+  .resources-list-period-button {
+    top: -2px;
+  }
   .resources-list-stream {
     .resources-list-item {
       margin: 32px auto 0;

@@ -7,6 +7,7 @@
       :trash="trash"
       :items="items"
       :personal="personal"
+      :period="period"
       trash-enabled
   >
     <md-button
@@ -26,6 +27,8 @@
   import sortBy from 'sort-by';
   import mixin from './mixin';
   import ResourceList from './List';
+  import Config from '../../../models/Config';
+  import Period from '../../../models/Period';
 
   export default {
     mixins: [mixin],
@@ -41,7 +44,8 @@
         items: undefined,
         sort: 'updated',
         order: 'desc',
-        trash: false
+        trash: false,
+        period: undefined
       };
     },
     watch: {
@@ -69,6 +73,16 @@
               load = true;
             }
           });
+          if (this.type && Config.resources[this.type].periodical) {
+            const period = Period.getById(route.params.period);
+            if (!this.period || this.period.getId() !== period.getId()) {
+              this.period = period;
+              load = true;
+            }
+          } else if (this.period) {
+            this.period = undefined;
+            load = true;
+          }
           if (load) {
             this.loadItems();
           }
@@ -83,8 +97,18 @@
           this.itemsRef.off('child_moved');
           this.itemsRef.off('child_removed');
         }
-        this.itemsRef = this.getFirebaseRef(this.trash ? 'trash' : 'resources')
-          .orderByChild(this.sort)['limitTo' + (this.order === 'desc' ? 'Last' : 'First')](100);
+        const ref = this.getFirebaseRef(this.trash ? 'trash' : 'resources');
+        if (this.period) {
+          this.itemsRef = ref.orderByChild('dueTime')
+              .startAt(this.period.start)
+              .endAt(this.period.end)
+              .limitToLast(100);
+        } else {
+          this.itemsRef = ref
+              .orderByChild(this.sort)[
+                'limitTo' + (this.order === 'desc' ? 'Last' : 'First')
+              ](100);
+        }
         this.items = [];
         this.itemsRef.on('child_added', (item) => {
           this.items.push(this.createItem(item.key, item.val()));

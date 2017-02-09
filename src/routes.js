@@ -34,7 +34,7 @@ const organizationRoute = {
 
 Object.keys(Config.resources).forEach((resource) => {
   organizationRoute.children.push({
-    path: ':type(' + resource + ')/:personal(personal)?/:trash(trash)?',
+    path: ':type(' + resource + ')/:personal(personal)?/:trash(trash)?/:period(q[1-4]-[0-9]{4})?',
     component: OrganizationResourcesPage
   });
   organizationRoute.children.push({

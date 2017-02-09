@@ -9,8 +9,21 @@ export default class Period {
     this.start = m.startOf('quarter').valueOf();
     this.end = m.endOf('quarter').valueOf();
   }
+  getPrevious() {
+    return new Period(moment(this.date).subtract(1, 'quarter').toDate());
+  }
   getNext() {
     return new Period(moment(this.date).add(1, 'quarter').toDate());
+  }
+  getId() {
+    return 'q' + this.quarter + '-' + this.date.getFullYear();
+  }
+  static getById(id) {
+    const matches = id ? id.match(/^q([1-4])-([0-9]{4})$/) : null;
+    if (!matches) {
+      return new Period();
+    }
+    return new Period(moment().year(matches[2]).quarter(matches[1]).toDate());
   }
   format() {
     return Vue.t('quarter')

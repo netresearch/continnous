@@ -16,7 +16,8 @@ const Config = {
         anyone: []
       },
       flashlight: {
-      }
+      },
+      periodical: true
     },
     ideas: {
       icon: 'lightbulb_outline',
@@ -31,7 +32,8 @@ const Config = {
         anyone: []
       },
       flashlight: {
-      }
+      },
+      periodical: false
     },
     insights: {
       icon: 'chat_bubble_outline',
@@ -46,7 +48,8 @@ const Config = {
         anyone: []
       },
       flashlight: {
-      }
+      },
+      periodical: false
     }
   },
   flashlight: {

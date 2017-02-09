@@ -107,6 +107,7 @@ module.exports = {
       label: 'target period',
       placeholder: 'Select within which period this should be accomplished'
     },
+    dueTime: 'target period',
     _score: 'relevance'
   },
   file: {
