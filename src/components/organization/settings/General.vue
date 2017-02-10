@@ -5,17 +5,24 @@
         v-model="organization"
         :validate="{name: validateName}"
         :firebase-path="'/organizations/' + organization.key"
-        :defaults="{title: organization.name + ' ' + $t('thisPlatform')}"
+        :defaults="{title: organization.name + ' ' + $t('thisPlatform'), visionTitle: $t('vision.defaultTitle'), missionTitle: $t('mission.defaultTitle')}"
     >
       <form-element type="md-input" required name="name" :label="$t('name')"></form-element>
       <form-element type="md-input" required name="title" :label="$t('title')"></form-element>
-      <form-element
-          v-for="key in ['vision', 'mission']"
-          type="md-textarea"
-          :name="key"
-          :label="$t(key + '.label')"
-          :placeholder="$t(key + '.placeholder')"
-      ></form-element>
+      <template v-for="key in ['vision', 'mission']">
+        <form-element
+            type="md-input"
+            :name="key + 'Title'"
+            :label="$t(key + '.title')"
+            :placeholder="$t(key + '.placeholder')"
+        ></form-element>
+        <form-element
+            type="md-textarea"
+            :name="key"
+            :label="$t(key + '.label')"
+            :placeholder="$t(key + '.placeholder')"
+        ></form-element>
+      </template>
     </card-form>
     <p class="md-caption">{{$t('theme')}}</p>
     <card-form @saved="onThemeSaved" v-model="organization" :firebase-path="'/organizations/' + organization.key">

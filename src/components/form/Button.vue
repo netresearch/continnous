@@ -3,7 +3,7 @@
       :class="{'md-primary': action === 'save'}"
       :disabled="!form || !form.hasChanged(action !== 'save')"
       @click="form[action]()"
-  >{{$t('actions.' + action)}}</md-button>
+  ><md-icon v-if="icon">{{icon}}</md-icon> {{$t('actions.' + action)}}</md-button>
 </template>
 
 <script>
@@ -15,7 +15,8 @@
       action: {
         type: String,
         required: true
-      }
+      },
+      icon: String
     }
   };
 </script>

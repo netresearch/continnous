@@ -68,10 +68,14 @@ module.exports = {
   },
   vision: {
     label: 'Vision statement',
+    title: 'Vision statement title',
+    defaultTitle: 'Our vision',
     placeholder: 'Provide a clear vision statement'
   },
   mission: {
     label: 'Mission statement',
+    title: 'Mission statement title',
+    defaultTitle: 'Our mission',
     placeholder: 'Provide a clear mission statement'
   },
   objectives: {
@@ -147,7 +151,7 @@ module.exports = {
     others: 'others',
     editHint: 'Edit the fields on the left by clicking right into the text',
     saveHint: 'You have unsaved changes - click save to publish or reset to withdraw them',
-    newSaveHint: 'Be sure to save when you are ready - otherwise your changes will be lost',
+    readStatementsHint: 'We encourage you to read through and align your contribution with:',
     motivation: '<strong>Thank you {firstName},</strong><br>we very much appreciate your commitment - we\'re pretty sure it will be worth it!',
     whatsAhead: 'After you saved this, <strong>you and others</strong> will be able to see, like and comment this - tick the checkbox below to keep this only for you:',
     whatsAheadPersonal: 'After you saved this, <strong>only you</strong> will be able to see this - untick the checkbox below to make this available to others:',

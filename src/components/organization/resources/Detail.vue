@@ -23,17 +23,23 @@
       <template scope="form">
         <div class="scroll-content resources-detail-info-container">
           <resource-info v-if="item && id" :type="type" :organization="organization" :personal="personal" :item="item"></resource-info>
-          <div v-else-if="!id">
+          <div v-if="!id">
             <p class="md-caption">
               <md-icon>thumb_up</md-icon>
               <span v-html="$t('detail.motivation', {firstName: auth.user.displayName.split(' ').shift(), displayName: auth.user.displayName})"></span>
             </p>
-            <hr>
-            <p class="md-caption">
-              <md-icon>info_outline</md-icon>
-              <span v-html="$t('detail.whatsAhead' + (personal ? 'Personal' : ''))"></span>
+            <p class="md-caption" style="margin-left: 22px;">
+              {{$t('detail.readStatementsHint')}}
             </p>
-            <md-checkbox v-model="personal" style="margin: 0 0 0 22px">{{$t(type + '.personal')}}</md-checkbox>
+            <template v-for="(icon, key) in {vision: 'flare', mission: 'navigation'}">
+              <p class="md-caption">
+                <md-icon>{{icon}}</md-icon>
+                <span>
+                  <strong>{{organization[key + 'Title'] || $t(key + '.defaultTitle')}}</strong><br>
+                  {{organization[key]}}
+                </span>
+              </p>
+            </template>
           </div>
         </div>
         <div class="scroll-content resources-card-form-container">
@@ -42,7 +48,14 @@
         <div class="scroll-content resources-detail-comments-container">
           <div>
             <template v-if="mayEdit">
-              <resource-publish-control :is-new="!id"></resource-publish-control>
+              <template v-if="!id">
+                <p class="md-caption">
+                  <md-icon>info_outline</md-icon>
+                  <span v-html="$t('detail.whatsAhead' + (personal ? 'Personal' : ''))"></span>
+                </p>
+                <md-checkbox v-model="personal" style="margin: 0 0 16px 22px">{{$t(type + '.personal')}}</md-checkbox>
+              </template>
+              <resource-publish-control :is-new="!id" :organization="organization"></resource-publish-control>
             </template>
             <template v-if="item && id">
               <hr v-if="mayEdit">
