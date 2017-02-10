@@ -31,6 +31,10 @@
 
 <style lang="scss" rel="stylesheet/scss">
   .resource-detail-publish-control {
+    .md-button {
+      margin-top: 0;
+      margin-bottom: 18px;
+    }
     .md-button.md-primary {
       &.resource-detail-full-button {
         margin-left: 0;

@@ -53,12 +53,16 @@
                   <md-icon>info_outline</md-icon>
                   <span v-html="$t('detail.whatsAhead' + (personal ? 'Personal' : ''))"></span>
                 </p>
-                <md-checkbox v-model="personal" style="margin: 0 0 16px 22px">{{$t(type + '.personal')}}</md-checkbox>
+                <md-checkbox v-model="personal" style="margin: 0 0 18px 22px">{{$t(type + '.personal')}}</md-checkbox>
               </template>
               <resource-publish-control :is-new="!id" :organization="organization"></resource-publish-control>
             </template>
             <template v-if="item && id">
               <hr v-if="mayEdit">
+              <md-input-container>
+                <label><md-icon class="md-small">comment</md-icon>Comment</label>
+                <md-textarea placeholder="Click here to comment..."></md-textarea>
+              </md-input-container>
               <resource-timeline class="scroll-content" :type="type" :organization="organization" :personal="personal" :item="item"></resource-timeline>
             </template>
           </div>
@@ -203,6 +207,33 @@
     > div {
       width: 50%;
       min-width: 200px;
+    }
+  }
+  .resources-detail-comments-container {
+    hr {
+      margin: 0;
+    }
+    .md-input-container {
+      margin-bottom: 16px;
+      padding-left: 22px;
+      padding-top: 20px;
+      padding-bottom: 8px;
+      margin-top: 8px;
+      &.md-input-focused {
+        padding-left: 0;
+        padding-bottom: 2px;
+        padding-top: 24px;
+      }
+      label {
+        .md-icon {
+          margin-right: 6px;
+          &:after {
+            display: none;
+          }
+        }
+        opacity: 1;
+        top: 0;
+      }
     }
   }
   .resource-detail-timeline {

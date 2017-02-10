@@ -19,12 +19,14 @@ const registeredThemes = ['default'];
 export default function install(Vue) {
   const mdTextarea = Vue.component('md-textarea').options;
   mdTextarea.mounted.push(function () {
-    this.observer = new MutationObserver(() => {
+    const update = () => {
       /* global document */
       const evt = document.createEvent('Event');
       evt.initEvent('autosize:update', true, false);
       this.$el.dispatchEvent(evt);
-    });
+    };
+    this.$nextTick(update);
+    this.observer = new MutationObserver(update);
     this.observer.observe(
       this.$el,
       { attributes: true, attributeFilter: ['disabled'] }
