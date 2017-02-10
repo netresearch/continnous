@@ -1,5 +1,6 @@
 <script>
   import Child from './child';
+  import Bus from '../../bus';
 
   export default {
     extends: Child,
@@ -17,16 +18,12 @@
       this.form._registerFormElement(this);
       /* eslint-enable no-underscore-dangle */
       if (this.type === 'md-textarea') {
-        this.$nextTick(() => {
-          /* global document, window */
-          const evt = document.createEvent('Event');
-          evt.initEvent('autosize:update', true, false);
-          window.setTimeout(() => {
-            if (this.$refs.el) {
-              this.$refs.el.$el.dispatchEvent(evt);
-            }
-          }, 1000);
-        });
+        Bus.$on('tick', this.updateTextareaSize);
+      }
+    },
+    beforeDestroy() {
+      if (this.type === 'md-textarea') {
+        Bus.$off('tick', this.updateTextareaSize);
       }
     },
     render(h) {
@@ -81,6 +78,14 @@
     methods: {
       forwardEvent(value) {
         this.form.onChange(this.name, value);
+      },
+      updateTextareaSize() {
+        /* global document */
+        if (this.$refs.el) {
+          const evt = document.createEvent('Event');
+          evt.initEvent('autosize:update', true, false);
+          this.$refs.el.$el.dispatchEvent(evt);
+        }
       }
     }
   };
