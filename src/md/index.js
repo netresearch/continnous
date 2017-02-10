@@ -1,3 +1,4 @@
+import MutationObserver from 'mutation-observer';
 import mdExtensionTheme from './extension.theme';
 import MdAvatarButton from './AvatarButton';
 import MdMessage from './Message';
@@ -16,6 +17,25 @@ const components = {
 const registeredThemes = ['default'];
 
 export default function install(Vue) {
+  const mdTextarea = Vue.component('md-textarea').options;
+  mdTextarea.mounted.push(function () {
+    this.observer = new MutationObserver(() => {
+      /* global document */
+      const evt = document.createEvent('Event');
+      evt.initEvent('autosize:update', true, false);
+      this.$el.dispatchEvent(evt);
+    });
+    this.observer.observe(
+      this.$el,
+      { attributes: true, attributeFilter: ['disabled'] }
+    );
+  });
+  mdTextarea.beforeDestroy.push(function () {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+  });
+
   Object.keys(components).forEach((component) => {
     Vue.component(
       component.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(),

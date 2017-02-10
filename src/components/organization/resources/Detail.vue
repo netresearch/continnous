@@ -46,7 +46,7 @@
           <resource-main :is-new="!id" :type="type"></resource-main>
         </div>
         <div class="scroll-content resources-detail-comments-container">
-          <div>
+          <div class="scroll-container">
             <template v-if="mayEdit">
               <template v-if="!id">
                 <p class="md-caption">
@@ -59,7 +59,7 @@
             </template>
             <template v-if="item && id">
               <hr v-if="mayEdit">
-              <resource-timeline :type="type" :organization="organization" :personal="personal" :item="item"></resource-timeline>
+              <resource-timeline class="scroll-content" :type="type" :organization="organization" :personal="personal" :item="item"></resource-timeline>
             </template>
           </div>
         </div>
@@ -204,5 +204,9 @@
       width: 50%;
       min-width: 200px;
     }
+  }
+  .resource-detail-timeline {
+    padding: 0 16px 0 0 !important;
+    margin-right: -16px;
   }
 </style>

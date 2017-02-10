@@ -55,28 +55,30 @@
     watch: {
       organization: {
         immediate: true,
-        handler() {
-          this.$nextTick(() => {
-            this.entries = [];
-            if (this.ref) {
-              this.ref.off('child_added');
-              this.ref.off('child_removed');
-            }
-            if (this.organization) {
-              const journalRef = this.organization.journal.getRef();
-              if (this.item) {
-                this.ref = journalRef.orderByChild('id').equalTo(this.item.id);
-              } else {
-                this.ref = journalRef.orderByChild('personal').equalTo(false).limitToLast(10);
-              }
-              this.ref.on('child_added', this.onEntryAdded);
-              this.ref.on('child_removed', this.onEntryRemoved);
-            }
-          });
-        }
+        handler: 'loadEntries'
       },
+      item: 'loadEntries'
     },
     methods: {
+      loadEntries() {
+        this.$nextTick(() => {
+          this.entries = [];
+          if (this.ref) {
+            this.ref.off('child_added');
+            this.ref.off('child_removed');
+          }
+          if (this.organization) {
+            const journalRef = this.organization.journal.getRef();
+            if (this.item) {
+              this.ref = journalRef.orderByChild('id').equalTo(this.item.id);
+            } else {
+              this.ref = journalRef.orderByChild('personal').equalTo(false).limitToLast(10);
+            }
+            this.ref.on('child_added', this.onEntryAdded);
+            this.ref.on('child_removed', this.onEntryRemoved);
+          }
+        });
+      },
       groupEntries() {
         this.entries.sort(sortBy((this.reverse ? '' : '-') + 'time'));
         const groups = [];

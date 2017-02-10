@@ -1,6 +1,5 @@
 <script>
   import Child from './child';
-  import Bus from '../../bus';
 
   export default {
     extends: Child,
@@ -17,14 +16,6 @@
       /* eslint-disable no-underscore-dangle */
       this.form._registerFormElement(this);
       /* eslint-enable no-underscore-dangle */
-      if (this.type === 'md-textarea') {
-        Bus.$on('tick', this.updateTextareaSize);
-      }
-    },
-    beforeDestroy() {
-      if (this.type === 'md-textarea') {
-        Bus.$off('tick', this.updateTextareaSize);
-      }
     },
     render(h) {
       const disabled = this.disabled || (this.form && this.form.disabled);
@@ -78,14 +69,6 @@
     methods: {
       forwardEvent(value) {
         this.form.onChange(this.name, value);
-      },
-      updateTextareaSize() {
-        /* global document */
-        if (this.$refs.el) {
-          const evt = document.createEvent('Event');
-          evt.initEvent('autosize:update', true, false);
-          this.$refs.el.$el.dispatchEvent(evt);
-        }
       }
     }
   };
