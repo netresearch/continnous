@@ -59,11 +59,10 @@
             </template>
             <template v-if="item && id">
               <hr v-if="mayEdit">
-              <md-input-container>
-                <label><md-icon class="md-small">comment</md-icon>Comment</label>
-                <md-textarea placeholder="Click here to comment..."></md-textarea>
-              </md-input-container>
-              <resource-timeline class="scroll-content" :type="type" :organization="organization" :personal="personal" :item="item"></resource-timeline>
+              <resource-comment :type="type" :organization="organization" :personal="personal" :item="item" @comment="$refs.timeline.reset()"></resource-comment>
+              <elastic-list ref="timeline" class="scroll-content resource-detail-timeline" container-selector=".journal-group" item-selector=".journal-entry">
+                <journal :organization="organization" :item="item" no-resource reverse></journal>
+              </elastic-list>
             </template>
           </div>
         </div>
@@ -80,12 +79,22 @@
   import ResourceMain from './detail/Main';
   import ResourceInfo from './detail/Info';
   import ResourcePublishControl from './detail/PublishControl';
-  import ResourceTimeline from './detail/Timeline';
+  import ResourceComment from './detail/Comment';
+  import Journal from '../Journal';
+  import ElasticList from '../../ElasticList';
 
   export default {
     mixins: [mixin],
     props: ['organization', 'permissions'],
-    components: { BaseForm, ResourceMain, ResourceInfo, ResourcePublishControl, ResourceTimeline },
+    components: {
+      BaseForm,
+      ResourceMain,
+      ResourceInfo,
+      ResourcePublishControl,
+      ResourceComment,
+      Journal,
+      ElasticList
+    },
     data() {
       return {
         auth,
@@ -213,31 +222,19 @@
     hr {
       margin: 0;
     }
-    .md-input-container {
-      margin-bottom: 16px;
-      padding-left: 22px;
-      padding-top: 20px;
-      padding-bottom: 8px;
-      margin-top: 8px;
-      &.md-input-focused {
-        padding-left: 0;
-        padding-bottom: 2px;
-        padding-top: 24px;
-      }
-      label {
-        .md-icon {
-          margin-right: 6px;
-          &:after {
-            display: none;
-          }
-        }
-        opacity: 1;
-        top: 0;
-      }
-    }
   }
   .resource-detail-timeline {
     padding: 0 16px 0 0 !important;
     margin-right: -16px;
+    .journal .md-layout {
+      margin: 16px 0;
+    }
+
+    .elastic-list-more {
+      .md-icon {
+        margin: -12px auto 0;
+        color: rgba(#000, 0.54);
+      }
+    }
   }
 </style>

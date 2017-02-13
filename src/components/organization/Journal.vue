@@ -9,8 +9,16 @@
           -->
           <div class="journal-entry" v-for="(entry, i) in groups[g]">
             <span class="avatar-name" v-if="i === 0">{{avatar.user.displayName}}</span>
-            <span class="journal-predicate">
-              <md-icon v-if="i > 0" class="md-mini">arrow_{{reverse ? 'down' : 'up'}}ward</md-icon>
+            <div class="journal-time">
+              <md-icon v-if="i > 0" class="md-mini">arrow_{{reverse ? 'down' : 'up'}}ward</md-icon>{{formatTime(entry.time)}}
+            </div>
+            <div class="journal-comment" v-if="noResource && entry.action === 'comment'">
+              {{entry.comment}}
+              <md-icon @click.native="deleteComment = entry; $refs.dialog.open()"
+                       v-if="noResource && entry.action === 'comment' && entry.uid === auth.user.uid"
+                       class="md-mini md-warn journal-delete">clear</md-icon>
+            </div>
+            <span class="journal-predicate" v-else>
               {{$t('journal.' + entry.action, { fields: joinFields(entry.fields) })}}
               {{entry.fields && !noResource ? $t('journal.on') : ''}}
             </span>
@@ -20,11 +28,19 @@
                 {{entry.title}}
               </router-link>
             </span>
-            <div class="md-caption">{{formatTime(entry.time)}}</div>
           </div>
         </template>
       </avatar>
     </div>
+    <md-dialog-confirm
+        v-if="noResource"
+        ref="dialog"
+        :md-title="$t('journal.confirmCommentDelete')"
+        :md-content="deleteComment.comment || 'bla'"
+        :md-ok-text="$t('actions.delete')"
+        :md-cancel-text="$t('actions.cancel')"
+        @close="$event === 'ok' ? doDeleteComment() : null"
+    ></md-dialog-confirm>
   </div>
 </template>
 
@@ -49,7 +65,8 @@
         resources: Config.resources,
         auth,
         groups: [],
-        entries: []
+        entries: [],
+        deleteComment: {}
       };
     },
     watch: {
@@ -60,6 +77,9 @@
       item: 'loadEntries'
     },
     methods: {
+      doDeleteComment() {
+        this.organization.journal.getRef().child(this.deleteComment.journalId).remove();
+      },
       loadEntries() {
         this.$nextTick(() => {
           this.entries = [];
@@ -162,10 +182,33 @@
     .journal-predicate {
       color: rgba(0, 0, 0, .57);
     }
+    .journal-time {
+      color: rgba(0, 0, 0, .57);
+      font-size: 12px;
+      line-height: 17px;
+      .md-icon {
+        margin-right: 2px;
+        top: -1px;
+        position: relative;
+      }
+    }
     .journal-entry {
+      cursor: default;
       margin-bottom: 10px;
       &:last-child {
         margin-bottom: 0;
+      }
+      @media screen {
+        .journal-delete {
+          cursor: pointer;
+          display: none;
+          &:not(:hover) {
+            color: inherit;
+          }
+        }
+        &:hover .journal-delete {
+          display: inline-flex;
+        }
       }
     }
     > :last-child .journal-resource {

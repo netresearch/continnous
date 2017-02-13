@@ -47,6 +47,10 @@
       }
     },
     methods: {
+      reset() {
+        this.expanded = false;
+        this.update();
+      },
       expand() {
         this.expanded = true;
 

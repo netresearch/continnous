@@ -138,6 +138,8 @@ module.exports = {
     remove: 'removed',
     restore: 'restored',
     like: 'likes',
+    comment: 'commented',
+    confirmCommentDelete: 'Really delete comment?'
   },
   you: 'You',
   quarter: 'Quarter',
