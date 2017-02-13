@@ -81,18 +81,31 @@ module.exports = {
   objectives: {
     title: 'Short title of the objective',
     personal: 'This is a personal objective',
-    this: 'This objective'
+    this: 'This objective',
+    accusative: 'objectives',
+    personal_accusative: 'personal objectives',
+    accusative_one: 'one'
   },
   ideas: {
     title: 'Short title of the idea',
     personal: 'This is a personal idea',
-    this: 'This idea'
+    this: 'This idea',
+    accusative: 'ideas',
+    personal_accusative: 'personal ideas',
+    accusative_one: 'one'
   },
   insights: {
     title: 'Short title of the insight',
     personal: 'This is a personal insight',
-    this: 'This insight'
+    this: 'This insight',
+    accusative: 'insights',
+    personal_accusative: 'personal insights',
+    accusative_one: 'one'
   },
+  thereAreNo: 'There are no {accusative} yet',
+  youDontHave: 'You don\'t have {accusative} yet',
+  howAbout: 'how about',
+  addingOne: 'adding {accusative_one}',
   fields: {
     subtitle: {
       label: 'subtitle',
@@ -143,6 +156,7 @@ module.exports = {
   },
   you: 'You',
   quarter: 'Quarter',
+  for: 'for',
   detail: {
     created: 'Created {ago}',
     updated: 'Updated {ago}',

@@ -8,6 +8,7 @@
       :items="items"
       :personal="personal"
       :period="period"
+      :status="status"
       trash-enabled
   >
     <md-button
@@ -45,7 +46,8 @@
         sort: 'updated',
         order: 'desc',
         trash: false,
-        period: undefined
+        period: undefined,
+        status: 0
       };
     },
     watch: {
@@ -110,6 +112,10 @@
               ](100);
         }
         this.items = [];
+        this.status = 0;
+        this.itemsRef.once('value', () => {
+          this.status = 1;
+        });
         this.itemsRef.on('child_added', (item) => {
           this.items.push(this.createItem(item.key, item.val()));
           this.items.sort(sortBy((this.order === 'desc' ? '-' : '') + this.sort));

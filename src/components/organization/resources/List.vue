@@ -63,6 +63,18 @@
     </md-toolbar>
 
     <div class="scroll-content">
+      <div v-if="status === 1 && !items.length">
+        {{
+          $t(personal ? 'youDontHave' : 'thereAreNo', {accusative: $t(type + '.' + (personal ? 'personal_' : '') + 'accusative')})
+          + (period ? ' ' + $t('for') + ' ' + period.format() : '')
+          + (permissions[(personal ? 'personal_' : '') + type].write ? '' : '.')
+        }}
+        <template v-if="permissions[(personal ? 'personal_' : '') + type].write">
+          - {{$t('howAbout')}}
+          <router-link :to="'/' + organization.key + '/' + type + (personal ? '/personal' : '') + '/create'">
+            {{$t('addingOne', {accusative_one: $t(type + '.accusative_one')})}}</router-link>?
+        </template>
+      </div>
       <div ref="list" :class="['resources-list']">
         <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
           <resource-item
@@ -87,7 +99,8 @@
   export default {
     components: { ResourceItem },
     props: {
-      items: [Array, Object],
+      items: [Array],
+      status: Number,
       title: String,
       organization: Object,
       type: String,
