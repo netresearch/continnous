@@ -18,6 +18,7 @@ const registeredThemes = ['default'];
 
 export default function install(Vue) {
   const mdTextarea = Vue.component('md-textarea').options;
+  /* eslint-disable func-names */
   mdTextarea.mounted.push(function () {
     const update = () => {
       /* global document */
