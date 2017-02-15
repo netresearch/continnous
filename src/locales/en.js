@@ -92,7 +92,22 @@ module.exports = {
     this: 'This idea',
     accusative: 'ideas',
     personal_accusative: 'personal ideas',
-    accusative_one: 'one'
+    accusative_one: 'one',
+    scoring: 'Scoring',
+    criteria: {
+      strategy: 'Strategy',
+      need: 'Need',
+      impact: 'Impact',
+      feasability: 'Feasability',
+      feel: 'Feel',
+    },
+    criteriaHelp: {
+      strategy: 'How well does the idea fit into our overall strategy or vision?',
+      need: 'How well does this address an important customer need?',
+      impact: 'How big do you consider the opportunity of your idea?',
+      feasability: 'How easy will it be to implement this?',
+      feel: 'How confident do you feel about your idea?',
+    }
   },
   insights: {
     title: 'Short title of the insight',

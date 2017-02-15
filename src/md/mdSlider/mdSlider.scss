@@ -1,0 +1,215 @@
+$grey: #bdbdbd;
+.md-slider {
+  padding: 16px 0;
+}
+.md-slider-target {
+  position: relative;
+  direction: ltr;
+  background: $grey;
+  margin: 0 4px;
+  &, * {
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-user-select: none;
+    -ms-touch-action: none;
+    touch-action: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+}
+.md-slider-base {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  position: absolute;
+  z-index: 1;
+}
+.md-slider-connect {
+  position: absolute;
+  right: 0;
+  top: 0;
+  left: 0;
+  bottom: 0;
+}
+.md-slider-origin {
+  position: absolute;
+  height: 0;
+  width: 0;
+}
+.md-slider-state-tap .md-slider-connect,
+.md-slider-state-tap .md-slider-origin {
+  -webkit-transition: top 0.3s, right 0.3s, bottom 0.3s, left 0.3s;
+  transition: top 0.3s, right 0.3s, bottom 0.3s, left 0.3s;
+}
+.md-slider-state-drag * {
+  cursor: inherit !important;
+}
+/* Painting and performance;
+ * Browsers can paint handles in their own layer.
+ */
+.md-slider-base,
+.md-slider-handle {
+  transform: translate3d(0, 0, 0);
+}
+
+.md-slider-handle {
+  position: relative;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  &.md-slider-active {
+    width: 18px;
+    height: 18px;
+  }
+}
+.md-slider-zero .md-slider-handle {
+  border-color: $grey;
+}
+
+.md-slider-horizontal {
+  height: 2px;
+  min-width: 100px;
+  .md-slider-handle {
+    left: -6px;
+    top: -5px;
+    &.md-slider-active {
+      left: -9px;
+      top: -8px;
+    }
+  }
+}
+.md-slider-vertical {
+  width: 2px;
+  min-height: 100px;
+  margin-left: 3px;
+  margin-right: 3px;
+  .md-slider-handle {
+    left: -5px;
+    top: -6px;
+    &.md-slider-active {
+      left: -8px;
+      top: -9px;
+    }
+  }
+}
+
+/* Styling;
+ */
+.md-slider-connect {
+  transition: background 450ms;
+}
+/* Handles and cursors;
+ */
+.md-slider-draggable {
+  cursor: ew-resize;
+}
+.md-slider-vertical .md-slider-draggable {
+  cursor: ns-resize;
+}
+
+.md-slider-pips {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+}
+/* Values;
+ *
+ */
+.md-slider-value,
+.md-slider-value-sub,
+.md-slider-marker {
+  display: none;
+}
+
+/* Markings;
+ *
+ */
+.md-slider-marker-sub {
+  position: absolute;
+  display: block;
+  width: 2px;
+  height: 2px;
+}
+
+.md-slider-tooltip {
+  display: block;
+  position: absolute;
+  cursor: default;
+  border-radius: 50%;
+  left: -7px;
+  top: -37px;
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  line-height: 28px;
+  white-space: nowrap;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform: scale(.4) translate3d(-7px,67.5px,0);
+  opacity: 0;
+  &:after {
+    position: absolute;
+    content: "";
+    left: 0;
+    border-radius: 16px;
+    top: 19px;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 16px solid transparent;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+}
+.md-slider-vertical .md-slider-tooltip {
+  top: -7px;
+  left: 23px;
+  transform: scale(.4) translate3d(-80.5px,-7px,0);
+  &:after {
+    border-left: none;
+    border-top: 14px solid transparent;
+    border-bottom: 14px solid transparent;
+    border-right: 16px solid transparent;
+    top: 0;
+    left: -7px;
+  }
+}
+.md-slider-active .md-slider-tooltip {
+  opacity: 1;
+  transform: translate3d(0,0,0) scale(1);
+}
+
+/* Disabled state;
+ */
+.md-slider[disabled] {
+  .md-slider-handle {
+    background-color: $grey;
+  }
+  .md-slider-connect {
+    background-color: darken($grey, 12);
+  }
+  .md-slider-pips {
+    display: none;
+  }
+
+}
+.md-slider-zero, .md-slider[disabled] {
+  .md-slider-tooltip {
+    background-color: $grey;
+    color: #fff;
+  }
+  .md-slider-horizontal .md-slider-tooltip:after {
+    border-top-color: $grey;
+  }
+  .md-slider-vertical .md-slider-tooltip:after {
+    border-right-color: $grey;
+  }
+}

@@ -39,6 +39,10 @@ export default function install(Vue) {
     }
   });
 
+  /* eslint-disable global-require, import/newline-after-import */
+  const MdSlider = require('./mdSlider/index').default;
+  Vue.use(MdSlider);
+
   Object.keys(components).forEach((component) => {
     Vue.component(
       component.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase(),

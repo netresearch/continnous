@@ -1,0 +1,23 @@
+.md-slider-connect {
+    background: #{'PRIMARY-COLOR'};
+}
+.md-slider-handle {
+    background: #{'PRIMARY-COLOR'};
+}
+.md-slider-marker {
+    background: #{'BACKGROUND-CONTRAST'};
+}
+
+.md-slider-zero .md-slider-handle {
+  background: #{'BACKGROUND-COLOR'};
+}
+.md-slider-tooltip {
+    background: #{'PRIMARY-COLOR'};
+    color: #{'PRIMARY-CONTRAST'};
+}
+.md-slider-horizontal .md-slider-tooltip:after {
+    border-top-color: #{'PRIMARY-COLOR'};
+}
+.md-slider-vertical .md-slider-tooltip:after {
+    border-right-color: #{'PRIMARY-COLOR'};
+}
