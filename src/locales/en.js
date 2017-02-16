@@ -40,6 +40,10 @@ module.exports = {
     denied: 'Denied'
   },
   changeStatus: 'Change status',
+  elevationInfo: 'This elevates this users weighting in ratings based on likes, visits and scorings - will only affect future rating updates',
+  elevate: 'Elevate',
+  unelevated: 'Unelevated',
+  elevated: 'Elevated',
   resources: {
     organization: 'Organization',
     objectives: 'Objectives',

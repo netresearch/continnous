@@ -3,23 +3,39 @@
     <md-list>
       <template v-for="(group, role) in groupedUsers">
         <md-subheader>{{$t('roles.' + role)}}</md-subheader>
-        <md-list-item :class="'user-' + entry.uid" v-for="entry in group" :disabled="entry.uid === auth.user.uid">
+        <md-list-item :class="'user-' + entry.uid" v-for="entry in group">
           <md-avatar>
             <img :src="users[entry.uid].photoURL">
           </md-avatar>
           <div class="md-list-text-container">
-            <span>{{users[entry.uid].displayName}}</span>
+            <span>{{users[entry.uid].displayName}}
+              <span class="md-caption" v-if="users[entry.uid].elevate">
+                | <strong>{{$t('elevated')}}</strong>
+                (+{{users[entry.uid].elevate}})
+              </span></span>
             <span>
               {{users[entry.uid].email.split('@').shift()}}@<span :class="entry.domain ? 'md-primary' : ''">{{users[entry.uid].email.split('@').pop()}}
                 <md-tooltip v-if="entry.domain">{{$t('roles.' + entry.domainRole) + ' ' + $tc('domain', 1)}}</md-tooltip>
               </span>
             </span>
           </div>
-          <md-list-expand v-if="entry.uid !== auth.user.uid">
+          <md-list-expand>
             <md-list>
-              <md-subheader class="md-inset">{{$t('changeStatus')}}</md-subheader>
-              <md-list-item v-for="newRole in roles.concat('applicant', 'denied')" v-if="newRole !== role" class="md-inset" @click="changeRole(entry.uid, newRole, entry.domainRole)">
-                {{$t('roles.' + newRole)}}
+              <template v-if="entry.uid !== auth.user.uid">
+                <md-subheader class="md-inset">{{$t('changeStatus')}}</md-subheader>
+                <md-list-item v-for="newRole in roles.concat('applicant', 'denied')" v-if="newRole !== role" class="md-inset" @click="changeRole(entry.uid, newRole, entry.domainRole)">
+                  &nbsp;&nbsp;&nbsp;{{$t('roles.' + newRole)}}
+                </md-list-item>
+              </template>
+              <md-subheader class="md-inset">
+                {{$t('elevate')}}&nbsp;
+                <md-icon style="cursor: help">
+                  help_outline
+                  <md-tooltip>{{$t('elevationInfo')}}</md-tooltip>
+                </md-icon>
+              </md-subheader>
+              <md-list-item v-for="elevate in [null, 1, 2]" v-if="!(elevate === users[entry.uid].elevate || !elevate && !users[entry.uid].elevate)" class="md-inset" @click="setElevation(entry.uid, elevate)">
+                &nbsp;&nbsp;&nbsp;{{elevate ? '+' + elevate : $t('unelevated')}}
               </md-list-item>
             </md-list>
           </md-list-expand>
@@ -113,6 +129,10 @@
         }
         const li = this.$el.querySelector('.user-' + uid);
         li.className = li.className.replace(/ md-active/, '');
+      },
+      setElevation(uid, elevate) {
+        console.log(uid, elevate);
+        Firebase.database().ref('organizations/' + this.organization.key + '/users/' + uid).update({ elevate });
       }
     }
   };
