@@ -166,8 +166,8 @@
           this.isAtMinimum = d.m === d.v;
         });
 
-        this.slider.on('change', (value) => {
-          this.currentValue = value;
+        this.slider.on('change', () => {
+          const value = this.slider.get();
           this.$emit('change', value);
           this.$emit('input', value);
         });

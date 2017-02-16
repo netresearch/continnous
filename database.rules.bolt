@@ -72,6 +72,13 @@ path /likes/organizations/{oid}/byResource/{rid}/{uid} {
     write() { isAuthenticated() && isAllowed('organization', 'read', oid) && uid === auth.uid }
 }
 
+path /scorings/organizations/{oid} {
+    read() { isAuthenticated() && isAllowed('organization', 'read', oid) }
+}
+path /scorings/organizations/{oid}/{rid}/{uid} {
+    write() { isAuthenticated() && isAllowed('organization', 'read', oid) && uid === auth.uid }
+}
+
 path /flashlight/paths/{pid} {
     read() { false }
     write() {

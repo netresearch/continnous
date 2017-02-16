@@ -44,6 +44,7 @@
         </div>
         <div class="scroll-content resources-card-form-container">
           <resource-main :is-new="!id" :type="type"></resource-main>
+          <resource-scoring :is-new="!id" :organization="organization" :type="type" :item="item"></resource-scoring>
         </div>
         <div class="scroll-content resources-detail-comments-container">
           <div class="scroll-container">
@@ -80,6 +81,7 @@
   import ResourceInfo from './detail/Info';
   import ResourcePublishControl from './detail/PublishControl';
   import ResourceComment from './detail/Comment';
+  import ResourceScoring from './detail/Scoring';
   import Journal from '../Journal';
   import ElasticList from '../../ElasticList';
 
@@ -92,6 +94,7 @@
       ResourceInfo,
       ResourcePublishControl,
       ResourceComment,
+      ResourceScoring,
       Journal,
       ElasticList
     },

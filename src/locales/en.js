@@ -93,21 +93,6 @@ module.exports = {
     accusative: 'ideas',
     personal_accusative: 'personal ideas',
     accusative_one: 'one',
-    scoring: 'Scoring',
-    criteria: {
-      strategy: 'Strategy',
-      need: 'Need',
-      impact: 'Impact',
-      feasability: 'Feasability',
-      feel: 'Feel',
-    },
-    criteriaHelp: {
-      strategy: 'How well does the idea fit into our overall strategy or vision?',
-      need: 'How well does this address an important customer need?',
-      impact: 'How big do you consider the opportunity of your idea?',
-      feasability: 'How easy will it be to implement this?',
-      feel: 'How confident do you feel about your idea?',
-    }
   },
   insights: {
     title: 'Short title of the insight',
@@ -116,6 +101,24 @@ module.exports = {
     accusative: 'insights',
     personal_accusative: 'personal insights',
     accusative_one: 'one'
+  },
+  scoring: {
+    title: 'Your scoring',
+    criteria: {
+      strategy: 'Strategy',
+      need: 'Need',
+      impact: 'Impact',
+      feasability: 'Feasability',
+      feel: 'Feel',
+    },
+    info: 'Please help us in prioritizing by scoring this contribution with your own opinion - this will be private to you and the staff',
+    help: {
+      strategy: 'How well does the idea fit into our overall strategy or vision?',
+      need: 'How well does this address an important customer need?',
+      impact: 'How big do you consider the opportunity of your idea?',
+      feasability: 'How easy will it be to implement this?',
+      feel: 'How confident do you feel about your idea?',
+    }
   },
   thereAreNo: 'There are no {accusative} yet',
   youDontHave: 'You don\'t have {accusative} yet',

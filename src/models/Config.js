@@ -17,7 +17,8 @@ const Config = {
       },
       flashlight: {
       },
-      periodical: true
+      periodical: true,
+      scoring: []
     },
     ideas: {
       icon: 'lightbulb_outline',
@@ -33,7 +34,8 @@ const Config = {
       },
       flashlight: {
       },
-      periodical: false
+      periodical: false,
+      scoring: ['strategy', 'need', 'impact', 'feasability', 'feel']
     },
     insights: {
       icon: 'chat_bubble_outline',
@@ -49,7 +51,8 @@ const Config = {
       },
       flashlight: {
       },
-      periodical: false
+      periodical: false,
+      scoring: []
     }
   },
   flashlight: {
