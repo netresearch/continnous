@@ -50,7 +50,7 @@
                   <md-icon>info_outline</md-icon>
                   <span v-html="$t('detail.whatsAhead' + (personal ? 'Personal' : ''))"></span>
                 </p>
-                <md-checkbox v-model="personal" style="margin: 0 0 18px 22px">{{$t(type + '.personal')}}</md-checkbox>
+                <md-checkbox v-model="personal" style="margin: 0 0 18px 22px">{{$t('detail.this')}} {{$t('detail.isPersonal')}}</md-checkbox>
               </template>
               <resource-publish-control :is-new="!id" :organization="organization"></resource-publish-control>
             </template>

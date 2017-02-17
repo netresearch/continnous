@@ -13,6 +13,11 @@ module.exports = {
     membershipProcessed: 'Your membership is being processed',
     membershipDenied: 'Your membership has been denied'
   },
+  language: {
+    language: 'Language',
+    de: 'German',
+    en: 'English'
+  },
   settings: 'Settings',
   overview: 'Overview',
   organization: {
@@ -175,12 +180,14 @@ module.exports = {
     restore: 'restored',
     like: 'likes',
     comment: 'commented',
-    confirmCommentDelete: 'Really delete comment?'
+    confirmCommentDelete: 'Really delete comment?',
+    this: 'this'
   },
   you: 'You',
   quarter: 'Quarter',
   for: 'for',
   detail: {
+    this: 'This',
     created: 'Created {ago}',
     updated: 'Updated {ago}',
     contributedBy: 'Contributed by',
@@ -194,8 +201,8 @@ module.exports = {
     motivation: '<strong>Thank you {firstName},</strong><br>we very much appreciate your commitment - we\'re pretty sure it will be worth it!',
     whatsAhead: 'After you saved this, <strong>you and others</strong> will be able to see, like and comment this - tick the checkbox below to keep this only for you:',
     whatsAheadPersonal: 'After you saved this, <strong>only you</strong> will be able to see this - untick the checkbox below to make this available to others:',
-    isPersonal: 'is personal so only you can see it',
-    isPublic: 'is public so anyone allowed to can see it',
+    isPersonal: 'is personal',
+    isPublic: 'is public',
     makePersonal: 'make personal',
     makePublic: 'make public'
   },

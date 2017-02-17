@@ -5,6 +5,7 @@
         :search="$t('actions.search')"
         @search="handleSearch"
         :q="$route.query.q"
+        v-if="organization && auth.user"
     >
       <template slot="title">
         <h2 class="md-title">{{title}}</h2>
@@ -21,33 +22,31 @@
         <account-switcher></account-switcher>
       </template>
 
-      <template v-if="organization">
-        <div class="app-content full-height">
-          <router-view :organization="organization" :permissions="permissions"></router-view>
-        </div>
+      <div class="app-content full-height">
+        <router-view :organization="organization" :permissions="permissions"></router-view>
+      </div>
 
-        <md-list slot="sidebar">
-          <md-list-item class="menu-entry">
-            <router-link :to="'/' + organization.key" exact>
-              <md-icon>home</md-icon>
-              <span>{{$t('overview')}}</span>
-              <router-link v-if="role === 'admin'" :to="'/' + organization.key + '/settings'" class="md-button md-icon-button md-list-action">
-                <md-icon>settings</md-icon>
-                <md-tooltip>{{$t('settings')}}</md-tooltip>
-              </router-link>
+      <md-list slot="sidebar">
+        <md-list-item class="menu-entry">
+          <router-link :to="'/' + organization.key" exact>
+            <md-icon>home</md-icon>
+            <span>{{$t('overview')}}</span>
+            <router-link v-if="role === 'admin'" :to="'/' + organization.key + '/settings'" class="md-button md-icon-button md-list-action">
+              <md-icon>settings</md-icon>
+              <md-tooltip>{{$t('settings')}}</md-tooltip>
             </router-link>
-          </md-list-item>
-          <md-list-item v-for="(resource, key) in resources" v-if="permissions[key].write || permissions['personal_' + key].write || permissions[key].read || permissions['personal_' + key].read">
-            <router-link :to="'/' + organization.key + '/' + key">
-              <md-icon>{{resource.icon}}</md-icon>
-              <span>{{$t('resources.' + key)}}</span>
-              <router-link v-if="permissions[key].write || permissions['personal_' + key].write" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
-                <md-icon>add</md-icon>
-              </router-link>
+          </router-link>
+        </md-list-item>
+        <md-list-item v-for="(resource, key) in resources" v-if="permissions[key].write || permissions['personal_' + key].write || permissions[key].read || permissions['personal_' + key].read">
+          <router-link :to="'/' + organization.key + '/' + key">
+            <md-icon>{{resource.icon}}</md-icon>
+            <span>{{$t('resources.' + key)}}</span>
+            <router-link v-if="permissions[key].write || permissions['personal_' + key].write" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
+              <md-icon>add</md-icon>
             </router-link>
-          </md-list-item>
-        </md-list>
-      </template>
+          </router-link>
+        </md-list-item>
+      </md-list>
     </md-app>
 
     <md-message
@@ -79,6 +78,7 @@
   import Config from '../models/Config';
   import Permissions from '../models/Permissions';
   import Flashlight from '../models/Flashlight';
+  import locales from '../locales';
 
   /* global document */
   const titleElement = document.querySelector('html > head > title');
@@ -119,19 +119,28 @@
         this.orgsRef.on('value',
           (snapshot) => {
             if (snapshot.val()) {
-              this.organization = new Organization(snapshot.key, snapshot.val());
-              this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
-              this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
-              titleElement.innerText = this.title;
+              const organization = new Organization(snapshot.key, snapshot.val());
+              auth.user.bind(organization).once('value', (sn) => {
+                (sn.val().lang ? locales.set(sn.val().lang) : locales.setFromNavigator()).then(() => {
+                  this.organization = organization;
+                  this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
+                  this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
+                  titleElement.innerText = this.title;
+                });
+              });
             } else {
-              this.organization = null;
-              this.title = null;
-              titleElement.innerHTML = defaultTitle;
+              locales.setFromNavigator().then(() => {
+                this.organization = null;
+                this.title = null;
+                titleElement.innerHTML = defaultTitle;
+              });
             }
           },
           () => {
-            this.organization = false;
-            this.fetchOrganization();
+            locales.setFromNavigator().then(() => {
+              this.organization = false;
+              this.fetchOrganization();
+            });
           }
         );
       },
@@ -141,7 +150,7 @@
           const orgKey = this.$route.params.organization_key;
           this.permissions.bind(this.organization, user, () => {
             this.role = this.permissions.role;
-            if (this.role || this.organization) {
+            if ((this.role || this.organization) && user) {
               // Update user
               Firebase.database().ref('/organizations/' + orgKey + '/users/' + user.uid).update({
                 email: user.email,
@@ -150,7 +159,6 @@
               });
             }
             if (this.organization && user) {
-              user.bind(this.organization);
               // Update flashlight index paths
               Flashlight.updatePaths(orgKey, user.uid, this.permissions);
             }

@@ -25,7 +25,7 @@ export default class User {
   bind(organization) {
     if (this.ref) {
       if (this.ref.orgKey === organization.key) {
-        return;
+        return this.ref();
       }
       this.ref().off('value');
     }
@@ -35,6 +35,7 @@ export default class User {
     ref.on('value', (s) => {
       setData(this, s.val());
     });
+    return ref;
   }
   toString() {
     return this.displayName || '?';

@@ -17,7 +17,7 @@
             <dt>
               <span>
                 {{$t('scoring.criteria.' + key)}}
-                <md-tooltip md-direction="bottom">{{$t('scoring.help.' + key)}}</md-tooltip>
+                <md-tooltip md-direction="bottom">{{$t('scoring.help.' + key, {organization: organization.name})}}</md-tooltip>
               </span>
             </dt>
             <dd>

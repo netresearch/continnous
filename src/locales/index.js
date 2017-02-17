@@ -3,23 +3,40 @@ import VueI18n from 'vue-i18n';
 
 Vue.use(VueI18n);
 
-const available = ['en']; // , 'de'];
+const available = ['en', 'de'];
 
 function loadLocales(lang) {
-  /* eslint-disable global-require, import/no-dynamic-require */
-  const locales = require('./' + lang);
-  Vue.locale(lang, locales);
+  return new Promise((resolve) => {
+    /* eslint-disable global-require, import/no-dynamic-require */
+    require(['./' + lang], (locales) => {
+      resolve(locales);
+    });
+  });
 }
 
-loadLocales('en');
-Vue.config.lang = 'en';
+const api = {
+  available,
+  current() {
+    return Vue.config.lang;
+  },
+  set(lang) {
+    let l = lang;
+    if (available.indexOf(l) < 0) {
+      l = available[0];
+    }
+    return new Promise((resolve) => {
+      Vue.locale(l, loadLocales.bind(null, l), () => {
+        Vue.config.lang = l;
+        resolve();
+      });
+    });
+  },
+  setFromNavigator() {
+    /* global navigator */
+    return api.set(
+      (navigator.language || navigator.userLanguage).replace(/^([a-z][a-z]).+$/, '$1')
+    );
+  }
+};
 
-/* global navigator */
-const lang = (navigator.language || navigator.userLanguage).replace(/^([a-z][a-z]).+$/, '$1');
-if (available.indexOf(lang) > -1 && lang !== 'en') {
-  loadLocales(lang);
-  Vue.config.lang = lang;
-  Vue.config.fallbackLang = 'en';
-}
-
-export default {};
+export default api;

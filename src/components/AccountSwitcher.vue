@@ -1,15 +1,3 @@
-<script>
-  import auth from '../auth';
-
-  export default {
-    data() {
-      return {
-        auth
-      };
-    }
-  };
-</script>
-
 <template>
   <div class="auth">
     <template v-if="auth.ready">
@@ -26,6 +14,15 @@
               <div class="author-card-links">
                 <md-button class="md-primary md-link" @click="auth.logout()">Logout</md-button>
               </div>
+              <div class="account-language">
+                <hr>
+                <md-input-container>
+                  <label>{{$t('language.language')}}</label>
+                  <md-select :value="language" @change="setLanguage">
+                    <md-option v-for="l in languages" :value="l">{{$t('language.' + l)}}</md-option>
+                  </md-select>
+                </md-input-container>
+              </div>
             </div>
           </div>
         </md-menu-content>
@@ -34,6 +31,28 @@
     <md-spinner v-else class="md-contrast" md-indeterminate :md-size="40"></md-spinner>
   </div>
 </template>
+
+<script>
+  import locales from '../locales';
+  import auth from '../auth';
+
+  export default {
+    data() {
+      return {
+        auth,
+        languages: locales.available,
+        language: locales.current()
+      };
+    },
+    methods: {
+      setLanguage(lang) {
+        this.language = lang;
+        locales.set(lang);
+        auth.user.ref().update({ lang });
+      }
+    }
+  };
+</script>
 
 <style lang="scss" rel="stylesheet/scss">
   .auth {
@@ -49,17 +68,24 @@
     }
   }
   .account-card {
-    padding: 8px 16px;
+    padding: 8px 16px 0;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     .md-avatar {
       position: static;
+      margin: 0;
     }
     .account-card-info {
+      margin-top: 10px;
       display: flex;
       flex-flow: column;
       flex: 1;
       margin-left: 16px;
+    }
+  }
+  .account-language {
+    .md-input-container {
+      margin-bottom: 16px;
     }
   }
 </style>
