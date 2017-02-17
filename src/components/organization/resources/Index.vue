@@ -7,7 +7,7 @@
       :trash="trash"
       :items="items"
       :personal="personal"
-      :period="period"
+      :period="trash ? undefined : period"
       :status="status"
       trash-enabled
   >
@@ -75,7 +75,7 @@
               load = true;
             }
           });
-          if (this.type && Config.resources[this.type].periodical) {
+          if (this.type && Config.resources[this.type].periodical && !p.trash) {
             const period = Period.getById(route.params.period);
             if (!this.period || this.period.getId() !== period.getId()) {
               this.period = period;
@@ -102,14 +102,14 @@
         const ref = this.getFirebaseRef(this.trash ? 'trash' : 'resources');
         if (this.period) {
           this.itemsRef = ref.orderByChild('dueTime')
-              .startAt(this.period.start)
-              .endAt(this.period.end)
-              .limitToLast(100);
+            .startAt(this.period.start)
+            .endAt(this.period.end)
+            .limitToLast(100);
         } else {
           this.itemsRef = ref
-              .orderByChild(this.sort)[
-                'limitTo' + (this.order === 'desc' ? 'Last' : 'First')
-              ](100);
+            .orderByChild(this.sort)[
+          'limitTo' + (this.order === 'desc' ? 'Last' : 'First')
+            ](100);
         }
         this.items = [];
         this.status = 0;

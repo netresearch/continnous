@@ -126,6 +126,7 @@ module.exports = {
   },
   thereAreNo: 'There are no {accusative} yet',
   youDontHave: 'You don\'t have {accusative} yet',
+  trashEmpty: 'There are no items in the trash.',
   howAbout: 'how about',
   addingOne: 'adding {accusative_one}',
   fields: {
@@ -147,7 +148,7 @@ module.exports = {
       placeholder: 'Select within which period this should be accomplished'
     },
     dueTime: 'target period',
-    _score: 'relevance'
+    rank: 'relevance'
   },
   file: {
     placeholder: 'Drag and drop to upload or click here.',

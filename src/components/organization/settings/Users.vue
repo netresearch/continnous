@@ -131,7 +131,6 @@
         li.className = li.className.replace(/ md-active/, '');
       },
       setElevation(uid, elevate) {
-        console.log(uid, elevate);
         Firebase.database().ref('organizations/' + this.organization.key + '/users/' + uid).update({ elevate });
       }
     }

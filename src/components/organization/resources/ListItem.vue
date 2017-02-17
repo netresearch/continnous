@@ -1,5 +1,5 @@
 <template>
-  <md-card md-with-hover @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal/' : '/') + item.id)">
+  <md-card md-with-hover @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '/trash' : '') + '/' + item.id)">
     <md-card-header>
       <md-card-header-text>
         <div class="md-title">{{item.title}}</div>

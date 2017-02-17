@@ -64,15 +64,20 @@
 
     <div class="scroll-content">
       <div v-if="status === 1 && !items.length">
-        {{
-          $t(personal ? 'youDontHave' : 'thereAreNo', {accusative: $t(type + '.' + (personal ? 'personal_' : '') + 'accusative')})
-          + (period ? ' ' + $t('for') + ' ' + period.format() : '')
-          + (permissions[(personal ? 'personal_' : '') + type].write ? '' : '.')
-        }}
-        <template v-if="permissions[(personal ? 'personal_' : '') + type].write">
-          - {{$t('howAbout')}}
-          <router-link :to="'/' + organization.key + '/' + type + (personal ? '/personal' : '') + '/create'">
-            {{$t('addingOne', {accusative_one: $t(type + '.accusative_one')})}}</router-link>?
+        <template v-if="trash">
+          {{$t('trashEmpty')}}
+        </template>
+        <template v-else>
+          {{
+            $t(personal ? 'youDontHave' : 'thereAreNo', {accusative: $t(type + '.' + (personal ? 'personal_' : '') + 'accusative')})
+            + (period ? ' ' + $t('for') + ' ' + period.format() : '')
+            + (permissions[(personal ? 'personal_' : '') + type].write ? '' : '.')
+          }}
+          <template v-if="permissions[(personal ? 'personal_' : '') + type].write">
+            - {{$t('howAbout')}}
+            <router-link :to="'/' + organization.key + '/' + type + (personal ? '/personal' : '') + '/create'">
+              {{$t('addingOne', {accusative_one: $t(type + '.accusative_one')})}}</router-link>?
+          </template>
         </template>
       </div>
       <div ref="list" :class="['resources-list']">
@@ -132,7 +137,7 @@
         return query;
       },
       sortFields() {
-        let fields = ['updated', 'created'];
+        let fields = ['updated', 'created', 'rank'];
         const addFields = this.additionalSort;
         if (addFields) {
           fields = (typeof addFields === 'string' ? addFields.split(',') : addFields)

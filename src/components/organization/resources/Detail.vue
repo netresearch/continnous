@@ -6,11 +6,7 @@
     <base-form
         class="scroll-container-hgroup"
         v-if="id !== undefined"
-        :firebase-path="
-            '/resources/organizations/' + organization.key
-            + '/' + (personal ? auth.user.uid : 'organization')
-            + '/' + type
-            + '/' + (id || '{new}')"
+        :firebase-path="getFirebasePath(trash ? 'trash' : 'resources', id || '{new}')"
         firebase-bind
         :firebase-receive="firebaseReceive"
         :defaults="{creator: auth.user.uid}"
@@ -105,7 +101,8 @@
         personal: false,
         id: undefined,
         mayEdit: false,
-        item: undefined
+        item: undefined,
+        trash: false
       };
     },
     watch: {
@@ -115,6 +112,7 @@
           this.personal = !!route.params.personal;
           this.type = route.params.type;
           this.id = route.params.id || null;
+          this.trash = !!route.params.trash;
           if (this.$refs.form) {
             this.$refs.form.reset(true);
           }
@@ -129,6 +127,9 @@
         const item = this.createItem(snapshot.key, snapshot.val());
         this.item = item;
         this.mayEdit = !this.id || item.creator === this.auth.user.uid;
+        if (this.id) {
+          this.trackView(item);
+        }
         return item;
       },
       onSaved(updates, ref) {

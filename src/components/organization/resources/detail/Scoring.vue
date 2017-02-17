@@ -35,10 +35,12 @@
   import auth from '../../../../auth';
   import Config from '../../../../models/Config';
   import Firebase from '../../../../firebase';
+  import mixin from '../mixin';
   
   export default {
     extends: Child,
     props: ['organization', 'type', 'item', 'isNew'],
+    mixins: [mixin],
     data() {
       return {
         values: {}
@@ -77,15 +79,28 @@
       updateCriterion(key, value) {
         this.values[key] = value;
         if (this.ref && !this.isNew) {
-          this.ref.child(key).set(value);
+          this.save().then(() => {
+            this.updateRank(this.item);
+          });
         }
       },
       onFormSave(beforeSave) {
         if (this.isNew) {
           beforeSave.push(new Promise((resolve, reject) => {
-            this.ref.set(this.values).then(resolve, reject);
+            this.save().then(resolve, reject);
           }));
         }
+      },
+      save() {
+        /* eslint-disable no-underscore-dangle */
+        const values = {};
+        this.criteria.forEach((criterion) => {
+          values[criterion] = this.values[criterion] || 0;
+        });
+        if (auth.user.elevate) {
+          values._elevate = auth.user.elevate;
+        }
+        return this.ref.set(values);
       }
     }
   };

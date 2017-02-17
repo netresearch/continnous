@@ -38,7 +38,7 @@ Object.keys(Config.resources).forEach((resource) => {
     component: OrganizationResourcesPage
   });
   organizationRoute.children.push({
-    path: ':type(' + resource + ')/:personal(personal)?/:id(-[^/]+)',
+    path: ':type(' + resource + ')/:personal(personal)?/:trash(trash)?/:id(-[^/]+)',
     component: OrganizationResourcesResource
   });
   organizationRoute.children.push({

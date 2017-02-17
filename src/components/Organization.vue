@@ -117,22 +117,22 @@
         }
         this.orgsRef = Firebase.database().ref('organizations/' + this.$route.params.organization_key);
         this.orgsRef.on('value',
-            (snapshot) => {
-              if (snapshot.val()) {
-                this.organization = new Organization(snapshot.key, snapshot.val());
-                this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
-                this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
-                titleElement.innerText = this.title;
-              } else {
-                this.organization = null;
-                this.title = null;
-                titleElement.innerHTML = defaultTitle;
-              }
-            },
-            () => {
-              this.organization = false;
-              this.fetchOrganization();
+          (snapshot) => {
+            if (snapshot.val()) {
+              this.organization = new Organization(snapshot.key, snapshot.val());
+              this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
+              this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
+              titleElement.innerText = this.title;
+            } else {
+              this.organization = null;
+              this.title = null;
+              titleElement.innerHTML = defaultTitle;
             }
+          },
+          () => {
+            this.organization = false;
+            this.fetchOrganization();
+          }
         );
       },
       fetchRoleAndPermissions() {
@@ -150,6 +150,7 @@
               });
             }
             if (this.organization && user) {
+              user.bind(this.organization);
               // Update flashlight index paths
               Flashlight.updatePaths(orgKey, user.uid, this.permissions);
             }
@@ -157,7 +158,9 @@
         });
       },
       requestMembership() {
-        this.orgUsersRef.set('?');
+        const user = this.auth.user;
+        const orgKey = this.$route.params.organization_key;
+        Firebase.database().ref('/organizations/' + orgKey + '/users/' + user.uid).set('?');
       },
       handleSearch(search) {
         const path = '/' + this.organization.key + '/search';

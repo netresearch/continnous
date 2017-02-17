@@ -79,6 +79,16 @@ path /scorings/organizations/{oid}/{rid}/{uid} {
     write() { isAuthenticated() && isAllowed('organization', 'read', oid) && uid === auth.uid }
 }
 
+path /views/organizations/{oid} {
+    read() { isAuthenticated() && isAllowed('organization', 'read', oid) }
+}
+path /views/organizations/{oid}/{rid} {
+    write() { isAuthenticated() && isAllowed('organization', 'read', oid) && rid === auth.uid }
+}
+path /views/organizations/{oid}/{rid}/{uid} {
+    write() { isAuthenticated() && isAllowed('organization', 'read', oid) && uid === auth.uid }
+}
+
 path /flashlight/paths/{pid} {
     read() { false }
     write() {
@@ -141,5 +151,14 @@ path /{branch}/organizations/{oid}/{scope}/{type}/{rid} {
             (scope === 'organization' && prior(this).creator === auth.uid || scope === auth.uid) ||
             this == null && isAdmin(oid)
         )
+    }
+}
+
+path /{branch}/organizations/{oid}/{scope}/{type}/{rid}/{key} {
+    write() {
+        (branch === 'resources' || branch === 'trash')
+        && (key === 'stats' || key === 'rank')
+        && isAuthenticated()
+        && isAllowedScope(scope, type, 'read', oid)
     }
 }
