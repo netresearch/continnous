@@ -108,7 +108,7 @@
         this.userRoles = snapshot.val() || {};
         groupUsers();
       });
-      Firebase.database().ref('organizations/' + this.organization.key + '/users').orderByChild('displayName').on('value', (snapshot) => {
+      Firebase.database().ref('/users/organizations/' + this.organization.key).orderByChild('displayName').on('value', (snapshot) => {
         this.users = snapshot.val();
         groupUsers();
       });
@@ -131,7 +131,7 @@
         li.className = li.className.replace(/ md-active/, '');
       },
       setElevation(uid, elevate) {
-        Firebase.database().ref('organizations/' + this.organization.key + '/users/' + uid).update({ elevate });
+        Firebase.database().ref('/users/organizations/' + this.organization.key + '/' + uid).update({ elevate });
       }
     }
   };

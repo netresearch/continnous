@@ -1,15 +1,19 @@
 import Firebase from '../firebase';
 
 const setData = (user, d) => {
-  user.email = d.email;
-  user.displayName = d.displayName;
-  user.uid = d.uid || user.uid;
-  user.photoURL = d.photoURL;
-  user.elevate = d.elevate || 0;
+  ['email', 'displayName', 'uid', 'photoURL', 'elevate'].forEach((key) => {
+    if (d.hasOwnProperty(key)) {
+      user[key] = d[key];
+    }
+  });
 };
 
 export default class User {
   constructor(data, organization) {
+    this.elevate = 0;
+    ['email', 'displayName', 'uid', 'photoURL'].forEach((key) => {
+      this[key] = undefined;
+    });
     if (typeof data === 'object') {
       setData(this, data);
     } else if (typeof data === 'string') {
@@ -23,17 +27,18 @@ export default class User {
     }
   }
   bind(organization) {
+    const orgKey = typeof organization === 'object' ? organization.key : organization;
     if (this.ref) {
-      if (this.ref.orgKey === organization.key) {
+      if (this.ref.orgKey === orgKey) {
         return this.ref();
       }
       this.ref().off('value');
     }
-    const ref = Firebase.database().ref('/organizations/' + organization.key + '/users/' + this.uid);
+    const ref = Firebase.database().ref('/users/organizations/' + orgKey + '/' + this.uid);
     this.ref = () => ref;
-    this.ref.orgKey = organization.key;
+    this.ref.orgKey = orgKey;
     ref.on('value', (s) => {
-      setData(this, s.val());
+      setData(this, s.val() || {});
     });
     return ref;
   }

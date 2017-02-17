@@ -130,8 +130,10 @@ path /organizations/{oid} is Any {
     write() { isAuthenticated() && isAdmin(oid) }
 }
 
-path /organizations/{oid}/users/{uid} {
-    read() { isAuthenticated() && (uid === auth.uid || isAllowed('organization', 'read', oid) || isAdmin(oid)) }
+path /users/organizations/{oid} {
+    read() { isAuthenticated() && (isAllowed('organization', 'read', oid) || isAdmin(oid)) }
+}
+path /users/organizations/{oid}/{uid} {
     create() { isAuthenticated() && (uid === auth.uid) }
     update() { isAuthenticated() && (uid === auth.uid || isAdmin(oid)) }
     delete() { isAuthenticated() && isAdmin(oid) }

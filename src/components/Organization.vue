@@ -121,7 +121,8 @@
             if (snapshot.val()) {
               const organization = new Organization(snapshot.key, snapshot.val());
               auth.user.bind(organization).once('value', (sn) => {
-                (sn.val().lang ? locales.set(sn.val().lang) : locales.setFromNavigator()).then(() => {
+                const ul = sn.val() ? sn.val().lang : null;
+                (ul ? locales.set(ul) : locales.setFromNavigator()).then(() => {
                   this.organization = organization;
                   this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
                   this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
@@ -152,7 +153,7 @@
             this.role = this.permissions.role;
             if ((this.role || this.organization) && user) {
               // Update user
-              Firebase.database().ref('/organizations/' + orgKey + '/users/' + user.uid).update({
+              user.bind(orgKey).update({
                 email: user.email,
                 displayName: user.displayName,
                 photoURL: user.photoURL
@@ -168,7 +169,7 @@
       requestMembership() {
         const user = this.auth.user;
         const orgKey = this.$route.params.organization_key;
-        Firebase.database().ref('/organizations/' + orgKey + '/users/' + user.uid).set('?');
+        Firebase.database().ref('/security/organizations/' + orgKey + '/users/' + user.uid).set('?');
       },
       handleSearch(search) {
         const path = '/' + this.organization.key + '/search';

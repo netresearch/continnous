@@ -18,7 +18,7 @@
                 <hr>
                 <md-input-container>
                   <label>{{$t('language.language')}}</label>
-                  <md-select :value="language" @change="setLanguage">
+                  <md-select v-model="language">
                     <md-option v-for="l in languages" :value="l">{{$t('language.' + l)}}</md-option>
                   </md-select>
                 </md-input-container>
@@ -44,8 +44,8 @@
         language: locales.current()
       };
     },
-    methods: {
-      setLanguage(lang) {
+    watch: {
+      language(lang) {
         this.language = lang;
         locales.set(lang);
         auth.user.ref().update({ lang });
