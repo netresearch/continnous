@@ -173,7 +173,7 @@ module.exports = {
     update: 'hat {fields} {resource} aktualisiert',
     on: 'für',
     create: 'hat {resource} hinzugefügt',
-    remove: 'entfernte {resource}',
+    remove: 'hat {resource} entfernt',
     restore: 'hat {resource} wiederhergestellt',
     like: 'gefällt',
     comment: 'kommentierte',

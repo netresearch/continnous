@@ -19,7 +19,7 @@
                        class="md-mini md-warn journal-delete">clear</md-icon>
             </div>
             <span class="journal-predicate" v-else>
-              {{$t('journal.' + entry.action, { fields: joinFields(entry.fields), resource: '###' }).replace(/###.+$/,'')}}
+              {{$t('journal.' + entry.action, { fields: joinFields(entry.fields), resource: '###' }).split('###').shift()}}
               {{entry.fields && !noResource ? $t('journal.on') : ''}}
             </span>
             <span v-if="!noResource" class="journal-resource">
@@ -28,9 +28,9 @@
                 {{entry.title}}
               </router-link>
             </span>
-            <span class="journal-predicate" v-else>{{$t('journal.this')}}</span>
+            <span class="journal-predicate" v-else-if="!entry.fields && entry.action !== 'comment'">{{$t('journal.this')}}</span>
             <span class="journal-predicate" v-if="!noResource || entry.action !== 'comment'">
-              {{$t('journal.' + entry.action, { fields: joinFields(entry.fields), resource: '###' }).replace(/^.+(###|$)/,'')}}
+              {{$t('journal.' + entry.action, { fields: joinFields(entry.fields), resource: '###' }).replace(/^[^#]+(###(.*))?$/,'$2')}}
             </span>
           </div>
         </template>
