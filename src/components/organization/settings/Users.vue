@@ -70,7 +70,7 @@
         const groupedUsers = {};
         Object.keys(this.users).forEach((uid) => {
           const entry = { uid };
-          let role = 'anyone';
+          let role;
           const emailDomain = this.users[uid].email.split('@').pop();
           if (this.userRoles.hasOwnProperty(uid)) {
             role = this.userRoles[uid];
@@ -92,6 +92,9 @@
             }
             return true;
           });
+          if (!role) {
+            role = 'anyone';
+          }
           if (!groupedUsers.hasOwnProperty(role)) {
             groupedUsers[role] = [];
           }

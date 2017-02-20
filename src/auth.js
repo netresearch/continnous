@@ -9,6 +9,7 @@ const auth = {
     provider.addScope('profile');
     provider.addScope('email');
     Firebase.auth().signInWithRedirect(provider);
+    // Firebase.auth().signInWithPopup(provider);
   },
   logout() {
     auth.user = undefined;
