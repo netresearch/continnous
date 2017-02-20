@@ -62,8 +62,8 @@
           {{$t('errors.' + (auth.user ? 403 : 401))}}
         </div>
         <md-button :class="{'md-raised': true, 'md-primary': !auth.user || role}" @click="auth.login()">{{$t('auth.' + (auth.user ? 'switchAccount' : 'signIn'))}}</md-button>
-        <md-button class="md-raised md-primary" v-if="auth.user && !role" @click="requestMembership">$t('auth.requestMembership')</md-button>
-        <p v-else-if="auth.user && role">{{$t('auth.role' + (role === '!' ? 'Denied' : 'Processed'))}}.</p>
+        <md-button class="md-raised md-primary" v-if="auth.user && !role" @click="requestMembership">{{$t('auth.requestMembership')}}</md-button>
+        <p v-else-if="auth.user && role">{{$t('auth.membership' + (role === '!' ? 'Denied' : 'Processed'))}}.</p>
       </div>
     </md-message>
   </div>
@@ -149,7 +149,7 @@
         this.$nextTick(() => {
           const user = this.auth.user;
           const orgKey = this.$route.params.organization_key;
-          this.permissions.bind(this.organization, user, () => {
+          this.permissions.bind(orgKey, user, () => {
             this.role = this.permissions.role;
             if ((this.role || this.organization) && user) {
               // Update user

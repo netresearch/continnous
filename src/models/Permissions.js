@@ -46,13 +46,12 @@ module.exports = class Permissions {
     }
     this.role = undefined;
     if (organization && user) {
-      const orgKey = organization.key;
+      const orgKey = typeof organization === 'object' ? organization.key : organization;
       refs.user = refs.get(
         '/security/organizations/' + orgKey + '/users/' + user.uid
       );
       refs.user.on('value', (snapshot) => {
         this.role = snapshot.val();
-
         if (organization && this.role !== '?' && this.role !== '!') {
           // Load permissions and set role for domain members (for whom snapshot.val() is null)
           const roles = this.role && this.role !== 'admin' ? [this.role] : Config.roles.slice(0);
