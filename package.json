@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "node build/dev-server.js",
     "build": "node build/build.js",
+    "deploy": "npm run build && firebase deploy",
+    "bolt": "firebase-bolt database.rules.bolt && firebase deploy --only database",
     "unit": "karma start test/unit/karma.conf.js --single-run",
     "e2e": "node test/e2e/runner.js",
     "test": "npm run unit && npm run e2e",
