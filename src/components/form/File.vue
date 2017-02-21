@@ -246,7 +246,7 @@
                 values.push(this.createValueObject(fileRecord));
               }
             });
-            value = this.multiple ? values : values[0];
+            value = this.multiple ? values : (values[0] || null);
           }
           this.$emit('change', value);
           this.$emit('input', value);

@@ -2,11 +2,11 @@
   <div class="resource-results">
     <template v-if="show">
       <card-form
-        :keys="['results']"
-        :validate="{results: filterAndValidate}"
-        :disabled="isNew || !editable || !edit"
-        sub
-        ref="form"
+          :keys="['results']"
+          :validate="{results: filterAndValidate}"
+          :disabled="isNew || !editable || !edit"
+          sub
+          ref="form"
       >
         <template scope="form">
           <div class="resource-results-title">
@@ -16,9 +16,10 @@
             <md-icon v-if="!isNew && editable && !edit" @click.native="edit = true">build</md-icon>
           </div>
           <hr>
-          <div class="resource-result-form" v-if="edit || isNew">
+          <results-list v-if="!edit && !isNew" :results="item ? item.results || [] : []" :types="types"></results-list>
+          <div class="resource-result-form" v-else>
             <div class="resource-result-form-result-list">
-              <div class="resource-result" v-for="(result, i) in form.values.results || []">
+              <div class="resource-result-form-result" v-for="(result, i) in form.values.results || []">
                 <md-menu>
                   <md-button class="md-icon-button md-primary" md-menu-trigger>
                     <md-icon :title="$t('results.' + result.type)">{{types[result.type].icon}}</md-icon>
@@ -33,12 +34,12 @@
                     </md-menu-item>
                   </md-menu-content>
                 </md-menu>
-                <div class="resource-result-fields">
-                  <md-input-container :class="['resource-result-title', {'md-input-invalid': errors[i] && errors[i].title}]">
+                <div class="resource-result-form-fields">
+                  <md-input-container :class="['resource-result-form-title', {'md-input-invalid': errors[i] && errors[i].title}]">
                     <label>{{$t('fields.title')}}</label>
                     <md-input required :value="result.title" @input="onChange(i, 'title', $event)"></md-input>
                   </md-input-container>
-                  <div class="resource-result-range">
+                  <div class="resource-result-form-range">
                     <md-input-container
                         v-for="key in ['initial', 'target']"
                         v-if="types[result.type][key]"
@@ -50,13 +51,13 @@
                   </div>
                 </div>
                 <md-icon @click.native="removeResult(i)">clear</md-icon>
-                <div class="resource-result-sort" v-if="form.values.results.length > 1">
+                <div class="resource-result-form-sort" v-if="form.values.results.length > 1">
                   <md-icon v-if="i > 0" @click.native="moveResult(i, -1)">arrow_drop_up</md-icon>
                   <md-icon v-if="i < form.values.results.length - 1" @click.native="moveResult(i, 1)">arrow_drop_down</md-icon>
                 </div>
               </div>
             </div>
-            <div class="resource-result-add">
+            <div class="resource-result-form-add">
               <span class="md-link" @click="addResult()">{{$t('results.add')}}</span>
             </div>
           </div>
@@ -72,9 +73,10 @@
   import Config from '../../../../models/Config';
   import mixin from '../mixin';
   import CardForm from '../../../form/Card';
+  import ResultsList from './ResultsList';
 
   export default {
-    components: { CardForm },
+    components: { CardForm, ResultsList },
     props: ['organization', 'type', 'item', 'isNew'],
     mixins: [mixin],
     data() {
@@ -129,6 +131,7 @@
         const old = results[i][field];
         results[i][field] = value;
         if (field === 'type') {
+          delete results[i].value;
           ['initial', 'target'].forEach((key) => {
             if (this.types[value][key]) {
               if (!this.types[old][key]) {
@@ -159,7 +162,7 @@
             if (key === 'title') {
               result.title = result.title.replace(/^\s*(.*)\s*$/, '$1');
               error = result.title.length < 1;
-            } else if (key !== 'type') {
+            } else if (key !== 'type' && key !== 'value') {
               if (typeof result[key] !== 'string') {
                 hasErrors = true;
               } else {
@@ -198,8 +201,8 @@
         results.push({ type, title: '' });
         this.$nextTick(() => {
           this.$el
-            .querySelector('.resource-result-form-result-list .resource-result:last-child')
-            .querySelector('.resource-result-title input').focus();
+              .querySelector('.resource-result-form-result-list .resource-result-form-result:last-child')
+              .querySelector('.resource-result-form-title input').focus();
         });
         this.$refs.form.onChange('results', results);
       }
@@ -228,7 +231,7 @@
         }
       }
     }
-    .resource-result {
+    .resource-result-form-result {
       padding-top: 10px;
       display: flex;
       flex-flow: row wrap;
@@ -251,13 +254,13 @@
           color: rgba(#000, 0.56);
         }
       }
-      .resource-result-fields {
+      .resource-result-form-fields {
         flex: 1;
         margin-left: 10px;
         > .md-input-container {
           margin: -12px 0 24px;
         }
-        .resource-result-range {
+        .resource-result-form-range {
           display: flex;
           flex-flow: row wrap;
           align-items: center;
@@ -278,7 +281,7 @@
         margin: 8px 0 0 6px;
       }
       > .md-icon,
-      .resource-result-sort .md-icon {
+      .resource-result-form-sort .md-icon {
         color: rgba(#000, 0.56);
         cursor: pointer;
         transition: all 0.24s;
@@ -286,7 +289,7 @@
           color: rgba(#000, 0.9);
         }
       }
-      .resource-result-sort {
+      .resource-result-form-sort {
         margin-top: 8px;
         min-height: 24px;
         display: inline-flex;
