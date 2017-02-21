@@ -40,6 +40,7 @@
         </div>
         <div class="scroll-content resources-card-form-container">
           <resource-main :is-new="!id" :type="type"></resource-main>
+          <resource-results :is-new="!id" :organization="organization" :type="type" :item="item"></resource-results>
           <resource-scoring :is-new="!id" :organization="organization" :type="type" :item="item"></resource-scoring>
         </div>
         <div class="scroll-content resources-detail-comments-container">
@@ -77,6 +78,7 @@
   import ResourceInfo from './detail/Info';
   import ResourcePublishControl from './detail/PublishControl';
   import ResourceComment from './detail/Comment';
+  import ResourceResults from './detail/Results';
   import ResourceScoring from './detail/Scoring';
   import Journal from '../Journal';
   import ElasticList from '../../ElasticList';
@@ -90,6 +92,7 @@
       ResourceInfo,
       ResourcePublishControl,
       ResourceComment,
+      ResourceResults,
       ResourceScoring,
       Journal,
       ElasticList
@@ -114,7 +117,7 @@
           this.id = route.params.id || null;
           this.trash = !!route.params.trash;
           if (this.$refs.form) {
-            this.$refs.form.reset(true);
+            this.$refs.form.reset(true, true);
           }
         }
       }

@@ -1,8 +1,8 @@
 <template>
   <md-button
       :class="{'md-primary': action === 'save'}"
-      :disabled="!form || !form.hasChanged(action !== 'save')"
-      @click="form[action]()"
+      :disabled="!form || !form.hasChanged(action !== 'save', recursive)"
+      @click="action === save ? form.save(recursive) : form.reset(false, recursive)"
   ><md-icon v-if="icon">{{icon}}</md-icon> {{$t('actions.' + action)}}</md-button>
 </template>
 
@@ -16,6 +16,7 @@
         type: String,
         required: true
       },
+      recursive: Boolean,
       icon: String
     }
   };

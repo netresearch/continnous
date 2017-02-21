@@ -75,6 +75,16 @@ module.exports = {
     unlike: 'Mir gefällt das nicht mehr',
     like: 'Mir gefällt das'
   },
+  results: {
+    title: 'Zielvorgaben',
+    check: 'Check',
+    value: 'Wert',
+    money: 'Geld',
+    scorings: 'Scorings',
+    ideas: 'Ideen',
+    add: 'Zielvorgabe hinzufügen',
+    none: 'Keine Zielvorgaben'
+  },
   vision: {
     label: 'Vision Statement',
     title: 'Titel des Vision Statement',
@@ -141,6 +151,8 @@ module.exports = {
       placeholder: 'Beschreibe detailliert, worum es hier geht'
     },
     title: 'Titel',
+    initial: 'Anfangswert',
+    target: 'Zielwert',
     image: 'Bild',
     attachments: 'Anhänge',
     created: 'Erstellt',

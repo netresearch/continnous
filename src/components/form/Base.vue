@@ -14,6 +14,7 @@
   import File from './File';
   import Theme from './Theme';
   import UnloadProtect from './UnloadProtect';
+  import { findParentForm } from './child';
 
   Vue.use((vm) => {
     vm.component('form-element', Element);
@@ -42,8 +43,7 @@
       value: Object,
       defaults: Object,
       firebasePath: {
-        type: String,
-        required: true
+        type: String
       },
       firebaseReceive: {
         type: Function,
@@ -61,10 +61,22 @@
        } */
       filter: Object,
       mdInline: Boolean,
-      disabled: Boolean
+      disabled: Boolean,
+      sub: Boolean
     },
     created() {
       this.elements = [];
+      this.subForms = [];
+    },
+    mounted() {
+      if (this.sub) {
+        const parent = findParentForm(this.$parent);
+        parent.subForms.push(this);
+        this.takeOverValues(parent.object);
+        this.parentForm = parent;
+        this.parentForm.subFormsChanged += Object.keys(this.changed).length;
+        this.parentForm.subFormsErrors += Object.keys(this.errors).length;
+      }
     },
     data() {
       return {
@@ -75,7 +87,9 @@
         errors: {},
         status: undefined,
         waiting: false,
-        progress: false
+        progress: false,
+        subFormsChanged: 0,
+        subFormsErrors: 0
       };
     },
     computed: {
@@ -102,6 +116,16 @@
         this.$nextTick(() => {
           this.takeOverValues(this.object || this.value);
         });
+      },
+      subFormsChanged(newVal, oldVal) {
+        if (this.sub && this.parentForm) {
+          this.parentForm.subFormsChanged += newVal - oldVal;
+        }
+      },
+      subFormsErrors(newVal, oldVal) {
+        if (this.sub && this.parentForm) {
+          this.parentForm.subFormsErrors += newVal - oldVal;
+        }
       }
     },
     methods: {
@@ -116,6 +140,11 @@
             }
           }
         });
+        if (this.subForms) {
+          this.subForms.forEach((subForm) => {
+            subForm.takeOverValues(this.object);
+          });
+        }
       },
       bindToFirebase() {
         this.$nextTick(() => {
@@ -136,9 +165,15 @@
         });
       },
       isNewFirebaseRef() {
+        if (this.sub) {
+          return this.parentForm ? this.parentForm.isNewFirebaseRef() : false;
+        }
         return this.firebasePath && this.firebasePath.substr(-6) === '/{new}';
       },
       getFirebaseRef() {
+        if (this.sub) {
+          return this.parentForm ? this.parentForm.getFirebaseRef() : undefined;
+        }
         if (this.firebasePath.substr(-6) === '/{new}') {
           const parentPath = this.firebasePath.substr(0, this.firebasePath.length - 6);
           return Firebase.database().ref(parentPath).push();
@@ -155,6 +190,10 @@
       },
       onChange(key, value) {
         const present = this.object && this.object.hasOwnProperty(key) ? this.object[key] : '';
+        if (this.sub && this.parentForm) {
+          this.parentForm.subFormsErrors -= Object.keys(this.errors).length;
+          this.parentForm.subFormsChanged -= Object.keys(this.changed).length;
+        }
         if (this.errors.hasOwnProperty(key)) {
           this.$delete(this.errors, key);
         }
@@ -171,6 +210,10 @@
           if (this.changed.hasOwnProperty(key)) {
             this.$delete(this.changed, key);
           }
+        }
+        if (this.sub && this.parentForm) {
+          this.parentForm.subFormsErrors += Object.keys(this.errors).length;
+          this.parentForm.subFormsChanged += Object.keys(this.changed).length;
         }
       },
       filterOrValidate(type, key, incomingValue) {
@@ -201,19 +244,29 @@
       isValid(key) {
         return !this.errors.hasOwnProperty(key);
       },
-      hasChanged(includeInvalid) {
-        const keys = this.allKeys;
-        for (let i = 0, l = keys.length; i < l; i++) {
-          if (this.changed.hasOwnProperty(keys[i])) {
+      hasChanged(includeInvalid, recursive) {
+        if (recursive) {
+          if (this.subFormsErrors) {
+            return includeInvalid;
+          } else if (this.subFormsChanged) {
             return true;
           }
-          if (includeInvalid && this.errors[keys[i]]) {
+        }
+        const keys = this.allKeys;
+        for (let i = 0, l = keys.length; i < l; i++) {
+          if (this.errors[keys[i]]) {
+            return includeInvalid;
+          }
+          if (this.changed.hasOwnProperty(keys[i])) {
             return true;
           }
         }
         return false;
       },
-      reset(clear) {
+      reset(clear, recursive) {
+        if (recursive) {
+          this.subForms.forEach(form => form.reset(clear, recursive));
+        }
         if (clear) {
           this.changed = {};
           this.errors = {};
@@ -230,24 +283,46 @@
           }
         });
       },
-      save() {
-        const keys = this.allKeys;
-        const updates = {};
-        const changedKeys = [];
+      save(recursive) {
         const isNew = this.isNewFirebaseRef();
-        keys.forEach((key) => {
-          const isDateField = (isNew && key === 'created') || key === 'updated';
-          if (isDateField
-            || (isNew && this.values[key] !== undefined)
-            || this.changed.hasOwnProperty(key)) {
-            updates[key] = isDateField ? +new Date() : this.values[key];
-            changedKeys.push(key);
+
+        const forms = [];
+        const updates = {};
+        const getUpdates = (form) => {
+          const fields = [];
+          const keys = form.allKeys;
+          keys.forEach((key) => {
+            const isDateField = (isNew && key === 'created') || key === 'updated';
+            if (isDateField
+              || (isNew && form.values[key] !== undefined)
+              || form.changed.hasOwnProperty(key)) {
+              updates[key] = isDateField ? +new Date() : form.values[key];
+              fields.push(key);
+            }
+          });
+          if (fields.length) {
+            forms.push({ form, fields });
           }
+          if (recursive) {
+            form.subForms.forEach((subForm) => {
+              getUpdates(subForm);
+            });
+          }
+        };
+        getUpdates(this);
+
+        let resolve;
+        let reject;
+        const promise = new Promise((rs, rj) => {
+          resolve = rs;
+          reject = rj;
         });
 
         if (Object.keys(updates).length) {
           this.status = 0;
           const beforeSave = [];
+          this.progress = false;
+          this.$emit('progress', this.progress);
           const progress = {
             done: 0,
             total: 0,
@@ -272,28 +347,40 @@
               };
             }
           };
-          this.progress = false;
-          this.$emit('progress', this.progress);
-          this.$emit('before-save', beforeSave, progress);
+          const $emit = (...args) => {
+            forms.forEach(form => form.form.$emit(...args));
+          };
+          $emit('before-save', beforeSave, progress);
           Promise.all(beforeSave).then(() => {
             this.$emit('progress', this.progress);
             this.progress = false;
             const ref = this.firebaseRef || this.getFirebaseRef();
             ref.update(updates).then(
               () => {
-                this.status = 1;
-                changedKeys.forEach((key) => {
-                  this.$delete(this.changed, key);
+                const afterSave = [];
+                $emit('after-save', afterSave, progress);
+                Promise.all(afterSave).then(() => {
+                  this.status = 1;
+                  forms.forEach((form) => {
+                    form.fields.forEach((key) => {
+                      form.form.$delete(form.form.changed, key);
+                    });
+                  });
+                  $emit('saved', updates, ref);
+                  resolve(updates);
                 });
-                this.$emit('saved', updates, ref);
               },
               () => {
                 this.status = -1;
-                this.$emit('save-error', updates);
+                $emit('save-error', updates);
+                reject();
               }
             );
           });
+        } else {
+          resolve();
         }
+        return promise;
       },
       _registerFormElement(element) {
         this.elements.push(element);

@@ -75,6 +75,16 @@ module.exports = {
     unlike: 'I don\'t like this anymore',
     like: 'I like this'
   },
+  results: {
+    title: 'Key results',
+    check: 'Check',
+    value: 'Value',
+    money: 'Money',
+    scorings: 'Scorings',
+    ideas: 'Ideas',
+    add: 'Add a key result',
+    none: 'No key results set'
+  },
   vision: {
     label: 'Vision statement',
     title: 'Vision statement title',
@@ -144,6 +154,8 @@ module.exports = {
       placeholder: 'Describe what this is about in detail'
     },
     title: 'title',
+    initial: 'initial value',
+    target: 'target value',
     image: 'image',
     attachments: 'attachments',
     created: 'created',

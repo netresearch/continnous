@@ -5,8 +5,8 @@
         <md-icon>{{isNew ? 'bubble_chart' : 'info_outline'}}</md-icon>
         <span>{{$t(isNew ? 'detail.newSaveHint' : 'detail.saveHint')}}</span>
       </p>
-      <form-button action="save" :class="['md-raised', 'md-primary', {'resource-detail-full-button': isNew}]"></form-button>
-      <form-button action="reset" v-if="!isNew"></form-button>
+      <form-button action="save" :recursive="isNew" :class="['md-raised', 'md-primary', {'resource-detail-full-button': isNew}]"></form-button>
+      <form-button action="reset" :recursive="isNew" v-if="!isNew"></form-button>
     </template>
     <p class="md-caption" v-else>
       <md-icon>info_outline</md-icon>
