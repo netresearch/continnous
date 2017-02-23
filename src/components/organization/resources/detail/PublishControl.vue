@@ -8,10 +8,6 @@
       <form-button action="save" :recursive="isNew" :class="['md-raised', 'md-primary', {'resource-detail-full-button': isNew}]"></form-button>
       <form-button action="reset" :recursive="isNew" v-if="!isNew"></form-button>
     </template>
-    <p class="md-caption" v-else>
-      <md-icon>info_outline</md-icon>
-      <span>{{$t('detail.editHint')}}</span>
-    </p>
   </div>
 </template>
 

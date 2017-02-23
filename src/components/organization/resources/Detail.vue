@@ -1,24 +1,59 @@
 <template>
-  <div :class="['scroll-container', 'resource', 'resource-' + (this.id ? 'edit' : 'create')]">
-    <md-toolbar class="md-dense">
-      <h2 class="md-title">{{$tc('resources.' + type, 2)}}</h2>
-    </md-toolbar>
-    <base-form
-        class="scroll-container-hgroup"
-        v-if="id !== undefined"
-        :firebase-path="getFirebasePath(trash ? 'trash' : 'resources', id || '{new}')"
-        firebase-bind
-        :firebase-receive="firebaseReceive"
-        :defaults="{creator: auth.user.uid}"
-        :keys="id ? ['updated'] : ['creator', 'created', 'updated']"
-        :validate="{title: validateTitle}"
-        ref="form"
-        @saved="onSaved"
-        @before-save="saveFiles"
-        :disabled="!mayEdit">
-      <template scope="form">
-        <div class="scroll-content resources-detail-info-container">
-          <resource-info v-if="item && id" :type="type" :organization="organization" :personal="personal" :item="item"></resource-info>
+  <base-form
+      :class="['resource-detail', 'resource-' + (this.id ? (edit ? 'edit' : 'view') : 'create')]"
+      v-if="id !== undefined"
+      :firebase-path="getFirebasePath(trash ? 'trash' : 'resources', id || '{new}')"
+      firebase-bind
+      :firebase-receive="firebaseReceive"
+      :defaults="{creator: auth.user.uid}"
+      :keys="id ? ['updated'] : ['creator', 'created', 'updated']"
+      :validate="{title: validateTitle}"
+      ref="form"
+      @saved="onSaved"
+      :disabled="!mayEdit"
+  >
+    <md-card class="scroll-container">
+      <div :class="['resource-detail-head', {'resource-detail-head-elevate': scrollTop > 0}]" v-if="item && id">
+        <avatar :uid="item.creator" :organization="organization">
+          <template scope="avatar">
+            <span class="avatar-name">{{avatar.user.displayName}}</span>
+            <span class="md-caption">
+                  {{moment(item.created).fromNow()}}
+                  <span v-if="item.updated > item.created">
+                    ({{$t('detail.updated', {ago: moment(item.updated).fromNow()})}})
+                  </span>
+                </span>
+          </template>
+        </avatar>
+        <md-button class="md-icon-button" @click="edit = !edit">
+          <md-icon>mode_edit</md-icon>
+        </md-button>
+        <template v-if="item.creator === auth.user.uid">
+          <div class="md-caption">
+                <span>
+                  {{$t(type + '.this')}} {{$t('detail.is' + (personal ? 'Personal' : 'Public'))}}
+                  - <span class="md-link" @click="togglePersonal">{{$t('detail.make' + (!personal ? 'Personal' : 'Public'))}}</span>
+                </span>
+          </div>
+        </template>
+      </div>
+      <div class="scroll-content resource-detail-body" @scroll="scrollTop = $event.target.scrollTop">
+        <div class="resource-detail-aside" :style="{top: scrollTop + 'px'}">
+          <div class="resource-detail-section">
+            <md-icon>local_offer</md-icon>
+            <resource-tags :is-new="!id" :organization="organization" :type="type" :item="item"></resource-tags>
+          </div>
+          <resource-likes v-if="id && item" class="resource-detail-section" :organization="organization" :item="item">
+          </resource-likes>
+          <base-form sub direct class="resource-detail-section" v-if="!edit && (mayEdit || item && item.attachments)">
+            <md-icon>attach_file</md-icon>
+            <form-element
+                type="form-file"
+                :label="$t('fields.attachments')"
+                name="attachments"
+                multiple>
+            </form-element>
+          </base-form>
           <div v-if="!id">
             <p class="md-caption">
               <md-icon>thumb_up</md-icon>
@@ -38,64 +73,69 @@
             </template>
           </div>
         </div>
-        <div class="scroll-content resources-card-form-container">
-          <resource-main :is-new="!id" :type="type"></resource-main>
-          <resource-results :is-new="!id" :organization="organization" :type="type" :item="item"></resource-results>
-          <resource-scoring :is-new="!id" :organization="organization" :type="type" :item="item"></resource-scoring>
-        </div>
-        <div class="scroll-content resources-detail-comments-container">
-          <div class="scroll-container">
-            <template v-if="mayEdit">
-              <template v-if="!id">
-                <p class="md-caption">
-                  <md-icon>info_outline</md-icon>
-                  <span v-html="$t('detail.whatsAhead' + (personal ? 'Personal' : ''))"></span>
-                </p>
-                <md-checkbox v-model="personal" style="margin: 0 0 18px 22px">{{$t('detail.this')}} {{$t('detail.isPersonal')}}</md-checkbox>
-              </template>
-              <resource-publish-control :is-new="!id" :organization="organization"></resource-publish-control>
-            </template>
-            <template v-if="item && id">
-              <hr v-if="mayEdit">
-              <resource-comment :type="type" :organization="organization" :personal="personal" :item="item" @comment="$refs.timeline.reset()"></resource-comment>
-              <elastic-list ref="timeline" class="scroll-content resource-detail-timeline" container-selector=".journal-group" item-selector=".journal-entry">
-                <journal :organization="organization" :item="item" no-resource reverse></journal>
-              </elastic-list>
-            </template>
+        <div class="resource-detail-main">
+          <div class="resource-detail-section">
+            <md-icon v-if="type" class="md-primary">{{config.icon}}</md-icon>
+            <resource-form v-if="edit" :type="type" organization="organization" :personal="personal" :item="item">
+              <form-element
+                  type="form-file"
+                  :label="$t('fields.attachments')"
+                  name="attachments"
+                  multiple></form-element>
+            </resource-form>
+            <resource-content v-else :type="type" organization="organization" :personal="personal" :item="item"></resource-content>
           </div>
+          <div class="resource-detail-section" v-if="config.results">
+            <md-icon>flag</md-icon>
+            <resource-results :is-new="!id" :inline="!edit" :editable="mayEdit" :organization="organization" :type="type" :item="item"></resource-results>
+          </div>
+          <template v-if="!edit">
+            <div class="resource-detail-section" v-if="config.scoring && config.scoring.length">
+              <md-icon>thumbs_up_down</md-icon>
+              <resource-scoring :criteria="config.scoring" :is-new="!id" :organization="organization" :type="type" :item="item"></resource-scoring>
+            </div>
+            <journal class="resource-detail-comments" actions="comment" @update="comments = $event.entries.length" :organization="organization" :item="item" no-resource reverse></journal>
+            <resource-comment :organization="organization" :type="type" :item="item" :personal="personal"></resource-comment>
+          </template>
         </div>
-      </template>
-    </base-form>
-  </div>
+      </div>
+    </md-card>
+  </base-form>
 </template>
 
 <script>
   import BaseForm from '../../form/Base';
   import auth from '../../../auth';
+  import Config from '../../../models/Config';
   import mixin from './mixin';
-  import Firebase from '../../../firebase';
-  import ResourceMain from './detail/Main';
-  import ResourceInfo from './detail/Info';
+  import ResourceContent from './detail/Content';
+  import ResourceForm from './detail/Form';
   import ResourcePublishControl from './detail/PublishControl';
   import ResourceComment from './detail/Comment';
   import ResourceResults from './detail/Results';
   import ResourceScoring from './detail/Scoring';
+  import ResourceTags from './detail/Tags';
+  import ResourceLikes from './detail/Likes';
   import Journal from '../Journal';
   import ElasticList from '../../ElasticList';
+  import Avatar from '../../Avatar';
 
   export default {
     mixins: [mixin],
     props: ['organization', 'permissions'],
     components: {
       BaseForm,
-      ResourceMain,
-      ResourceInfo,
+      ResourceContent,
+      ResourceForm,
       ResourcePublishControl,
       ResourceComment,
       ResourceResults,
       ResourceScoring,
+      ResourceTags,
+      ResourceLikes,
       Journal,
-      ElasticList
+      ElasticList,
+      Avatar
     },
     data() {
       return {
@@ -103,9 +143,11 @@
         type: undefined,
         personal: false,
         id: undefined,
-        mayEdit: false,
         item: undefined,
-        trash: false
+        trash: false,
+        edit: false,
+        scrollTop: 0,
+        comments: 0
       };
     },
     watch: {
@@ -115,11 +157,20 @@
           this.personal = !!route.params.personal;
           this.type = route.params.type;
           this.id = route.params.id || null;
+          this.edit = !this.id;
           this.trash = !!route.params.trash;
           if (this.$refs.form) {
             this.$refs.form.reset(true, true);
           }
         }
+      }
+    },
+    computed: {
+      mayEdit() {
+        return this.type && this.permissions[(this.personal ? 'personal_' : '') + this.type].write;
+      },
+      config() {
+        return this.type ? Config.resources[this.type] : {};
       }
     },
     methods: {
@@ -129,7 +180,6 @@
       firebaseReceive(snapshot) {
         const item = this.createItem(snapshot.key, snapshot.val());
         this.item = item;
-        this.mayEdit = !this.id || item.creator === this.auth.user.uid;
         if (this.id) {
           this.trackView(item);
         }
@@ -148,55 +198,18 @@
           this.$router.replace(this.getUrlPath(this.$refs.form.firebaseRef.key));
         }
       },
-      saveFiles(beforeSave, progress) {
-        const ref = Firebase.storage().ref();
-        this.$refs.form.elements.filter(element => element.type === 'form-file').forEach((element) => {
-          element.$refs.el.save((file) => {
-            const promises = [];
-            if (file.deleted) {
-              const children = [file.id];
-              if (file.preview) {
-                children.push(file.id + '_preview');
-              }
-              children.forEach((child) => {
-                promises.push(new Promise((resolve, reject) => {
-                  ref.child(child).delete().then(resolve).catch(reject);
-                }));
-              });
-            } else {
-              let totalBytes = 0;
-              const monitorUpload = (task) => {
-                promises.push(new Promise((resolve, reject) => {
-                  let totalBytesAdded = false;
-                  const fileProgress = progress ? progress.get() : null;
-                  task.on('state_changed', (snapshot) => {
-                    if (!totalBytesAdded) {
-                      totalBytesAdded = true;
-                      totalBytes += snapshot.totalBytes;
-                      if (fileProgress) {
-                        fileProgress.setTotal(snapshot.totalBytes);
-                      }
-                    }
-                    file.progress = (snapshot.bytesTransferred / totalBytes) * 100;
-                    if (fileProgress) {
-                      fileProgress.tick(snapshot.bytesTransferred);
-                    }
-                  }, (error) => {
-                    file.error = error;
-                    reject(error);
-                  }, resolve);
-                }));
-              };
-              monitorUpload(ref.child(file.id).put(file.file));
-              if (file.preview) {
-                monitorUpload(ref.child(file.id + '_preview').putString(
-                  file.preview.split(',').pop(), 'base64', {
-                    contentType: 'image/png',
-                  }
-                ));
-              }
-            }
-            beforeSave.push(Promise.all(promises));
+      togglePersonal() {
+        this.organization.journal.getRef()
+          .orderByChild('id')
+          .equalTo(this.item.id)
+          .once('value', (sn) => {
+            sn.forEach((csn) => {
+              csn.ref.update({ personal: !this.personal });
+            });
+          });
+        this.getFirebaseRef('resources', this.item.id, !this.personal).set(this.item).then(() => {
+          this.getFirebaseRef('resources', this.item.id).remove().then(() => {
+            this.$router.replace(this.getUrlPath(this.item.id, !this.personal));
           });
         });
       }
@@ -205,43 +218,98 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-  .resources-card-form-container {
-    flex-grow: 2 !important;
-    min-width: 300px;
-    max-width: 632px;
+  .resource-detail {
+    height: 100%;
+    padding: 32px;
   }
-  .resource .md-card {
-    max-width: 616px;
-  }
-  .resources-detail-info-container,
-  .resources-detail-comments-container {
-    display: flex;
-    flex-flow: row;
-    &.resources-detail-info-container {
-      justify-content: flex-end;
-    }
-    > div {
-      width: 50%;
-      min-width: 200px;
-    }
-  }
-  .resources-detail-comments-container {
-    hr {
-      margin: 0;
-    }
-  }
-  .resource-detail-timeline {
-    padding: 0 16px 0 0 !important;
-    margin-right: -16px;
-    .journal .md-layout {
-      margin: 16px 0;
-    }
-
-    .elastic-list-more {
-      .md-icon {
-        margin: -12px auto 0;
-        color: rgba(#000, 0.54);
+  .resource-detail > .md-card {
+    margin: 0 auto;
+    max-height: 100%;
+    height: auto;
+    max-width: 1000px;
+    .resource-detail-head {
+      transition: all 0.2s;
+      border-bottom: 1px solid rgba(#000, 0.12);
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-flow: row wrap;
+      align-items: center;
+      padding: 10px 32px;
+      &.resource-detail-head-elevate {
+        box-shadow: -10px -2px 16px -3px rgba(0, 0, 0, 0.6);
       }
+      .avatar {
+        flex: 1;
+      }
+    }
+    .resource-detail-body {
+      position: relative;
+      z-index: 1;
+      max-height: 100%;
+      overflow: auto;
+      padding: 32px;
+      padding-right: 0;
+      &:after {
+        content: ".";
+        clear: both;
+        display: block;
+        visibility: hidden;
+        height: 0px;
+      }
+    }
+    .resource-detail-main {
+      margin-right: 296px + 32px;
+    }
+    .resource-detail-aside {
+      position: relative;
+      padding-right: 32px;
+      float:right;
+      width: 296px;
+    }
+    .resource-detail-comments {
+      .journal-entry {
+        margin-top: 2px;
+      }
+      .journal-time {
+        display: inline;
+      }
+      .journal-comment {
+        margin-top: 4px;
+        //margin-left: 16px;
+      }
+    }
+  }
+  .resource-detail-section {
+    position: relative;
+    padding-left: 40px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    &:after {
+      content: "";
+      display: block;
+      margin: 16px 0 16px -40px;
+      height: 1px;
+      background: rgba(0, 0, 0, 0.1);
+    }
+    margin-bottom: 16px;
+    &:first-of-type,
+    & + & {
+      border-top: none;
+    }
+    &:last-child:after {
+      display: none;
+    }
+    > .md-icon {
+      position: absolute;
+      color: rgba(#000, 0.32);
+      left: 6px;
+      top: 0px;
+    }
+  }
+  .resource-detail-main .resource-detail-section {
+    &:after {
+      margin-top: 24px;
+      margin-bottom: 24px;
     }
   }
 </style>

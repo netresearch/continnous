@@ -150,7 +150,7 @@ path /{branch}/organizations/{oid}/{scope}/{type}/{rid} {
         && isAllowedScope(scope, type, 'write', oid)
         && (
             prior(this) == null ||
-            (scope === 'organization' && prior(this).creator === auth.uid || scope === auth.uid) ||
+            (scope === 'organization' || scope === auth.uid) ||
             this == null && isAdmin(oid)
         )
     }

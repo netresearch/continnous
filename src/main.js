@@ -22,6 +22,17 @@ Vue.material.registerTheme('default', {
   primary: 'light-green',
   accent: 'lime',
 });
+Vue.mixin({
+  methods: {
+    $log(...args) {
+      if (!Vue.config.silent) {
+        /* eslint-disable no-console */
+        console.log(...args);
+        /* eslint-enable no-console */
+      }
+    }
+  }
+});
 
 /* eslint-disable no-new */
 new Vue({

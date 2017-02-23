@@ -1,0 +1,9 @@
+<template>
+  <div>
+    <md-chip>Tags</md-chip>
+    <md-chip>are</md-chip>
+    <md-chip>not</md-chip>
+    <md-chip>yet</md-chip>
+    <md-chip>implemented</md-chip>
+  </div>
+</template>

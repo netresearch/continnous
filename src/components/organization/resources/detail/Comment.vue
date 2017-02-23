@@ -1,23 +1,28 @@
 <template>
-  <md-input-container class="resource-comment">
-    <label><md-icon class="md-small">comment</md-icon>Comment</label>
-    <md-textarea
-        :value="focused ? text : ''"
-        ref="textarea"
-        @input="text = $event"
-        @focus.native="focused = true; updateTextarea()"
-        @blur.native="focused = false; updateTextarea()"
-        placeholder="Add comment..."></md-textarea>
-    <md-icon
-        ref="button"
-        @click.native="save()"
-        :class="['resource-comment-send', {'resource-comment-send-disabled': !text.replace(/^\s*(.+)\s*$/, '$1').length}]"
-    >add_box</md-icon>
-  </md-input-container>
+  <div class="resource-detail-comment">
+    <avatar :organization="organization" uid="current" no-name></avatar>
+    <md-input-container>
+      <md-textarea
+          :value="focused ? text : ''"
+          ref="textarea"
+          @input="text = $event"
+          @focus.native="focused = true; updateTextarea()"
+          @blur.native="focused = false; updateTextarea()"
+          :placeholder="$t('actions.writeComment') + '...'"></md-textarea>
+      <md-icon
+          ref="button"
+          @click.native="save()"
+          :class="['resource-comment-send', {'resource-comment-send-disabled': !text.replace(/^\s*(.+)\s*$/, '$1').length}]"
+      >add_box</md-icon>
+    </md-input-container>
+  </div>
 </template>
 
 <script>
+  import Avatar from '../../../Avatar';
+
   export default {
+    components: { Avatar },
     props: ['organization', 'type', 'item', 'personal'],
     data() {
       return {
@@ -55,43 +60,39 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-
-  .md-input-container.resource-comment {
-    margin-bottom: 16px;
-    padding-left: 22px;
-    padding-top: 20px;
-    padding-bottom: 4px;
-    margin-top: 8px;
-    min-height: 56px;
-    overflow: hidden;
-    .resource-comment-send {
-      cursor: pointer;
-      opacity: 0;
+  .resource-detail-comment {
+    margin-top: 16px;
+    display: flex;
+    flex-flow: row wrap;
+    .md-input-container {
+      min-height: 0;
+      flex: 1;
+      margin: 0;
+      margin-left: 10px;
+      padding-top: 5px;
+      min-width: 100px;
       &:after {
-        display: none;
+        opacity: 0;
       }
-      &.resource-comment-send-disabled {
-        color: rgba(#000, 0.54) !important;
-        cursor: default;
-      }
-    }
-    &.md-input-focused {
-      padding-left: 0;
-      padding-bottom: 2px;
-      padding-top: 24px;
       .resource-comment-send {
-        opacity: 1;
-      }
-    }
-    label {
-      .md-icon {
-        margin-right: 6px;
+        cursor: pointer;
+        opacity: 0;
         &:after {
           display: none;
         }
+        &.resource-comment-send-disabled {
+          color: rgba(#000, 0.54) !important;
+          cursor: default;
+        }
       }
-      opacity: 1;
-      top: 0;
+      &.md-input-focused {
+        .resource-comment-send {
+          opacity: 1;
+        }
+        &:after {
+          opacity: 1;
+        }
+      }
     }
   }
 </style>

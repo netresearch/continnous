@@ -1,45 +1,38 @@
 <template>
   <div class="resource-scoring">
-    <template v-if="criteria && criteria.length">
-      <md-card>
-        <md-card-content>
-          <div class="resource-scoring-title">
-            <span>
-            {{$t('scoring.title')}}
-            </span>
-            <md-icon>
-              help_outline
-              <md-tooltip md-direction="bottom">{{$t('scoring.info')}}</md-tooltip>
-            </md-icon>
-          </div>
-          <hr>
-          <dl class="resource-scoring-criterion-container" v-for="key in criteria">
-            <dt>
-              <span>
-                {{$t('scoring.criteria.' + key)}}
-                <md-tooltip md-direction="bottom">{{$t('scoring.help.' + key, {organization: organization.name})}}</md-tooltip>
-              </span>
-            </dt>
-            <dd>
-              <md-slider :value="values[key]" @change="updateCriterion(key, $event)" max="5" :name="key" :step="1" tooltips></md-slider>
-            </dd>
-          </dl>
-        </md-card-content>
-      </md-card>
-    </template>
+    <div class="resource-scoring-title">
+      <span>
+      {{$t('scoring.title')}}
+      </span>
+      <md-icon>
+        help_outline
+        <md-tooltip md-direction="bottom">{{$t('scoring.info')}}</md-tooltip>
+      </md-icon>
+    </div>
+    <hr>
+    <dl class="resource-scoring-criterion-container" v-for="key in criteria">
+      <dt>
+        <span>
+          {{$t('scoring.criteria.' + key)}}
+          <md-tooltip md-direction="bottom">{{$t('scoring.help.' + key, {organization: organization.name})}}</md-tooltip>
+        </span>
+      </dt>
+      <dd>
+        <md-slider :value="values[key]" @change="updateCriterion(key, $event)" max="5" :name="key" :step="1" tooltips></md-slider>
+      </dd>
+    </dl>
   </div>
 </template>
 
 <script>
   import Child from '../../../form/child';
   import auth from '../../../../auth';
-  import Config from '../../../../models/Config';
   import Firebase from '../../../../firebase';
   import mixin from '../mixin';
   
   export default {
     extends: Child,
-    props: ['organization', 'type', 'item', 'isNew'],
+    props: ['organization', 'type', 'item', 'isNew', 'criteria'],
     mixins: [mixin],
     data() {
       return {
@@ -62,11 +55,6 @@
             });
           }
         }
-      }
-    },
-    computed: {
-      criteria() {
-        return this.type ? Config.resources[this.type].scoring : [];
       }
     },
     mounted() {
@@ -108,7 +96,6 @@
 
 <style lang="scss" rel="stylesheet/scss">
   .resource-scoring {
-    margin-top: 32px;
     .resource-scoring-title {
       display: flex;
       flex-flow: row wrap;

@@ -62,7 +62,8 @@
       filter: Object,
       mdInline: Boolean,
       disabled: Boolean,
-      sub: Boolean
+      sub: Boolean,
+      direct: Boolean
     },
     created() {
       this.elements = [];
@@ -76,6 +77,13 @@
         this.parentForm = parent;
         this.parentForm.subFormsChanged += Object.keys(this.changed).length;
         this.parentForm.subFormsErrors += Object.keys(this.errors).length;
+      }
+    },
+    beforeDestroy() {
+      if (this.sub && this.parentForm) {
+        this.parentForm.subForms = this.parentForm.subForms.filter(form => form !== this);
+        this.parentForm.subFormsChanged -= Object.keys(this.changed).length;
+        this.parentForm.subFormsErrors -= Object.keys(this.errors).length;
       }
     },
     data() {
@@ -201,6 +209,9 @@
           this.$set(this.changed, key, value);
           if (this.filterOrValidate('validate', key, value)) {
             this.$set(this.values, key, this.filterOrValidate('filter', key, value));
+            if (this.direct) {
+              this.save();
+            }
           } else {
             this.$delete(this.changed, key);
             this.$set(this.errors, key, true);
@@ -348,7 +359,15 @@
             }
           };
           const $emit = (...args) => {
-            forms.forEach(form => form.form.$emit(...args));
+            forms.forEach((form) => {
+              /* Not necessary for now
+              form.fields.forEach((field) => {
+                form.form.elements.filter(element => element.name === field).forEach(
+                  element => element.$emit(...args)
+                );
+              }); */
+              form.form.$emit(...args);
+            });
           };
           $emit('before-save', beforeSave, progress);
           Promise.all(beforeSave).then(() => {
@@ -386,6 +405,18 @@
         this.elements.push(element);
         if (element.name) {
           this.elementKeys.push(element.name);
+          if (this.object && this.object.hasOwnProperty(element.name)) {
+            this.$set(this.values, element.name, this.object[element.name]);
+          }
+        }
+      },
+      _unregisterFormElement(element) {
+        this.elements = this.elements.filter(e => e !== element);
+        if (element.name) {
+          this.elementKeys = this.elementKeys.filter(name => name !== element.name);
+          this.$delete(this.changed, element.name);
+          this.$delete(this.errors, element.name);
+          this.$delete(this.values, element.name);
         }
       }
     }

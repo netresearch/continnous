@@ -72,9 +72,13 @@ p.md-caption {
 }
 .md-chip {
   height: 20px;
-  border-radius: 4px;
+  border-radius: 12px;
   font-size: 12px;
-  padding: 2px 6px;
+  line-height: 12px;
+  padding: 3px 8px;
+  border: 1px solid rgba(#000, 0.12);
+  background: rgba(#000, 0.06) !important;
+  margin: 2px 0;
 }
 .md-nav-bar > .md-button {
   margin: 6px 0;

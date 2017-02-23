@@ -62,7 +62,8 @@
       organization: Object,
       item: Object,
       noResource: Boolean,
-      reverse: Boolean
+      reverse: Boolean,
+      actions: [String, Array]
     },
     data() {
       return {
@@ -87,7 +88,9 @@
       loadEntries() {
         this.$nextTick(() => {
           this.entries = [];
+          this.groups = [];
           if (this.ref) {
+            this.$emit('update', this);
             this.ref.off('child_added');
             this.ref.off('child_removed');
           }
@@ -120,9 +123,16 @@
       },
       onEntryAdded(snapshot) {
         const entry = Object.assign({ journalId: snapshot.key }, snapshot.val());
+        if (this.actions) {
+          const actions = typeof this.actions === 'string' ? [this.actions] : this.actions;
+          if (actions.indexOf(entry.action) < 0) {
+            return;
+          }
+        }
         const addEntry = () => {
           this.entries.push(entry);
           this.groupEntries();
+          this.$emit('update', this);
         };
         if (this.noResource) {
           addEntry();
@@ -145,6 +155,7 @@
           if (entry.journalId === snapshot.key) {
             this.entries.splice(i, 1);
             this.groupEntries();
+            this.$emit('update', this);
           }
         });
       },

@@ -73,7 +73,8 @@ module.exports = {
     search: 'Suchen',
     abort: 'Abbrechen',
     unlike: 'Mir gefällt das nicht mehr',
-    like: 'Mir gefällt das'
+    like: 'Mir gefällt das',
+    writeComment: 'Schreibe einen Kommentar'
   },
   results: {
     title: 'Zielvorgaben',
@@ -199,7 +200,6 @@ module.exports = {
     this: 'Das',
     created: 'Erstellt {ago}',
     updated: 'Aktualisiert {ago}',
-    contributedBy: 'Beitrag von',
     you: 'Dir',
     likeThis: 'gefällt das',
     beFirstToLike: 'Sei der Erste, dem das gefällt',

@@ -435,17 +435,20 @@
       .form-file-icon,
       .form-file-preview {
         margin-top: 6px;
-        max-width: 100%;
         position: relative;
         background: #eeeeee;
         background-repeat: no-repeat;
-        background-size: cover;
+        background-size: contain;
         background-position: center;
         &:before {
           content: "";
           display: block;
           padding-top: 56.25%;
         }
+      }
+      .form-file-preview {
+        box-sizing: content-box;
+        border: 16px solid #eeeeee;
       }
       .form-file-icon {
         cursor: default;

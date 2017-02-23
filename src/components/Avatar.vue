@@ -40,8 +40,9 @@
     methods: {
       setUserObject() {
         this.$nextTick(() => {
-          this.user = this.uid && this.organization
-              ? new User(this.uid, this.organization) : undefined;
+          const uid = this.uid === 'current' ? this.auth.user.uid : this.uid;
+          this.user = uid && this.organization
+              ? new User(uid, this.organization) : undefined;
         });
       }
     }
@@ -61,7 +62,7 @@
       flex-flow: column;
       padding: 2px 0;
       margin: 2px 0;
-      margin-left: 8px;
+      margin-left: 10px;
       .avatar-name {
         font-size: 16px;
         font-weight: 500;

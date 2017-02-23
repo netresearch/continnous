@@ -1,83 +1,77 @@
 <template>
-  <div class="resource-results">
-    <template v-if="show">
-      <card-form
-          :keys="['results']"
-          :validate="{results: filterAndValidate}"
-          :disabled="isNew || !editable || !edit"
-          sub
-          ref="form"
-      >
-        <template scope="form">
-          <div class="resource-results-title">
-            <span>
-            {{$t('results.title')}}
-            </span>
-            <md-icon v-if="!isNew && editable && !edit" @click.native="edit = true">build</md-icon>
-          </div>
-          <hr>
-          <results-list v-if="!edit && !isNew" :results="item ? item.results || [] : []" :types="types"></results-list>
-          <div class="resource-result-form" v-else>
-            <div class="resource-result-form-result-list">
-              <div class="resource-result-form-result" v-for="(result, i) in form.values.results || []">
-                <md-menu>
-                  <md-button class="md-icon-button md-primary" md-menu-trigger>
-                    <md-icon :title="$t('results.' + result.type)">{{types[result.type].icon}}</md-icon>
-                  </md-button>
-                  <md-menu-content>
-                    <md-menu-item
-                        v-for="(type, key) in types"
-                        @selected="onChange(i, 'type', key)"
-                        :disabled="key === result.type">
-                      <md-icon>{{type.icon}}</md-icon>
-                      <span>{{$t('results.' + key)}}</span>
-                    </md-menu-item>
-                  </md-menu-content>
-                </md-menu>
-                <div class="resource-result-form-fields">
-                  <md-input-container :class="['resource-result-form-title', {'md-input-invalid': errors[i] && errors[i].title}]">
-                    <label>{{$t('fields.title')}}</label>
-                    <md-input required :value="result.title" @input="onChange(i, 'title', $event)"></md-input>
-                  </md-input-container>
-                  <div class="resource-result-form-range">
-                    <md-input-container
-                        v-for="key in ['initial', 'target']"
-                        v-if="types[result.type][key]"
-                        :class="{'md-input-invalid': errors[i] && errors[i][key]}"
-                    >
-                      <label>{{$t('fields.' + key)}}</label>
-                      <md-input required :value="result[key]" @input="onChange(i, key, $event)"></md-input>
-                    </md-input-container>
-                  </div>
-                </div>
-                <md-icon @click.native="removeResult(i)">clear</md-icon>
-                <div class="resource-result-form-sort" v-if="form.values.results.length > 1">
-                  <md-icon v-if="i > 0" @click.native="moveResult(i, -1)">arrow_drop_up</md-icon>
-                  <md-icon v-if="i < form.values.results.length - 1" @click.native="moveResult(i, 1)">arrow_drop_down</md-icon>
-                </div>
+  <base-form
+      sub
+      :keys="['results']"
+      :validate="{results: filterAndValidate}"
+      ref="form"
+      class="resource-results"
+  >
+    <template scope="form">
+      <div class="resource-results-title">
+        <span>
+        {{$t('results.title')}}
+        </span>
+        <md-icon v-if="editable && inline && !edit" @click.native="edit = true">settings</md-icon>
+      </div>
+      <hr>
+      <results-list v-if="!editable || inline && !edit" :results="item ? item.results || [] : []" :types="types"></results-list>
+      <div class="resource-result-form" v-else>
+        <div class="resource-result-form-result-list">
+          <div class="resource-result-form-result" v-for="(result, i) in form.values.results || []">
+            <md-menu>
+              <md-button class="md-icon-button md-primary" md-menu-trigger>
+                <md-icon :title="$t('results.' + result.type)">{{types[result.type].icon}}</md-icon>
+              </md-button>
+              <md-menu-content>
+                <md-menu-item
+                    v-for="(type, key) in types"
+                    @selected="onChange(i, 'type', key)"
+                    :disabled="key === result.type">
+                  <md-icon>{{type.icon}}</md-icon>
+                  <span>{{$t('results.' + key)}}</span>
+                </md-menu-item>
+              </md-menu-content>
+            </md-menu>
+            <div class="resource-result-form-fields">
+              <md-input-container :class="['resource-result-form-title', {'md-input-invalid': errors[i] && errors[i].title}]">
+                <label>{{$t('fields.title')}}</label>
+                <md-input required :value="result.title" @input="onChange(i, 'title', $event)"></md-input>
+              </md-input-container>
+              <div class="resource-result-form-range">
+                <md-input-container
+                    v-for="key in ['initial', 'target']"
+                    v-if="types[result.type][key]"
+                    :class="{'md-input-invalid': errors[i] && errors[i][key]}"
+                >
+                  <label>{{$t('fields.' + key)}}</label>
+                  <md-input required :value="result[key]" @input="onChange(i, key, $event)"></md-input>
+                </md-input-container>
               </div>
             </div>
-            <div class="resource-result-form-add">
-              <span class="md-link" @click="addResult()">{{$t('results.add')}}</span>
+            <md-icon @click.native="removeResult(i)">clear</md-icon>
+            <div class="resource-result-form-sort" v-if="form.values.results.length > 1">
+              <md-icon v-if="i > 0" @click.native="moveResult(i, -1)">arrow_drop_up</md-icon>
+              <md-icon v-if="i < form.values.results.length - 1" @click.native="moveResult(i, 1)">arrow_drop_down</md-icon>
             </div>
           </div>
-        </template>
-        <md-button @click="$refs.form.reset(); edit = false;" slot="secondaryButtons">{{$t('actions.cancel')}}</md-button>
-      </card-form>
+        </div>
+        <div class="resource-result-form-add">
+          <span class="md-link" @click="addResult()">{{$t('results.add')}}</span>
+        </div>
+      </div>
     </template>
-  </div>
+    <md-button @click="$refs.form.reset(); edit = false;" slot="secondaryButtons">{{$t('actions.cancel')}}</md-button>
+  </base-form>
 </template>
 
 <script>
-  import auth from '../../../../auth';
-  import Config from '../../../../models/Config';
   import mixin from '../mixin';
-  import CardForm from '../../../form/Card';
+  import BaseForm from '../../../form/Base';
   import ResultsList from './ResultsList';
 
   export default {
-    components: { CardForm, ResultsList },
-    props: ['organization', 'type', 'item', 'isNew'],
+    components: { BaseForm, ResultsList },
+    props: ['organization', 'type', 'item', 'inline', 'editable'],
     mixins: [mixin],
     data() {
       return {
@@ -114,14 +108,11 @@
         handler() {
           this.edit = false;
         }
-      }
-    },
-    computed: {
-      show() {
-        return this.type ? Config.resources[this.type].results : false;
       },
-      editable() {
-        return this.isNew || (this.item && auth.user.uid === this.item.creator);
+      inline(inline) {
+        if (!inline) {
+          this.edit = false;
+        }
       }
     },
     methods: {
@@ -212,23 +203,17 @@
 
 <style lang="scss" rel="stylesheet/scss">
   .resource-results {
-    .md-card {
-      margin-top: 32px;
-      .md-card-content:last-child {
-        padding-bottom: 16px;
+    .resource-results-title {
+      display: flex;
+      flex-flow: row wrap;
+      align-items: center;
+      color: rgba(0, 0, 0, 0.54);
+      margin: -4px 0 -4px;
+      span {
+        flex: 1 0 auto;
       }
-      .resource-results-title {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        color: rgba(0, 0, 0, 0.54);
-        margin: -4px 0 -4px;
-        span {
-          flex: 1 0 auto;
-        }
-        .md-icon {
-          cursor: help;
-        }
+      .md-icon {
+        cursor: help;
       }
     }
     .resource-result-form-result {

@@ -12,9 +12,19 @@
       naked: Boolean,
       disabled: Boolean
     },
+    data() {
+      return {
+        defaultElementArgs: {}
+      };
+    },
     mounted() {
       /* eslint-disable no-underscore-dangle */
       this.form._registerFormElement(this);
+      /* eslint-enable no-underscore-dangle */
+    },
+    beforeDestroy() {
+      /* eslint-disable no-underscore-dangle */
+      this.form._unregisterFormElement(this);
       /* eslint-enable no-underscore-dangle */
     },
     render(h) {
@@ -29,7 +39,7 @@
           on: {
             input: this.forwardEvent
           },
-          props: Object.assign({}, this.$vnode.data.attrs, {
+          props: Object.assign({}, this.defaultElementArgs, this.$vnode.data.attrs, {
             value,
             disabled
           }),
@@ -68,6 +78,8 @@
     },
     methods: {
       forwardEvent(value) {
+        this.$emit('input', value);
+        this.$emit('change', value);
         this.form.onChange(this.name, value);
       }
     }

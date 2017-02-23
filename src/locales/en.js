@@ -73,7 +73,8 @@ module.exports = {
     search: 'Search',
     abort: 'Abort',
     unlike: 'I don\'t like this anymore',
-    like: 'I like this'
+    like: 'I like this',
+    writeComment: 'Write comment'
   },
   results: {
     title: 'Key results',
@@ -202,7 +203,6 @@ module.exports = {
     this: 'This',
     created: 'Created {ago}',
     updated: 'Updated {ago}',
-    contributedBy: 'Contributed by',
     you: 'You',
     likeThis: 'like this',
     beFirstToLike: 'Be the first one to like this',
