@@ -4,16 +4,40 @@
       :keys="['results']"
       :validate="{results: filterAndValidate}"
       ref="form"
-      class="resource-results"
+      :class="['resource-results', {'resource-results-edit': edit}]"
+      @saved="edit = false"
+      @cancel="edit = false"
   >
     <template scope="form">
-      <div class="resource-results-title">
+      <div :class="['resource-detail-section-head', {active: edit}]">
         <span>
         {{$t('results.title')}}
         </span>
-        <md-icon v-if="editable && inline && !edit" @click.native="edit = true">settings</md-icon>
+        <md-icon v-if="editable && inline && !edit" @click.native="edit = true">
+          settings
+          <md-tooltip>{{$t('settings')}}</md-tooltip>
+        </md-icon>
+        <template v-if="editable && inline && edit">
+          <form-button action="reset" class="md-icon-button">
+            <md-icon>
+              undo
+              <md-tooltip>{{$t('actions.reset')}}</md-tooltip>
+            </md-icon>
+          </form-button>
+          <form-button action="cancel" class="md-icon-button">
+            <md-icon>
+              clear
+              <md-tooltip>{{$t('actions.cancel')}}</md-tooltip>
+            </md-icon>
+          </form-button>
+          <form-button action="save" class="md-icon-button">
+            <md-icon>
+              done
+              <md-tooltip>{{$t('actions.save')}}</md-tooltip>
+            </md-icon>
+          </form-button>
+        </template>
       </div>
-      <hr>
       <results-list v-if="!editable || inline && !edit" :results="item ? item.results || [] : []" :types="types"></results-list>
       <div class="resource-result-form" v-else>
         <div class="resource-result-form-result-list">
@@ -67,10 +91,11 @@
 <script>
   import mixin from '../mixin';
   import BaseForm from '../../../form/Base';
+  import FormButton from '../../../form/Button';
   import ResultsList from './ResultsList';
 
   export default {
-    components: { BaseForm, ResultsList },
+    components: { BaseForm, ResultsList, FormButton },
     props: ['organization', 'type', 'item', 'inline', 'editable'],
     mixins: [mixin],
     data() {
@@ -203,18 +228,8 @@
 
 <style lang="scss" rel="stylesheet/scss">
   .resource-results {
-    .resource-results-title {
-      display: flex;
-      flex-flow: row wrap;
-      align-items: center;
-      color: rgba(0, 0, 0, 0.54);
-      margin: -4px 0 -4px;
-      span {
-        flex: 1 0 auto;
-      }
-      .md-icon {
-        cursor: help;
-      }
+    .resource-result-form {
+      margin: 0 8px;
     }
     .resource-result-form-result {
       padding-top: 10px;

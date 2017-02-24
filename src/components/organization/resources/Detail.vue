@@ -283,7 +283,7 @@
       display: block;
       margin: 16px 0 16px 0;
       height: 1px;
-      background: rgba(0, 0, 0, 0.1);
+      background: rgba(0, 0, 0, 0.12);
     }
     .journal-entry {
       margin-top: 2px;
@@ -324,7 +324,7 @@
         display: block;
         margin: $padding -1 * $padding 16px -1 * $padding;
         height: 1px;
-        background: rgba(0, 0, 0, 0.1);
+        background: rgba(0, 0, 0, 0.12);
       }
     }
   }
@@ -332,17 +332,12 @@
   .resource-detail-section {
     position: relative;
     padding-left: 40px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
     &:after {
       content: "";
       display: block;
       margin: 16px 0 16px -40px;
       height: 1px;
-      background: rgba(0, 0, 0, 0.1);
-    }
-    &:first-of-type,
-    & + & {
-      border-top: none;
+      background: rgba(0, 0, 0, 0.12);
     }
     &:last-child:after {
       display: none;
@@ -354,6 +349,33 @@
       top: 0px;
     }
   }
+  .resource-detail-section-head {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    margin: -4px 0 16px;
+    border-bottom: 1px solid rgba(#000, 0.1);
+    padding-bottom: 12px;
+    span {
+      flex: 1 0 auto;
+      color: rgba(0, 0, 0, 0.56);
+    }
+    &.active {
+      border-bottom: 2px solid rgba(#000, 0.2);
+      span {
+        color: inherit;
+        font-size: 18px;
+      }
+    }
+    > .md-icon {
+      cursor: pointer;
+      color: rgba(0, 0, 0, 0.56);
+      margin-left: 10px;
+    }
+    .md-button {
+      margin:-8px 0;
+    }
+  }
   .resource-detail-main .resource-detail-section {
     &:after {
       margin-top: 24px;
@@ -361,6 +383,11 @@
     }
   }
   .resource-detail-aside {
+    .resource-detail-section {
+      &:after {
+        background: rgba(#000, 0.1);
+      }
+    }
     .form-element-attachments {
       .md-input-container,
       .form-file-container {

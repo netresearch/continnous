@@ -36,8 +36,7 @@
         const unsaved = forms.find(form => form.hasChanged(true));
         if (unsaved) {
           // Show dialog
-          forms[0].protector.canSave = forms.find(form => form.hasChanged());
-          forms[0].protector.open = true;
+          forms[0].protector.show(!!forms.find(form => form.hasChanged()));
         } else {
           // Continue
           continueRoute(true);
@@ -48,6 +47,8 @@
       next();
     }
   };
+  
+  let cancelCallback;
 
   export default {
     extends: Child,
@@ -107,29 +108,55 @@
       this.form.$on('progress', this.updateProgress);
     },
     methods: {
+      cancel(recursive) {
+        if (this.form.hasChanged(true, recursive)) {
+          cancelCallback = (save) => {
+            if (save) {
+              this.form.save(recursive);
+            } else {
+              this.form.reset(false, recursive);
+              this.form.$emit('cancel');
+            }
+          };
+          this.show(!!this.form.hasChanged(false, recursive));
+        } else {
+          this.form.$emit('cancel');
+        }
+      },
+      show(canSave) {
+        forms[0].protector.canSave = canSave;
+        forms[0].protector.open = true;
+      },
       save() {
-        this.doSave = true;
-        forms.map(form => form.save());
+        if (cancelCallback) {
+          cancelCallback(true);
+        } else {
+          forms.map(form => form.save());
+        }
       },
       close(proceed) {
         this.open = false;
-        this.$nextTick(() => {
-          continueRoute(proceed);
-        });
+        if (!cancelCallback) {
+          this.$nextTick(() => {
+            continueRoute(proceed);
+          });
+        } else if (proceed) {
+          cancelCallback(false);
+        }
       },
       updateStatus() {
         const saving = forms.find(form => form.status === 0);
         if (saving) {
-          this.status = 0;
+          forms[0].protector.status = 0;
         } else {
           const error = forms.find(form => form.status === -1);
           if (error) {
-            this.status = -1;
-            this.canSave = false;
+            forms[0].protector.status = -1;
+            forms[0].protector.canSave = false;
           } else {
-            this.status = 1;
+            forms[0].protector.status = 1;
             /* global window */
-            window.setTimeout(this.close.bind(this, true), 1000);
+            window.setTimeout(forms[0].protector.close.bind(forms[0].protector, true), 1000);
           }
         }
       },

@@ -1,9 +1,13 @@
 <template>
   <md-button
       :class="{'md-primary': action === 'save'}"
-      :disabled="!form || !form.hasChanged(action !== 'save', recursive)"
-      @click="action === 'save' ? form.save(recursive) : form.reset(false, recursive)"
-  ><md-icon v-if="icon">{{icon}}</md-icon> {{$t('actions.' + action)}}</md-button>
+      :disabled="!form || action !== 'cancel' && !form.hasChanged(action !== 'save', recursive)"
+      @click="action === 'save' ? form.save(recursive) : (action === 'reset' ? form.reset(false, recursive) : form.protector.cancel(recursive))"
+  >
+    <slot>
+      <md-icon v-if="icon">{{icon}}</md-icon> {{$t('actions.' + action)}}
+    </slot>
+  </md-button>
 </template>
 
 <script>
