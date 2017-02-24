@@ -1,7 +1,7 @@
 <template>
   <div class="resource-image" v-show="image">
-    <div :style="{paddingTop: (image.height / image.width * 100) + '%'}"></div>
-    <md-image v-if="preview || image.preview" :md-src="preview || image.preview"></md-image>
+    <div v-if="image" :style="{paddingTop: (image.height / image.width * 100) + '%'}"></div>
+    <md-image v-if="image && (preview || image.preview)" :md-src="preview || image.preview"></md-image>
   </div>
 </template>
 

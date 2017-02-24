@@ -1,7 +1,6 @@
 <template>
   <base-form
       :class="['resource-detail', 'resource-' + (this.id ? (edit ? 'edit' : 'view') : 'create')]"
-      v-if="id !== undefined"
       :firebase-path="getFirebasePath(trash ? 'trash' : 'resources', id || '{new}')"
       firebase-bind
       :firebase-receive="firebaseReceive"
@@ -12,8 +11,8 @@
       @saved="onSaved"
       :disabled="!mayEdit"
   >
-    <md-card class="scroll-container">
-      <div :class="['resource-detail-head', {'resource-detail-head-elevate': scrollTop > 0}]" v-if="item && id">
+    <md-whiteframe md-elevation="2" v-if="item">
+      <div :class="['resource-detail-head']" v-if="item && id">
         <avatar :uid="item.creator" :organization="organization">
           <template scope="avatar">
             <span class="avatar-name">{{avatar.user.displayName}}</span>
@@ -37,15 +36,38 @@
           </div>
         </template>
       </div>
-      <div class="scroll-content resource-detail-body" @scroll="scrollTop = $event.target.scrollTop">
-        <div class="resource-detail-aside" :style="{top: scrollTop + 'px'}">
+      <div class="resource-detail-body" @scroll="scrollTop = $event.target.scrollTop">
+        <div class="resource-detail-main">
+          <div class="resource-detail-section">
+            <md-icon class="md-primary">{{config.icon}}</md-icon>
+            <resource-form v-if="edit" :type="type" organization="organization" :personal="personal" :item="item">
+              <form-element
+                  type="form-file"
+                  :label="$t('fields.attachments')"
+                  name="attachments"
+                  multiple></form-element>
+            </resource-form>
+            <resource-content v-else :type="type" organization="organization" :personal="personal" :item="item"></resource-content>
+          </div>
+          <div class="resource-detail-section" v-if="config.results">
+            <md-icon>flag</md-icon>
+            <resource-results :is-new="!id" :inline="!edit" :editable="mayEdit" :organization="organization" :type="type" :item="item"></resource-results>
+          </div>
+          <template v-if="!edit">
+            <div class="resource-detail-section" v-if="config.scoring && config.scoring.length">
+              <md-icon>thumbs_up_down</md-icon>
+              <resource-scoring :criteria="config.scoring" :is-new="!id" :organization="organization" :type="type" :item="item"></resource-scoring>
+            </div>
+          </template>
+        </div>
+        <div class="resource-detail-aside" :style="{top: scrollTop + (scrollTop ? 'px' : '')}">
           <div class="resource-detail-section">
             <md-icon>local_offer</md-icon>
             <resource-tags :is-new="!id" :organization="organization" :type="type" :item="item"></resource-tags>
           </div>
-          <resource-likes v-if="id && item" class="resource-detail-section" :organization="organization" :item="item">
+          <resource-likes v-if="id" class="resource-detail-section" :organization="organization" :item="item">
           </resource-likes>
-          <base-form sub direct class="resource-detail-section" v-if="!edit && (mayEdit || item && item.attachments)">
+          <base-form sub direct class="resource-detail-section" v-if="!edit && (mayEdit || item.attachments)">
             <md-icon>attach_file</md-icon>
             <form-element
                 type="form-file"
@@ -73,33 +95,12 @@
             </template>
           </div>
         </div>
-        <div class="resource-detail-main">
-          <div class="resource-detail-section">
-            <md-icon v-if="type" class="md-primary">{{config.icon}}</md-icon>
-            <resource-form v-if="edit" :type="type" organization="organization" :personal="personal" :item="item">
-              <form-element
-                  type="form-file"
-                  :label="$t('fields.attachments')"
-                  name="attachments"
-                  multiple></form-element>
-            </resource-form>
-            <resource-content v-else :type="type" organization="organization" :personal="personal" :item="item"></resource-content>
-          </div>
-          <div class="resource-detail-section" v-if="config.results">
-            <md-icon>flag</md-icon>
-            <resource-results :is-new="!id" :inline="!edit" :editable="mayEdit" :organization="organization" :type="type" :item="item"></resource-results>
-          </div>
-          <template v-if="!edit">
-            <div class="resource-detail-section" v-if="config.scoring && config.scoring.length">
-              <md-icon>thumbs_up_down</md-icon>
-              <resource-scoring :criteria="config.scoring" :is-new="!id" :organization="organization" :type="type" :item="item"></resource-scoring>
-            </div>
-            <journal class="resource-detail-comments" actions="comment" @update="comments = $event.entries.length" :organization="organization" :item="item" no-resource reverse></journal>
-            <resource-comment :organization="organization" :type="type" :item="item" :personal="personal"></resource-comment>
-          </template>
+        <div class="resource-detail-comments">
+          <journal actions="comment" @update="comments = $event.entries.length" :organization="organization" :item="item" no-resource reverse></journal>
+          <resource-comment :organization="organization" :type="type" :item="item" :personal="personal"></resource-comment>
         </div>
       </div>
-    </md-card>
+    </md-whiteframe>
   </base-form>
 </template>
 
@@ -218,68 +219,117 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
+  $padding: 32px;
   .resource-detail {
     height: 100%;
-    padding: 32px;
+    padding: $padding;
   }
-  .resource-detail > .md-card {
+  .resource-detail > .md-whiteframe {
+    background: #fff;
+    border-radius: 4px;
     margin: 0 auto;
     max-height: 100%;
-    height: auto;
     max-width: 1000px;
-    .resource-detail-head {
-      transition: all 0.2s;
-      border-bottom: 1px solid rgba(#000, 0.12);
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-flow: row wrap;
-      align-items: center;
-      padding: 10px 32px;
-      &.resource-detail-head-elevate {
-        box-shadow: -10px -2px 16px -3px rgba(0, 0, 0, 0.6);
-      }
-      .avatar {
-        flex: 1;
-      }
+    display: flex;
+    flex-flow: column;
+  }
+  .resource-detail-head {
+    transition: all 0.2s;
+    border-bottom: 1px solid rgba(#000, 0.12);
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    padding: 12px $padding;
+    height: 64px;
+    &.resource-detail-head-elevate {
+      box-shadow: -10px -2px 16px -3px rgba(0, 0, 0, 0.6);
     }
-    .resource-detail-body {
-      position: relative;
-      z-index: 1;
-      max-height: 100%;
-      overflow: auto;
-      padding: 32px;
-      padding-right: 0;
-      &:after {
-        content: ".";
-        clear: both;
-        display: block;
-        visibility: hidden;
-        height: 0px;
-      }
+    .avatar {
+      flex: 1;
     }
-    .resource-detail-main {
-      margin-right: 296px + 32px;
+  }
+  .resource-detail-body {
+    position: relative;
+    z-index: 1;
+    max-height: calc(100% - 64px);
+    overflow: auto;
+    overflow-x: hidden;
+    padding: $padding;
+    padding-right: 0;
+    &:after {
+      content: ".";
+      clear: both;
+      display: block;
+      visibility: hidden;
+      height: 0px;
+    }
+  }
+  .resource-detail-main,
+  .resource-detail-comments {
+    width: calc(100% - 296px);
+    padding-right: $padding;
+    float: left;
+  }
+  .resource-detail-aside {
+    position: relative;
+    padding-right: $padding;
+    float:right;
+    width: 296px;
+  }
+  .resource-detail-comments {
+    &:before {
+      content: "";
+      display: block;
+      margin: 16px 0 16px 0;
+      height: 1px;
+      background: rgba(0, 0, 0, 0.1);
+    }
+    .journal-entry {
+      margin-top: 2px;
+    }
+    .journal-time {
+      display: inline;
+    }
+    .journal-comment {
+      margin-top: 4px;
+      //margin-left: 16px;
+    }
+  }
+  $main-max-width: 600px;
+  $sidebar-from: 928px;
+  $sidebar-width: 304px;
+  @media (max-width: $sidebar-from) {
+    .resource-detail {
+      padding: 0;
+    }
+  }
+  @media (min-width: $sidebar-from) and (max-width: $sidebar-width + $main-max-width + (4 * $padding)),
+    (max-width: $main-max-width + (2 * $padding)) {
+    .resource-detail-main,
+    .resource-detail-comments {
+      width: 100%;
+      float: none;
+    }
+    .resource-detail-comments:before {
+      margin-left: -1 * $padding;
+      margin-right: -1 * $padding;
     }
     .resource-detail-aside {
-      position: relative;
-      padding-right: 32px;
-      float:right;
-      width: 296px;
-    }
-    .resource-detail-comments {
-      .journal-entry {
-        margin-top: 2px;
-      }
-      .journal-time {
-        display: inline;
-      }
-      .journal-comment {
-        margin-top: 4px;
-        //margin-left: 16px;
+      position: static;
+      width: 100%;
+      float: none;
+      &:before {
+        content: "";
+        display: block;
+        margin: $padding -1 * $padding 16px -1 * $padding;
+        height: 1px;
+        background: rgba(0, 0, 0, 0.1);
       }
     }
   }
+
   .resource-detail-section {
     position: relative;
     padding-left: 40px;
@@ -311,5 +361,8 @@
       margin-top: 24px;
       margin-bottom: 24px;
     }
+  }
+  .resource-detail-aside {
+
   }
 </style>

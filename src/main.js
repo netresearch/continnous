@@ -30,6 +30,7 @@ Vue.mixin({
         console.log(...args);
         /* eslint-enable no-console */
       }
+      return args[0];
     }
   }
 });
