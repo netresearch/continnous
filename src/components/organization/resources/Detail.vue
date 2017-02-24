@@ -28,7 +28,7 @@
         <template v-else>
           <h3 v-if="type" style="flex: 1">{{$t(type + '.new')}}</h3>
         </template>
-        <md-button v-if="!id || personal" :class="['md-icon-button', {'md-warn': personal}]" @click="togglePersonal">
+        <md-button v-if="!id || personal" :class="['md-icon-button', {'md-warn': personal}]" @click="togglePersonal()">
           <md-icon>
             lock_outline
             <md-tooltip>
