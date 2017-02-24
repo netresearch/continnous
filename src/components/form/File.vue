@@ -1,7 +1,7 @@
 <!-- This could be contributed to vue-material if the @save method would be extracted -->
 
 <template>
-  <div
+  <form
       :class="['form-file-container', {'form-file-gallery': gallery && numFiles, 'form-file-inline': inline, 'form-file-has-files': numFiles > 0}]">
     <div class="form-file-list" v-if="numFiles">
       <div
@@ -51,7 +51,7 @@
         {{$t('file.placeholder')}}
       </span>
     </div>
-  </div>
+  </form>
 </template>
 
 <script>
@@ -179,6 +179,7 @@
       },
       remove(file) {
         file.deleted = true;
+        this.$el.reset();
         this.triggerChange();
       },
       acceptFiles(files) {
@@ -385,6 +386,7 @@
     flex: 1;
   }
   .form-file-container {
+    max-width: 100%;
     .md-icon:after {
       display: none;
     }
@@ -487,6 +489,7 @@
         }
       }
       .form-file-info {
+        width: 100%;
         padding: 6px;
         display: flex;
         flex-flow: row wrap;

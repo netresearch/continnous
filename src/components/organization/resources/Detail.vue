@@ -9,11 +9,12 @@
       :validate="{title: validateTitle}"
       ref="form"
       @saved="onSaved"
+      @cancel="!id ? $router.back() : edit = false"
       :disabled="!mayEdit"
   >
     <md-whiteframe md-elevation="2" v-if="item">
-      <div :class="['resource-detail-head']" v-if="item && id">
-        <avatar :uid="item.creator" :organization="organization">
+      <div :class="['resource-detail-head']" v-if="item">
+        <avatar v-if="id" :uid="item.creator" :organization="organization">
           <template scope="avatar">
             <span class="avatar-name">{{avatar.user.displayName}}</span>
             <span class="md-caption">
@@ -24,23 +25,70 @@
                 </span>
           </template>
         </avatar>
-        <md-button class="md-icon-button" @click="edit = !edit">
-          <md-icon>mode_edit</md-icon>
+        <template v-else>
+          <h3 v-if="type" style="flex: 1">{{$t(type + '.new')}}</h3>
+        </template>
+        <md-button v-if="!id || personal" :class="['md-icon-button', {'md-warn': personal}]" @click="togglePersonal">
+          <md-icon>
+            lock_outline
+            <md-tooltip>
+              {{$t(type + '.this')}} {{$t('detail.is' + (personal ? 'Personal' : 'Public'))}} -
+              {{$t('detail.make' + (!personal ? 'Personal' : 'Public'))}}
+            </md-tooltip>
+          </md-icon>
         </md-button>
-        <template v-if="item.creator === auth.user.uid">
-          <div class="md-caption">
-                <span>
-                  {{$t(type + '.this')}} {{$t('detail.is' + (personal ? 'Personal' : 'Public'))}}
-                  - <span class="md-link" @click="togglePersonal">{{$t('detail.make' + (!personal ? 'Personal' : 'Public'))}}</span>
-                </span>
-          </div>
+        <template v-if="edit">
+          <form-button v-if="id" action="reset" class="md-icon-button" recursive>
+            <md-icon>
+              undo
+              <md-tooltip>{{$t('actions.reset')}}</md-tooltip>
+            </md-icon>
+          </form-button>
+          <form-button action="cancel" class="md-icon-button" recursive>
+            <md-icon>
+              block
+              <md-tooltip>{{$t('actions.cancelEdit')}}</md-tooltip>
+            </md-icon>
+          </form-button>
+          <form-button action="save" class="md-icon-button" recursive>
+            <md-icon>
+              done
+              <md-tooltip>{{$t('actions.save')}}</md-tooltip>
+            </md-icon>
+          </form-button>
+        </template>
+        <template v-if="!edit">
+          <md-button v-if="trash" class="md-icon-button" @click="toggleTrash()">
+            <md-icon>delete_sweep</md-icon>
+            <md-tooltip>{{$t('actions.restore')}}</md-tooltip>
+          </md-button>
+          <share v-if="!trash && !personal" :url="getUrl()"></share>
+          <md-button class="md-icon-button" @click="edit = true">
+            <md-icon>mode_edit</md-icon>
+            <md-tooltip>{{$t('actions.editAll')}}</md-tooltip>
+          </md-button>
+          <md-menu v-if="(!trash || !personal) && mayEdit" md-size="5">
+            <md-button class="md-icon-button" md-menu-trigger>
+              <md-icon>more_vert</md-icon>
+            </md-button>
+            <md-menu-content>
+              <md-menu-item @selected="togglePersonal()" v-if="!personal && item.creator === auth.user.uid">
+                <md-icon>lock_outline</md-icon>
+                <span>{{$t('detail.makePersonal')[0].toUpperCase() + $t('detail.makePersonal').substr(1)}}</span>
+              </md-menu-item>
+              <md-menu-item @selected="toggleTrash()" v-if="!trash">
+                <md-icon>delete</md-icon>
+                <span>{{$t('actions.delete')}}</span>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
         </template>
       </div>
       <div class="resource-detail-body" @scroll="scrollTop = $event.target.scrollTop">
         <div class="resource-detail-main">
           <div class="resource-detail-section">
             <md-icon class="md-primary">{{config.icon}}</md-icon>
-            <resource-form v-if="edit" :type="type" organization="organization" :personal="personal" :item="item">
+            <resource-form v-if="edit || !id" :type="type" organization="organization" :personal="personal" :item="item">
               <form-element
                   type="form-file"
                   :label="$t('fields.attachments')"
@@ -61,21 +109,23 @@
           </template>
         </div>
         <div class="resource-detail-aside" :style="{top: scrollTop + (scrollTop ? 'px' : '')}">
-          <div class="resource-detail-section">
-            <md-icon>local_offer</md-icon>
-            <resource-tags :is-new="!id" :organization="organization" :type="type" :item="item"></resource-tags>
-          </div>
-          <resource-likes v-if="id" class="resource-detail-section" :organization="organization" :item="item">
-          </resource-likes>
-          <base-form sub direct class="resource-detail-section" v-if="!edit && (mayEdit || item.attachments)">
-            <form-element
-                type="form-file"
-                name="attachments"
-                box
-                multiple>
-            </form-element>
-          </base-form>
-          <div v-if="!id">
+          <template v-if="id">
+            <div class="resource-detail-section">
+              <md-icon>local_offer</md-icon>
+              <resource-tags :is-new="!id" :organization="organization" :type="type" :item="item"></resource-tags>
+            </div>
+            <resource-likes v-if="!edit" class="resource-detail-section" :organization="organization" :item="item">
+            </resource-likes>
+            <base-form sub :direct="!edit" class="resource-detail-section" v-if="mayEdit || item.attachments">
+              <form-element
+                  type="form-file"
+                  name="attachments"
+                  box
+                  multiple>
+              </form-element>
+            </base-form>
+          </template>
+          <div v-else>
             <p class="md-caption">
               <md-icon>thumb_up</md-icon>
               <span v-html="$t('detail.motivation', {firstName: auth.user.displayName.split(' ').shift(), displayName: auth.user.displayName})"></span>
@@ -119,6 +169,7 @@
   import Journal from '../Journal';
   import ElasticList from '../../ElasticList';
   import Avatar from '../../Avatar';
+  import Share from '../../Share';
 
   export default {
     mixins: [mixin],
@@ -135,7 +186,8 @@
       ResourceLikes,
       Journal,
       ElasticList,
-      Avatar
+      Avatar,
+      Share
     },
     data() {
       return {
@@ -197,21 +249,6 @@
         if (!this.id) {
           this.$router.replace(this.getUrlPath(this.$refs.form.firebaseRef.key));
         }
-      },
-      togglePersonal() {
-        this.organization.journal.getRef()
-          .orderByChild('id')
-          .equalTo(this.item.id)
-          .once('value', (sn) => {
-            sn.forEach((csn) => {
-              csn.ref.update({ personal: !this.personal });
-            });
-          });
-        this.getFirebaseRef('resources', this.item.id, !this.personal).set(this.item).then(() => {
-          this.getFirebaseRef('resources', this.item.id).remove().then(() => {
-            this.$router.replace(this.getUrlPath(this.item.id, !this.personal));
-          });
-        });
       }
     }
   };
@@ -247,6 +284,9 @@
     }
     .avatar {
       flex: 1;
+    }
+    .md-button {
+      margin: 0;
     }
   }
   .resource-detail-body {

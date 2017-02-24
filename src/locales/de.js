@@ -74,7 +74,10 @@ module.exports = {
     abort: 'Abbrechen',
     unlike: 'Mir gefällt das nicht mehr',
     like: 'Mir gefällt das',
-    writeComment: 'Schreibe einen Kommentar'
+    writeComment: 'Schreibe einen Kommentar',
+    editAll: 'Alle Felder bearbeiten',
+    cancelEdit: 'Bearbeitung abbrechen',
+    share: 'Teilen'
   },
   results: {
     title: 'Zielvorgaben',
@@ -103,21 +106,24 @@ module.exports = {
     this: 'Dieses Ziel',
     accusative: 'Ziele',
     personal_accusative: 'persönliche Ziele',
-    accusative_one: 'eins'
+    accusative_one: 'eins',
+    new: 'Neues Ziel'
   },
   ideas: {
     title: 'Kurzer Titel Deiner Idee',
     this: 'Diese Idee',
     accusative: 'Ideen',
     personal_accusative: 'persönliche Ideen',
-    accusative_one: 'eine'
+    accusative_one: 'eine',
+    new: 'Neue Idee'
   },
   insights: {
     title: 'Kurzer Titel Deiner Erkenntnis',
     this: 'Diese Erkenntnis',
     accusative: 'Erkenntnisse',
     personal_accusative: 'persönliche Erkenntnisse',
-    accusative_one: 'eine'
+    accusative_one: 'eine',
+    new: 'Neue Erkenntnis'
   },
   scoring: {
     title: 'Dein Scoring',

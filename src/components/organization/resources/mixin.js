@@ -39,23 +39,57 @@ export default {
     moment(time) {
       return moment(time);
     },
-    getUrlPath(id, personal) {
+    getUrlPath(id, personal, trash) {
       const p = personal === undefined ? this.personal : personal;
+      const t = trash === undefined ? this.trash : trash;
       let path = '/' + this.organization.key + '/' + this.type;
       if (p) {
         path += '/personal';
+      }
+      if (t) {
+        path += '/trash';
       }
       if (id) {
         path += '/' + id;
       }
       return path;
     },
-    toggleTrash(trash, item) {
-      this.getFirebaseRef(!trash ? 'trash' : 'resources', item.id)
-        .set(this.prepareItemForFirebase(item))
+    getUrl(id) {
+      /* global document */
+      return document.location.origin
+        + (this.$router.mode === 'hash' ? '/#' : '')
+        + this.getUrlPath(id);
+    },
+    togglePersonal(item) {
+      const it = item || this.item;
+      this.organization.journal.getRef()
+        .orderByChild('id')
+        .equalTo(it.id)
+        .once('value', (sn) => {
+          sn.forEach((csn) => {
+            csn.ref.update({ personal: !this.personal });
+          });
+        });
+      this.getFirebaseRef('resources', it.id, !this.personal).set(it).then(() => {
+        this.getFirebaseRef('resources', it.id).remove().then(() => {
+          if (!item) {
+            this.$router.replace(this.getUrlPath(it.id, !this.personal));
+          }
+        });
+      });
+    },
+    toggleTrash(item) {
+      const trash = this.trash;
+      const it = item || this.item;
+      this.getFirebaseRef(!trash ? 'trash' : 'resources', it.id)
+        .set(this.prepareItemForFirebase(it))
         .then(() => {
-          this.organization.journal.addEntry(this.type, this.personal, item.id, trash ? 'restore' : 'remove');
-          this.getFirebaseRef(trash ? 'trash' : 'resources', item.id).remove();
+          this.organization.journal.addEntry(this.type, this.personal, it.id, trash ? 'restore' : 'remove');
+          this.getFirebaseRef(trash ? 'trash' : 'resources', it.id).remove().then(() => {
+            if (!item) {
+              this.$router.replace(this.getUrlPath(it.id, this.personal, !trash));
+            }
+          });
         });
     },
     getLikesRef(id, all, byUser) {

@@ -11,7 +11,7 @@
     </md-card-media>
     <md-card-actions>
       <template v-if="trash">
-        <md-button v-if="trash" @click.stop="toggleTrash(trash, item)" :title="$t('actions.restore')" class="md-icon-button">
+        <md-button v-if="trash" @click.stop="toggleTrash(item)" :title="$t('actions.restore')" class="md-icon-button">
           <md-icon>delete_sweep</md-icon>
         </md-button>
         <div style="flex: 1"></div>
@@ -19,15 +19,13 @@
       <md-button @click.stop="setLike(item, !like)" :class="['md-icon-button', {'md-accent': like}]">
         <md-icon>favorite</md-icon>
       </md-button>
-      <md-button class="md-icon-button">
-        <md-icon>share</md-icon>
-      </md-button>
-      <md-menu @click.native.stop="" v-if="!trash && permissions[type].write && item.creator === auth.user.uid" md-size="4">
+      <share @click.native.stop="" v-if="!trash && !personal" :url="getUrl(item.id)"></share>
+      <md-menu @click.native.stop="" v-if="!trash && permissions[type].write" md-size="4">
         <md-button class="md-icon-button" md-menu-trigger>
           <md-icon>more_vert</md-icon>
         </md-button>
         <md-menu-content>
-          <md-menu-item @selected="toggleTrash(trash, item)" v-if="!trash && permissions[type].write && item.creator === auth.user.uid">
+          <md-menu-item @selected="toggleTrash(item)" v-if="!trash && permissions[type].write && item.creator === auth.user.uid">
             <md-icon>delete</md-icon>
             <span>{{$t('actions.delete')}}</span>
           </md-menu-item>
@@ -41,10 +39,11 @@
   import auth from '../../../auth';
   import mixin from './mixin';
   import ResourceImage from './Image';
+  import Share from '../../Share';
 
   export default {
     mixins: [mixin],
-    components: { ResourceImage },
+    components: { ResourceImage, Share },
     props: {
       personal: Boolean,
       item: Object,

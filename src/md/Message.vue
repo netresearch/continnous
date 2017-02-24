@@ -3,7 +3,7 @@
     <div class="message" v-show="visible">
       <template v-if="st === 0">
         <div class="loader" v-if="splash"></div>
-        <md-spinner v-else :md-indeterminate="progress === false" :md-progress="progress || 1" :md-size="32"></md-spinner>
+        <md-spinner v-else :md-indeterminate="!progress" :md-progress="progress || 1" :md-size="32"></md-spinner>
       </template>
       <div class="message-content" v-else>
         <md-icon :class="st < 0 ? 'md-warn' : 'md-primary'">{{st === -1 ? 'error' : (st === -2 ? 'warning' : (st === 1 ? 'done' : 'info'))}}</md-icon>

@@ -275,6 +275,10 @@
         return false;
       },
       reset(clear, recursive) {
+        if (this.sub && this.parentForm) {
+          this.parentForm.subFormsErrors -= Object.keys(this.errors).length;
+          this.parentForm.subFormsChanged -= Object.keys(this.changed).length;
+        }
         if (recursive) {
           this.subForms.forEach(form => form.reset(clear, recursive));
         }
@@ -381,6 +385,9 @@
                 Promise.all(afterSave).then(() => {
                   this.status = 1;
                   forms.forEach((form) => {
+                    if (form.form.sub && form.form.parentForm) {
+                      form.form.parentForm.subFormsChanged -= form.fields.length;
+                    }
                     form.fields.forEach((key) => {
                       form.form.$delete(form.form.changed, key);
                     });

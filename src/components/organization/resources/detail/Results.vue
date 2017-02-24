@@ -26,8 +26,8 @@
           </form-button>
           <form-button action="cancel" class="md-icon-button">
             <md-icon>
-              clear
-              <md-tooltip>{{$t('actions.cancel')}}</md-tooltip>
+              block
+              <md-tooltip>{{$t('actions.cancelEdit')}}</md-tooltip>
             </md-icon>
           </form-button>
           <form-button action="save" class="md-icon-button">

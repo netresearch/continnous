@@ -74,7 +74,10 @@ module.exports = {
     abort: 'Abort',
     unlike: 'I don\'t like this anymore',
     like: 'I like this',
-    writeComment: 'Write comment'
+    writeComment: 'Write comment',
+    editAll: 'Edit all fields',
+    cancelEdit: 'Cancel edit',
+    share: 'Share'
   },
   results: {
     title: 'Key results',
@@ -104,7 +107,8 @@ module.exports = {
     this: 'This objective',
     accusative: 'objectives',
     personal_accusative: 'personal objectives',
-    accusative_one: 'one'
+    accusative_one: 'one',
+    new: 'New objective'
   },
   ideas: {
     title: 'Short title of the idea',
@@ -113,6 +117,7 @@ module.exports = {
     accusative: 'ideas',
     personal_accusative: 'personal ideas',
     accusative_one: 'one',
+    new: 'New idea',
   },
   insights: {
     title: 'Short title of the insight',
@@ -120,7 +125,8 @@ module.exports = {
     this: 'This insight',
     accusative: 'insights',
     personal_accusative: 'personal insights',
-    accusative_one: 'one'
+    accusative_one: 'one',
+    new: 'New insight'
   },
   scoring: {
     title: 'Your scoring',
