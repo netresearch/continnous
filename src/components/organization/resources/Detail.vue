@@ -68,11 +68,10 @@
           <resource-likes v-if="id" class="resource-detail-section" :organization="organization" :item="item">
           </resource-likes>
           <base-form sub direct class="resource-detail-section" v-if="!edit && (mayEdit || item.attachments)">
-            <md-icon>attach_file</md-icon>
             <form-element
                 type="form-file"
-                :label="$t('fields.attachments')"
                 name="attachments"
+                box
                 multiple>
             </form-element>
           </base-form>
@@ -341,7 +340,6 @@
       height: 1px;
       background: rgba(0, 0, 0, 0.1);
     }
-    margin-bottom: 16px;
     &:first-of-type,
     & + & {
       border-top: none;
@@ -363,6 +361,31 @@
     }
   }
   .resource-detail-aside {
-
+    .form-element-attachments {
+      .md-input-container,
+      .form-file-container {
+        position: static;
+      }
+      .md-input-container {
+        padding-top: 0;
+        margin: 0;
+        &:after {
+          display: none;
+        }
+      }
+      .form-file-box span {
+        display: block;
+        text-align: center;
+      }
+      .form-file-box .md-icon {
+        position: absolute;
+        left: 6px;
+        top: 0px;
+        margin: 0;
+      }
+      .form-file-list {
+        margin-top: -4px;
+      }
+    }
   }
 </style>

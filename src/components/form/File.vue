@@ -2,7 +2,7 @@
 
 <template>
   <div
-      :class="['form-file-container', {'form-file-gallery': gallery && numFiles, 'form-file-inline': inline}]">
+      :class="['form-file-container', {'form-file-gallery': gallery && numFiles, 'form-file-inline': inline, 'form-file-has-files': numFiles > 0}]">
     <div class="form-file-list" v-if="numFiles">
       <div
           v-for="file in files"
@@ -38,17 +38,24 @@
         :multiple="multiple"
         :accept="accept"
         ref="mdFile"
-        v-show="!disabled && (!numFiles || (multiple && (!limit || numFiles < limit)))"
+        v-show="!box && !disabled && (!numFiles || (multiple && (!limit || numFiles < limit)))"
         @selected="acceptFiles($event); $refs.mdFile.filename = undefined;"
         :placeholder="$t('file.placeholder')"></md-file>
+    <div
+        class="form-file-box"
+        v-if="box && !disabled && (!numFiles || (multiple && (!limit || numFiles < limit)))"
+        @click="$refs.mdFile.openPicker()"
+    >
+      <span>
+        <md-icon>attach_file</md-icon>
+        {{$t('file.placeholder')}}
+      </span>
+    </div>
   </div>
 </template>
 
 <script>
-  import Child from './child';
-
   export default {
-    extends: Child,
     props: {
       value: [Array, Object],
       disabled: Boolean,
@@ -65,7 +72,8 @@
       registerPreviewUrl: Function,
       getUrl: Function,
       saveFile: Function,
-      inline: Boolean
+      inline: Boolean,
+      box: Boolean
     },
     data() {
       return {
@@ -523,6 +531,26 @@
           }
         }
       }
+    }
+    .form-file-box {
+      cursor: pointer;
+      text-align: center;
+      padding: 8px;
+      border: 1px dashed rgba(#000, 0.1);
+      color: rgba(#000, 0.56);
+      span {
+        display: inline-flex;
+        flex-flow: row;
+        align-items: center;
+        text-align: left;
+        .md-icon {
+          margin-left: 0;
+          margin-right: 8px;
+        }
+      }
+    }
+    &.form-file-has-files .form-file-box {
+      margin-top: 2px;
     }
   }
 </style>
