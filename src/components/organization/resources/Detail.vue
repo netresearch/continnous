@@ -12,8 +12,14 @@
       @cancel="!id ? $router.back() : edit = false"
       :disabled="!mayEdit"
   >
+    <div class="resource-detail-backdrop" @click="close()"></div>
     <md-whiteframe md-elevation="2" v-if="item">
-      <div :class="['resource-detail-head']" v-if="item">
+      <md-toolbar class="md-dense resource-detail-mobile-head">
+        <md-whiteframe md-elevation="2"></md-whiteframe>
+        <h2 class="md-title" style="flex: 1">{{personal ? $tc('resources.personal_' + type, 2) : organization.name + ' ' + $tc('resources.' + type, 2)}}</h2>
+        <md-button class="md-icon-button" @click="close()"><md-icon>chevron_left</md-icon></md-button>
+      </md-toolbar>
+      <div :class="['resource-detail-head', {'resource-detail-head-elevate': scrollTop > 0}]" v-if="item">
         <avatar v-if="id" :uid="item.creator" :organization="organization">
           <template scope="avatar">
             <span class="avatar-name">{{avatar.user.displayName}}</span>
@@ -57,7 +63,7 @@
             </md-icon>
           </form-button>
         </template>
-        <template v-if="!edit">
+        <template v-else>
           <md-button v-if="trash" class="md-icon-button" @click="toggleTrash()">
             <md-icon>delete_sweep</md-icon>
             <md-tooltip>{{$t('actions.restore')}}</md-tooltip>
@@ -82,6 +88,9 @@
               </md-menu-item>
             </md-menu-content>
           </md-menu>
+          <md-button class="md-icon-button resource-detail-close" @click="close()">
+            <md-icon>close</md-icon>
+          </md-button>
         </template>
       </div>
       <div class="resource-detail-body" @scroll="scrollTop = $event.target.scrollTop">
@@ -126,25 +135,21 @@
             </base-form>
           </template>
           <div v-else>
-            <p class="md-caption">
+            <div class="resource-detail-section">
               <md-icon>thumb_up</md-icon>
               <span v-html="$t('detail.motivation', {firstName: auth.user.displayName.split(' ').shift(), displayName: auth.user.displayName})"></span>
-            </p>
-            <p class="md-caption" style="margin-left: 22px;">
-              {{$t('detail.readStatementsHint')}}
-            </p>
-            <template v-for="(icon, key) in {vision: 'flare', mission: 'navigation'}">
-              <p class="md-caption">
-                <md-icon>{{icon}}</md-icon>
-                <span>
-                  <strong>{{organization[key + 'Title'] || $t(key + '.defaultTitle')}}</strong><br>
-                  {{organization[key]}}
-                </span>
-              </p>
-            </template>
+              <p>{{$t('detail.readStatementsHint')}}</p>
+            </div>
+            <div class="resource-detail-section" v-for="(icon, key) in {vision: 'flare', mission: 'navigation'}">
+              <md-icon>{{icon}}</md-icon>
+              <span>
+                <strong>{{organization[key + 'Title'] || $t(key + '.defaultTitle')}}</strong><br>
+                {{organization[key]}}
+              </span>
+            </div>
           </div>
         </div>
-        <div class="resource-detail-comments">
+        <div class="resource-detail-comments" v-if="!edit">
           <journal actions="comment" @update="comments = $event.entries.length" :organization="organization" :item="item" no-resource reverse></journal>
           <resource-comment :organization="organization" :type="type" :item="item" :personal="personal"></resource-comment>
         </div>
@@ -206,8 +211,8 @@
       $route: {
         immediate: true,
         handler(route) {
-          this.personal = !!route.params.personal;
-          this.type = route.params.type;
+          this.personal = !!route.params.personal || !!route.query.personal;
+          this.type = route.params.type || route.query.type;
           this.id = route.params.id || null;
           this.edit = !this.id;
           this.trash = !!route.params.trash;
@@ -249,6 +254,9 @@
         if (!this.id) {
           this.$router.replace(this.getUrlPath(this.$refs.form.firebaseRef.key));
         }
+      },
+      close() {
+        this.$router.back();
       }
     }
   };
@@ -257,8 +265,25 @@
 <style lang="scss" rel="stylesheet/scss">
   $padding: 32px;
   .resource-detail {
-    height: 100%;
     padding: $padding;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+  }
+  .resource-detail-backdrop {
+    background: rgba(#000, 0.36);
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+  .resource-detail-close {
+    margin-right: -12px !important;
+    color: rgba(#000, 0.56);
   }
   .resource-detail > .md-whiteframe {
     background: #fff;
@@ -279,6 +304,7 @@
     align-items: center;
     padding: 12px $padding;
     height: 64px;
+    min-height: 64px;
     &.resource-detail-head-elevate {
       box-shadow: -10px -2px 16px -3px rgba(0, 0, 0, 0.6);
     }
@@ -334,38 +360,6 @@
     .journal-comment {
       margin-top: 4px;
       //margin-left: 16px;
-    }
-  }
-  $main-max-width: 600px;
-  $sidebar-from: 928px;
-  $sidebar-width: 304px;
-  @media (max-width: $sidebar-from) {
-    .resource-detail {
-      padding: 0;
-    }
-  }
-  @media (min-width: $sidebar-from) and (max-width: $sidebar-width + $main-max-width + (4 * $padding)),
-    (max-width: $main-max-width + (2 * $padding)) {
-    .resource-detail-main,
-    .resource-detail-comments {
-      width: 100%;
-      float: none;
-    }
-    .resource-detail-comments:before {
-      margin-left: -1 * $padding;
-      margin-right: -1 * $padding;
-    }
-    .resource-detail-aside {
-      position: static;
-      width: 100%;
-      float: none;
-      &:before {
-        content: "";
-        display: block;
-        margin: $padding -1 * $padding 16px -1 * $padding;
-        height: 1px;
-        background: rgba(0, 0, 0, 0.12);
-      }
     }
   }
 
@@ -452,6 +446,70 @@
       }
       .form-file-list {
         margin-top: -4px;
+      }
+    }
+  }
+
+
+  /*
+      Mobile stuff
+  */
+  .resource-detail-mobile-head {
+    position: relative;
+    overflow: hidden;
+    padding-left: $padding;
+    z-index: 3;
+    .md-whiteframe {
+      position: absolute;
+      height: 10px;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+    }
+  }
+
+  $main-max-width: 600px;
+  $sidebar-from: 928px;
+  $sidebar-width: 304px;
+  @media (max-width: $sidebar-from) {
+    .resource-detail {
+      padding: 0;
+      > .md-whiteframe {
+        border-radius: 0;
+        box-shadow: none;
+        height: 100%;
+      }
+    }
+    .resource-detail-close {
+      display: none;
+    }
+  }
+  @media (min-width: $sidebar-from) {
+    .resource-detail-mobile-head {
+      display: none;
+    }
+  }
+  @media (min-width: $sidebar-from) and (max-width: $sidebar-width + $main-max-width + ((4 * $padding) + 40px)),
+  (max-width: $main-max-width + (2 * $padding)) {
+    .resource-detail-main,
+    .resource-detail-comments {
+      width: 100%;
+      float: none;
+    }
+    .resource-detail-comments:before {
+      margin-left: -1 * $padding;
+      margin-right: -1 * $padding;
+    }
+    .resource-detail-aside {
+      position: static;
+      width: 100%;
+      float: none;
+      &:before {
+        content: "";
+        display: block;
+        margin: $padding -1 * $padding 16px -1 * $padding;
+        height: 1px;
+        background: rgba(0, 0, 0, 0.12);
       }
     }
   }

@@ -18,6 +18,8 @@
         })"
         :class="{'router-link-active': type && result.resource === (personal ? 'personal_' : '') + type}"
     >{{$t('resources.' + result.resource)}}</md-button>
+
+    <router-view :organization="organization" :permissions="permissions"></router-view>
   </resource-list>
 </template>
 
@@ -57,6 +59,9 @@
       search(reason) {
         this.$nextTick(() => {
           const query = this.$route.query;
+          if (this.$route.params.id && this.q) {
+            return;
+          }
           let search = false;
           ['sort', 'order', 'q'].forEach((key) => {
             if (query[key] && query[key] !== this[key]) {

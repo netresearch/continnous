@@ -169,7 +169,8 @@ module.exports = {
       placeholder: 'Wähle innerhalb welches Zeitraums das umgesetzt werden soll'
     },
     dueTime: 'Umsetzungszeitraum',
-    rank: 'Relevanz'
+    rank: 'Ranking',
+    _score: 'Relevanz'
   },
   file: {
     placeholder: 'Ziehe Dateien zum Upload hierher oder klicke hier.',

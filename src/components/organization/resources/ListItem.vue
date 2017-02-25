@@ -1,5 +1,5 @@
 <template>
-  <md-card md-with-hover @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '/trash' : '') + '/' + item.id)">
+  <md-card class="resource-list-item" md-with-hover>
     <md-card-header>
       <md-card-header-text>
         <div class="md-title">{{item.title}}</div>
@@ -9,6 +9,7 @@
     <md-card-media v-if="item.image">
       <resource-image :image="item.image" @resource-image-shown="$emit('resource-image-shown')"></resource-image>
     </md-card-media>
+    <router-link class="resource-list-item-link" :to="to"></router-link>
     <md-card-actions>
       <template v-if="trash">
         <md-button v-if="trash" @click.stop="toggleTrash(item)" :title="$t('actions.restore')" class="md-icon-button">
@@ -16,11 +17,11 @@
         </md-button>
         <div style="flex: 1"></div>
       </template>
-      <md-button @click.stop="setLike(item, !like)" :class="['md-icon-button', {'md-accent': like}]">
+      <md-button @click="setLike(item, !like)" :class="['md-icon-button', {'md-accent': like}]">
         <md-icon>favorite</md-icon>
       </md-button>
-      <share @click.native.stop="" v-if="!trash && !personal" :url="getUrl(item.id)"></share>
-      <md-menu @click.native.stop="" v-if="!trash && permissions[type].write" md-size="4">
+      <share v-if="!trash && !personal" :url="getUrl(item.id)"></share>
+      <md-menu v-if="!trash && permissions[type].write" md-size="4">
         <md-button class="md-icon-button" md-menu-trigger>
           <md-icon>more_vert</md-icon>
         </md-button>
@@ -58,6 +59,19 @@
         like: false
       };
     },
+    computed: {
+      to() {
+        const path = this.$route.path + '/' + this.item.id;
+        const query = Object.assign({}, this.$route.query);
+        if (this.$route.params.search) {
+          query.type = this.type;
+          if (this.personal) {
+            query.personal = 1;
+          }
+        }
+        return { path, query };
+      }
+    },
     watch: {
       item: {
         immediate: true,
@@ -73,3 +87,17 @@
     }
   };
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .resource-list-item {
+    position: relative;
+    .resource-list-item-link {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+  }
+</style>

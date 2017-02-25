@@ -24,30 +24,31 @@ const organizationRoute = {
         { path: 'permissions', component: OrganizationSettingsPermissions },
         { path: 'users', component: OrganizationSettingsUsers }
       ]
-    },
-    {
-      path: 'search',
-      component: OrganizationResourcesSearch
     }
   ]
 };
 
 Object.keys(Config.resources).forEach((resource) => {
   organizationRoute.children.push({
-    path: ':type(' + resource + ')/:personal(personal)?/:trash(trash)?/:period(q[1-4]-[0-9]{4})?',
-    component: OrganizationResourcesPage
+    path: ':type(' + resource + ')'
+      + '/:personal(personal)?'
+      + '/:trash(trash)?'
+      + '/:period(q[1-4]-[0-9]{4})?',
+    component: OrganizationResourcesPage,
+    children: [
+      { path: ':id(-[^/]+)', component: OrganizationResourcesResource },
+      { path: 'create', component: OrganizationResourcesResource }
+    ]
   });
   organizationRoute.children.push({
-    path: ':type(' + resource + ')/:personal(personal)?/:trash(trash)?/:id(-[^/]+)',
-    component: OrganizationResourcesResource
-  });
-  organizationRoute.children.push({
-    path: ':type(' + resource + ')/:personal(personal)?/create',
-    component: OrganizationResourcesResource
-  });
-  organizationRoute.children.push({
-    path: 'search/:type(' + resource + ')?/:personal(personal)?',
-    component: OrganizationResourcesSearch
+    path: ':search(search)'
+      + '/:type(' + resource + ')?'
+      + '/:personal(personal)?',
+    component: OrganizationResourcesSearch,
+    children: [
+      { path: ':id(-[^/]+)', component: OrganizationResourcesResource },
+      { path: 'create', OrganizationResourcesResource }
+    ]
   });
 });
 

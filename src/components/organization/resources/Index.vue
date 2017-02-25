@@ -9,6 +9,8 @@
       :personal="personal"
       :period="trash ? undefined : period"
       :status="status"
+      :sort="sort"
+      :order="order"
       trash-enabled
   >
     <md-button
@@ -20,7 +22,7 @@
       {{name}}
     </md-button>
 
-    <router-view v-if="type" :organization="organization" :type="type"></router-view>
+    <router-view v-if="type" :organization="organization" :type="type" :permissions="permissions"></router-view>
   </resource-list>
 </template>
 
@@ -54,6 +56,9 @@
       $route: {
         immediate: true,
         handler(route) {
+          if (route.params.id && this.type) {
+            return;
+          }
           const p = {
             type: route.params.type || this.type,
             trash: !!route.params.trash,

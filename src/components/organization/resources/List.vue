@@ -80,6 +80,7 @@
           </template>
         </template>
       </div>
+      <slot></slot>
       <div ref="list" :class="['resources-list']">
         <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
           <resource-item
@@ -222,6 +223,13 @@
 
 
 <style lang="scss" rel="stylesheet/scss">
+  .resources-list-container {
+    position: relative;
+  }
+  .resources-list {
+    position: relative;
+    z-index: 1;
+  }
   .resources-list-period {
     text-transform: uppercase;
   }
