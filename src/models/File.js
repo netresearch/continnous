@@ -75,7 +75,7 @@ export default class File {
 }
 
 FileElement.props.getPreviewUrl.default = File.getPreviewURL;
-FileElement.props.getUrl = File.getURL;
+FileElement.props.getUrl.default = File.getURL;
 FileElement.props.registerPreviewUrl.default = File.registerPreviewURL;
 FileElement.isFileElement = true;
 
