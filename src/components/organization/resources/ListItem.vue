@@ -26,7 +26,7 @@
           <md-icon>more_vert</md-icon>
         </md-button>
         <md-menu-content>
-          <md-menu-item @selected="toggleTrash(item)" v-if="!trash && permissions[type].write && item.creator === auth.user.uid">
+          <md-menu-item @selected="toggleTrash(item)" v-if="!trash && permissions[type].write">
             <md-icon>delete</md-icon>
             <span>{{$t('actions.delete')}}</span>
           </md-menu-item>

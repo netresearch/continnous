@@ -243,6 +243,7 @@
         return item;
       },
       onSaved(updates, ref) {
+        this.edit = false;
         if (!this.personal) {
           if (this.id) {
             const keys = Object.keys(updates).filter(field => field !== 'updated');
