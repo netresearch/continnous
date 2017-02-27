@@ -49,15 +49,6 @@ module.exports = {
   elevate: 'Erhöhen',
   unelevated: 'Nicht erhöht',
   elevated: 'Erhöht',
-  resources: {
-    organization: 'Organisation',
-    objectives: 'Ziele',
-    personal_objectives: 'Persönliche Ziele',
-    ideas: 'Ideen',
-    personal_ideas: 'Persönliche Ideen',
-    insights: 'Erkenntnisse',
-    personal_insights: 'Persönliche Erkenntnisse'
-  },
   actions: {
     edit: 'Bearbeiten',
     delete: 'Entfernen',
@@ -102,7 +93,9 @@ module.exports = {
     placeholder: 'Geben Sie eine klar verständliche Zusammenfassung Ihrer Mission an'
   },
   objectives: {
-    title: 'Kurzer Titel des Ziels',
+    title: 'Ziel | Ziele',
+    titlePlaceholder: 'Kurzer Titel des Ziels',
+    personal: 'Persönliche Ziele',
     this: 'Dieses Ziel',
     accusative: 'Ziele',
     personal_accusative: 'persönliche Ziele',
@@ -110,7 +103,9 @@ module.exports = {
     new: 'Neues Ziel'
   },
   ideas: {
-    title: 'Kurzer Titel Deiner Idee',
+    title: 'Idee | Ideen',
+    titlePlaceholder: 'Kurzer Titel Deiner Idee',
+    personal: 'Persönliche Erkenntnisse',
     this: 'Diese Idee',
     accusative: 'Ideen',
     personal_accusative: 'persönliche Ideen',
@@ -118,12 +113,24 @@ module.exports = {
     new: 'Neue Idee'
   },
   insights: {
-    title: 'Kurzer Titel Deiner Erkenntnis',
+    title: 'Erkenntnis | Erkenntnisse',
+    titlePlaceholder: 'Kurzer Titel Deiner Erkenntnis',
+    personal: 'Persönliche Erkenntnisse',
     this: 'Diese Erkenntnis',
     accusative: 'Erkenntnisse',
     personal_accusative: 'persönliche Erkenntnisse',
     accusative_one: 'eine',
     new: 'Neue Erkenntnis'
+  },
+  roadmaps: {
+    title: 'Roadmap | Roadmaps',
+    titlePlaceholder: 'Kurzer Titel der Roadmap',
+    personal: 'Persönliche Roadmaps',
+    this: 'Diese Roadmap',
+    accusative: 'Roadmaps',
+    personal_accusative: 'persönliche roadmaps',
+    accusative_one: 'eine',
+    new: 'Neue Roadmap'
   },
   scoring: {
     title: 'Dein Scoring',
