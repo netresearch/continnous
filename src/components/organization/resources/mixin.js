@@ -12,12 +12,12 @@ export default {
     getFirebaseRef(...pathArgs) {
       return Firebase.database().ref(this.getFirebasePath(...pathArgs));
     },
-    getFirebasePath(branch, id, personal) {
+    getFirebasePath(branch, id, personal, type) {
       const p = personal === undefined ? this.personal : personal;
       return '/' + branch
         + '/organizations/' + this.organization.key
         + '/' + (p ? auth.user.uid : 'organization')
-        + '/' + this.type
+        + '/' + (type || this.type)
         + (id ? '/' + id : '');
     },
     createItem(id, data, resource, personal) {

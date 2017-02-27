@@ -21,17 +21,7 @@
         <md-icon>favorite</md-icon>
       </md-button>
       <share v-if="!trash && !personal" :url="getUrl(item.id)"></share>
-      <md-menu v-if="!trash && permissions[type].write" md-size="4">
-        <md-button class="md-icon-button" md-menu-trigger>
-          <md-icon>more_vert</md-icon>
-        </md-button>
-        <md-menu-content>
-          <md-menu-item @selected="toggleTrash(item)" v-if="!trash && permissions[type].write">
-            <md-icon>delete</md-icon>
-            <span>{{$t('actions.delete')}}</span>
-          </md-menu-item>
-        </md-menu-content>
-      </md-menu>
+      <item-menu :organization="organization" :item="item" :type="type" :personal="personal" :trash="trash" :permissions="permissions"></item-menu>
     </md-card-actions>
   </md-card>
 </template>
@@ -41,10 +31,11 @@
   import mixin from './mixin';
   import ResourceImage from './Image';
   import Share from '../../Share';
+  import ItemMenu from './ItemMenu';
 
   export default {
     mixins: [mixin],
-    components: { ResourceImage, Share },
+    components: { ResourceImage, Share, ItemMenu },
     props: {
       personal: Boolean,
       item: Object,

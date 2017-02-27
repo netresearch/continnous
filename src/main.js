@@ -31,6 +31,9 @@ Vue.mixin({
         /* eslint-enable no-console */
       }
       return args[0];
+    },
+    $isArray(value) {
+      return Object.prototype.toString.call(value) === '[object Array]';
     }
   },
   filters: {

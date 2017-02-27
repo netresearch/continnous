@@ -73,7 +73,15 @@ const Config = {
       },
       periodical: false,
       scoring: [],
-      results: false
+      results: false,
+      links: {
+        ideas: {
+          exclusive: true,
+          apart: true,
+          add: true,
+          all: true
+        }
+      }
     }
   },
   flashlight: {

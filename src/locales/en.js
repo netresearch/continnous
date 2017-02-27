@@ -94,7 +94,7 @@ module.exports = {
     placeholder: 'Provide a clear mission statement'
   },
   objectives: {
-    title: 'Objectives',
+    title: 'Objective | Objectives',
     titlePlaceholder: 'Short title of the objective',
     personal: 'Personal objectives',
     this: 'This objective',
@@ -104,7 +104,7 @@ module.exports = {
     new: 'New objective'
   },
   ideas: {
-    title: 'Ideas',
+    title: 'Idea | Ideas',
     titlePlaceholder: 'Short title of the idea',
     personal: 'Personal ideas',
     this: 'This idea',
@@ -114,7 +114,7 @@ module.exports = {
     new: 'New idea',
   },
   insights: {
-    title: 'Insights',
+    title: 'Insight | Insights',
     titlePlaceholder: 'Short title of the insight',
     personal: 'Personal insights',
     this: 'This insight',
@@ -124,7 +124,7 @@ module.exports = {
     new: 'New insight'
   },
   roadmaps: {
-    title: 'Roadmaps',
+    title: 'Roadmap | Roadmaps',
     titlePlaceholder: 'Short title of the roadmap',
     personal: 'Personal roadmaps',
     this: 'This roadmap',
