@@ -6,6 +6,8 @@
       <resource-image :image="item.image"></resource-image>
       <div class="resource-detail-description" v-if="item.description">{{item.description}}</div>
     </template>
+
+    <slot></slot>
   </div>
 </template>
 

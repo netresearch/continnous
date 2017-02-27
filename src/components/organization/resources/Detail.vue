@@ -98,13 +98,16 @@
           <div class="resource-detail-section">
             <md-icon class="md-primary">{{config.icon}}</md-icon>
             <resource-form v-if="edit || !id" :type="type" organization="organization" :personal="personal" :item="item">
+              <component :is="type + '-form'"></component>
               <form-element
                   type="form-file"
                   :label="$t('fields.attachments')"
                   name="attachments"
                   multiple></form-element>
             </resource-form>
-            <resource-content v-else :type="type" organization="organization" :personal="personal" :item="item"></resource-content>
+            <resource-content v-else :type="type" organization="organization" :personal="personal" :item="item">
+              <component :is="type + '-content'" :item="item"></component>
+            </resource-content>
           </div>
           <div class="resource-detail-section" v-if="config.results">
             <md-icon>flag</md-icon>
@@ -119,6 +122,15 @@
         </div>
         <div class="resource-detail-aside" :style="{top: scrollTop + (scrollTop ? 'px' : '')}">
           <template v-if="id">
+            <div v-if="!edit && period" class="resource-detail-section">
+              <md-icon>
+                date_range
+                <md-tooltip>{{$t('fields.dueTime') | ucfirst}}</md-tooltip>
+              </md-icon>
+              <div class="resource-detail-section-content">
+                {{period.format()}}
+              </div>
+            </div>
             <div class="resource-detail-section">
               <md-icon>local_offer</md-icon>
               <resource-tags :is-new="!id" :organization="organization" :type="type" :item="item"></resource-tags>
@@ -175,25 +187,35 @@
   import ElasticList from '../../ElasticList';
   import Avatar from '../../Avatar';
   import Share from '../../Share';
+  import Period from '../../../models/Period';
+
+  const components = {
+    BaseForm,
+    ResourceContent,
+    ResourceForm,
+    ResourcePublishControl,
+    ResourceComment,
+    ResourceResults,
+    ResourceScoring,
+    ResourceTags,
+    ResourceLikes,
+    Journal,
+    ElasticList,
+    Avatar,
+    Share
+  };
+
+  ['Form', 'Content'].forEach((component) => {
+    /* eslint-disable global-require, import/no-dynamic-require */
+    Object.keys(Config.resources).forEach((resource) => {
+      components[resource + '-' + component.toLowerCase()] = require('./detail/' + resource + '/' + component);
+    });
+  });
 
   export default {
     mixins: [mixin],
     props: ['organization', 'permissions'],
-    components: {
-      BaseForm,
-      ResourceContent,
-      ResourceForm,
-      ResourcePublishControl,
-      ResourceComment,
-      ResourceResults,
-      ResourceScoring,
-      ResourceTags,
-      ResourceLikes,
-      Journal,
-      ElasticList,
-      Avatar,
-      Share
-    },
+    components,
     data() {
       return {
         auth,
@@ -228,6 +250,12 @@
       },
       config() {
         return this.type ? Config.resources[this.type] : {};
+      },
+      period() {
+        if (this.config.periodical && this.item && this.item.dueTime) {
+          return new Period(new Date(this.item.dueTime));
+        }
+        return undefined;
       }
     },
     methods: {
@@ -382,6 +410,9 @@
       color: rgba(#000, 0.32);
       left: 6px;
       top: 0px;
+    }
+    .resource-detail-section-content {
+      padding-top: 4px;
     }
   }
   .resource-detail-section-head {

@@ -36,28 +36,14 @@
           md-inline
       >
       </form-element>
-
-      <component :is="type + '-form'"></component>
-
       <slot></slot>
     </div>
 </template>
 
 <script>
-  import Config from '../../../../models/Config';
-
-  const components = {};
-
-  /* eslint-disable global-require, import/no-dynamic-require */
-  Object.keys(Config.resources).forEach((resource) => {
-    components[resource + '-form'] = require('./' + resource + '/Form');
-  });
-
   export default {
-    components,
     props: {
-      type: String,
-      edit: Boolean
+      type: String
     },
   };
 </script>
