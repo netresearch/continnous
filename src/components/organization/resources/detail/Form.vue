@@ -4,7 +4,7 @@
           type="md-textarea"
           md-inline name="title"
           :label="$t('fields.title')"
-          :placeholder="$t(type + '.title')"
+          :placeholder="$t(type + '.titlePlaceholder')"
           md-inline
       ></form-element>
 

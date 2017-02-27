@@ -56,6 +56,24 @@ const Config = {
       periodical: false,
       scoring: [],
       results: false
+    },
+    roadmaps: {
+      icon: 'format_list_bulleted',
+      defaultPermissions: {
+        member: ['read', 'write'],
+        guest: ['read'],
+        anyone: []
+      },
+      defaultPersonalPermissions: {
+        member: ['read', 'write'],
+        guest: ['read', 'write'],
+        anyone: []
+      },
+      flashlight: {
+      },
+      periodical: false,
+      scoring: [],
+      results: false
     }
   },
   flashlight: {

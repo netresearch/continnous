@@ -31,7 +31,9 @@
             <template v-for="(privileges, resource) in defaultPermissions[roles[0]]">
               <tr class="md-table-row permissions-resource">
                 <td class="md-table-cell" :colspan="roles.length + 1">
-                  <div class="md-table-cell-container">{{$t('resources.' + resource)}}</div>
+                  <div class="md-table-cell-container">
+                    {{resource.substr(0, 9) === 'personal_' ? $t(resource.substr(9) + '.personal') : $t(resource + '.title')}}
+                  </div>
                 </td>
               </tr>
               <tr class="md-table-row" v-for="(defaultAllowed, privilege) in privileges">
@@ -76,13 +78,18 @@
     },
     methods: {
       firebaseReceive(snapshot) {
-        return extend(true, {}, this.defaultPermissions, snapshot.val() || {});
+        return extend(true, {}, snapshot.val() || {});
       },
       onPermissionsChange(role, resource, privilege) {
         const form = this.$refs.form;
-        const allowed = !form.values[role][resource][privilege];
         const newRolePermissions = extend(true, {}, form.values[role]);
-        newRolePermissions[resource][privilege] = allowed;
+        if (!newRolePermissions.hasOwnProperty(resource)) {
+          newRolePermissions[resource] = {};
+        }
+        if (!newRolePermissions[resource].hasOwnProperty(privilege)) {
+          newRolePermissions[resource][privilege] = false;
+        }
+        newRolePermissions[resource][privilege] = !newRolePermissions[resource][privilege];
         form.onChange(role, newRolePermissions);
       },
       resetPermissionsToDefaults() {

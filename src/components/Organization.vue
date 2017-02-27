@@ -40,7 +40,7 @@
         <md-list-item v-for="(resource, key) in resources" v-if="permissions[key].write || permissions['personal_' + key].write || permissions[key].read || permissions['personal_' + key].read">
           <router-link :to="'/' + organization.key + '/' + key">
             <md-icon>{{resource.icon}}</md-icon>
-            <span>{{$t('resources.' + key)}}</span>
+            <span>{{$t(key + '.title')}}</span>
             <router-link v-if="permissions[key].write || permissions['personal_' + key].write" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
               <md-icon>add</md-icon>
             </router-link>

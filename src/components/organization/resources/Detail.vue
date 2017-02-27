@@ -16,7 +16,7 @@
     <md-whiteframe md-elevation="2" v-if="item">
       <md-toolbar class="md-dense resource-detail-mobile-head">
         <md-whiteframe md-elevation="2"></md-whiteframe>
-        <h2 class="md-title" style="flex: 1">{{personal ? $tc('resources.personal_' + type, 2) : organization.name + ' ' + $tc('resources.' + type, 2)}}</h2>
+        <h2 class="md-title" style="flex: 1">{{personal ? $tc(type + '.personal', 2) : organization.name + ' ' + $tc(type + '.personal', 2)}}</h2>
         <md-button class="md-icon-button" @click="close()"><md-icon>chevron_left</md-icon></md-button>
       </md-toolbar>
       <div :class="['resource-detail-head', {'resource-detail-head-elevate': scrollTop > 0}]" v-if="item">

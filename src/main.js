@@ -32,6 +32,20 @@ Vue.mixin({
       }
       return args[0];
     }
+  },
+  filters: {
+    ucfirst(v) {
+      if (typeof v === 'string') {
+        return v.substr(0, 1).toUpperCase() + v.substr(1);
+      }
+      return v;
+    },
+    lcfirst(v) {
+      if (typeof v === 'string') {
+        return v.substr(0, 1).toLowerCase() + v.substr(1);
+      }
+      return v;
+    }
   }
 });
 

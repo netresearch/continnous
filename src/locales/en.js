@@ -21,6 +21,7 @@ module.exports = {
   settings: 'Settings',
   overview: 'Overview',
   organization: {
+    title: 'Organization',
     info: 'Organization information',
     domains: 'Organization domains'
   },
@@ -49,15 +50,6 @@ module.exports = {
   elevate: 'Elevate',
   unelevated: 'Unelevated',
   elevated: 'Elevated',
-  resources: {
-    organization: 'Organization',
-    objectives: 'Objectives',
-    personal_objectives: 'Personal objectives',
-    ideas: 'Ideas',
-    personal_ideas: 'Personal ideas',
-    insights: 'Insights',
-    personal_insights: 'Personal insights'
-  },
   actions: {
     edit: 'Edit',
     delete: 'Delete',
@@ -102,8 +94,9 @@ module.exports = {
     placeholder: 'Provide a clear mission statement'
   },
   objectives: {
-    title: 'Short title of the objective',
-    personal: 'This is a personal objective',
+    title: 'Objectives',
+    titlePlaceholder: 'Short title of the objective',
+    personal: 'Personal objectives',
     this: 'This objective',
     accusative: 'objectives',
     personal_accusative: 'personal objectives',
@@ -111,8 +104,9 @@ module.exports = {
     new: 'New objective'
   },
   ideas: {
-    title: 'Short title of the idea',
-    personal: 'This is a personal idea',
+    title: 'Ideas',
+    titlePlaceholder: 'Short title of the idea',
+    personal: 'Personal ideas',
     this: 'This idea',
     accusative: 'ideas',
     personal_accusative: 'personal ideas',
@@ -120,13 +114,24 @@ module.exports = {
     new: 'New idea',
   },
   insights: {
-    title: 'Short title of the insight',
-    personal: 'This is a personal insight',
+    title: 'Insights',
+    titlePlaceholder: 'Short title of the insight',
+    personal: 'Personal insights',
     this: 'This insight',
     accusative: 'insights',
     personal_accusative: 'personal insights',
     accusative_one: 'one',
     new: 'New insight'
+  },
+  roadmaps: {
+    title: 'Roadmaps',
+    titlePlaceholder: 'Short title of the roadmap',
+    personal: 'Personal roadmaps',
+    this: 'This roadmap',
+    accusative: 'roadmaps',
+    personal_accusative: 'personal roadmaps',
+    accusative_one: 'one',
+    new: 'New roadmap'
   },
   scoring: {
     title: 'Your scoring',

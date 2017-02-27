@@ -1,6 +1,6 @@
 <template>
   <resource-list
-      :title="$tc('resources.' + type, 2)"
+      :title="$tc(type + '.title', 2)"
       :organization="organization"
       :permissions="permissions"
       :type="type"
@@ -15,7 +15,7 @@
   >
     <md-button
         slot="buttons"
-        v-for="(name, path) in {'': organization.name + ' ' + $tc('resources.' + type, 2), 'personal': $t('resources.personal_' + type)}"
+        v-for="(name, path) in {'': organization.name + ' ' + $tc(type + '.title', 2), 'personal': $tc(type + '.personal', 2)}"
         @click="$router.push('/' + organization.key + '/' + type + (path ? '/' + path : ''))"
         v-if="permissions[(path ? path + '_' : '') + type].read || permissions[(path ? path + '_' : '') + type].write"
         :class="{'router-link-active': path === '' && !personal || path !== '' && personal}">
