@@ -481,6 +481,19 @@
       }
     }
   }
+  .has-mouse .resource-detail-aside .form-file-info {
+    overflow: hidden;
+    position: relative;
+    .md-icon {
+      position: absolute;
+      right: -28px;
+      transition: right 0.2s;
+      box-shadow: -7px 0px 20px 0px rgba(255,255,255,1);
+    }
+    &:hover .md-icon {
+      right: 0;
+    }
+  }
 
 
   /*
