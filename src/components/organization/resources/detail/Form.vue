@@ -29,7 +29,7 @@
       </form-element>
 
       <form-element
-          type="md-textarea"
+          type="md-editor"
           name="description"
           :label="$t('fields.description.label')"
           :placeholder="$t('fields.description.placeholder')"

@@ -9,7 +9,7 @@
       :validate="{title: validateTitle}"
       ref="form"
       @saved="onSaved"
-      @cancel="!id ? $router.back() : edit = false"
+      @cancel="!id ? $router.back() : $router.back()"
       :disabled="!mayEdit"
   >
     <div class="resource-detail-backdrop" @click="close()"></div>
@@ -69,7 +69,7 @@
             <md-tooltip>{{$t('actions.restore')}}</md-tooltip>
           </md-button>
           <share v-if="!trash && !personal" :url="getUrl()"></share>
-          <md-button class="md-icon-button" @click="edit = true">
+          <md-button class="md-icon-button" @click="$router.push({path: $route.path + '/edit', query: $route.query})">
             <md-icon>mode_edit</md-icon>
             <md-tooltip>{{$t('actions.editAll')}}</md-tooltip>
           </md-button>
@@ -236,7 +236,7 @@
           this.personal = !!route.params.personal || !!route.query.personal;
           this.type = route.params.type || route.query.type;
           this.id = route.params.id || null;
-          this.edit = !this.id;
+          this.edit = !this.id || !!route.params.edit;
           this.trash = !!route.params.trash;
           if (this.$refs.form) {
             this.$refs.form.reset(true, true);

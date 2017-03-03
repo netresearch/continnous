@@ -42,6 +42,8 @@ export default function install(Vue) {
   /* eslint-disable global-require, import/newline-after-import */
   const MdSlider = require('./mdSlider/index').default;
   Vue.use(MdSlider);
+  const MdEditor = require('./mdEditor/index').default;
+  Vue.use(MdEditor);
 
   Object.keys(components).forEach((component) => {
     Vue.component(

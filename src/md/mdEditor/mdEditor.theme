@@ -1,0 +1,16 @@
+.md-editor {
+    button {
+        &, .md-icon {
+            color: rgba(#000, 0.54) !important;
+        }
+        &:hover, &:hover .md-icon {
+            color: rgba(#000, 0.8) !important;
+        }
+
+        &.medium-editor-button-active {
+            &, .md-icon {
+                color: #{'PRIMARY-COLOR'} !important;
+            }
+        }
+    }
+}

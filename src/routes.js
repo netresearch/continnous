@@ -36,7 +36,7 @@ Object.keys(Config.resources).forEach((resource) => {
       + '/:period(q[1-4]-[0-9]{4})?',
     component: OrganizationResourcesPage,
     children: [
-      { path: ':id(-[^/]+)', component: OrganizationResourcesResource },
+      { path: ':id(-[^/]+)/:edit(edit)?', component: OrganizationResourcesResource },
       { path: 'create', component: OrganizationResourcesResource }
     ]
   });
@@ -46,7 +46,7 @@ Object.keys(Config.resources).forEach((resource) => {
       + '/:personal(personal)?',
     component: OrganizationResourcesSearch,
     children: [
-      { path: ':id(-[^/]+)', component: OrganizationResourcesResource },
+      { path: ':id(-[^/]+)/:edit(edit)?', component: OrganizationResourcesResource },
       { path: 'create', OrganizationResourcesResource }
     ]
   });
