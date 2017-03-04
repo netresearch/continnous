@@ -233,12 +233,14 @@
       $route: {
         immediate: true,
         handler(route) {
+          const id = this.id;
+          const type = this.type;
           this.personal = !!route.params.personal || !!route.query.personal;
           this.type = route.params.type || route.query.type;
           this.id = route.params.id || null;
           this.edit = !this.id || !!route.params.edit;
           this.trash = !!route.params.trash;
-          if (this.$refs.form) {
+          if (this.$refs.form && (this.id !== id || this.type !== type)) {
             this.$refs.form.reset(true, true);
           }
         }
