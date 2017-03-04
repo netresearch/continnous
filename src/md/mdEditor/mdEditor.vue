@@ -1,65 +1,40 @@
 <template>
-  <div :class="['md-editor', {'md-editor-notempty': !empty}]">
-    <div ref="toolbar" class="md-editor-toolbar"></div>
+  <div :class="['md-editor', {'md-editor-notempty': !empty, 'md-editor-focused': focused}]">
+    <input type="text" @focus="focused = true">
     <div ref="editor" class="md-editor-editor"></div>
   </div>
 </template>
 
 <script>
+  import Quill from 'quill';
   import Vue from 'vue';
-  import MediumEditor from 'medium-editor';
-  import extend from 'extend';
 
-  const iconMap = {
-    anchor: 'link',
-    bold: 'format_bold',
-    italic: 'format_italic',
-    underline: 'format_underline',
-    strikethrough: 'strikethrough_s',
-    // superscript: '',
-    // subscript: '',
-    image: 'insert_photo',
-    // html: '',
-    orderedlist: 'format_list_numbered',
-    unorderedlist: 'format_list_bulleted',
-    indent: 'format_indent_increase',
-    outdent: 'format_indent_decrease',
-    justifyCenter: 'format_align_center',
-    justifyFull: 'format_align_justify',
-    justifyLeft: 'format_align_left',
-    justifyRight: 'format_align_right',
-    removeFormat: 'format_clear',
-    quote: 'format_quote',
-    pre: 'code',
-    // h1: '',
-    // h2: '',
-    // h3: '',
-    // h4: '',
-    // h5: '',
-    // h6: '',
-  };
-  
+  /* global document */
+
   export default {
     props: {
       value: String,
       placeholder: String,
       disabled: Boolean,
-      options: Object
+      allowClipboardAttributes: Boolean
     },
     extends: Vue.component('md-input').options,
     data() {
       return {
-        empty: true
+        empty: true,
+        mounted: false,
+        focused: false
       };
     },
     watch: {
       value: {
         immediate: true,
         handler(value) {
-          if (this.$refs.editor) {
-            const v = value === undefined ? '' : value;
-            if (this.getFilteredContent() !== v) {
-              this.$refs.editor.innerHTML = v;
+          if (this.editor) {
+            const v = value || '';
+            if (v !== this.getFilteredHTML()) {
+              this.editor.root.innerHTML = v;
+              this.editor.update('silent');
             }
           }
           if (!value) {
@@ -70,75 +45,86 @@
             });
           }
         }
-      }
-    },
-    computed: {
-      mergedOptions() {
-        return extend(true, {
-          targetBlank: true,
-          autoLink: true,
-          placeholder: {
-            text: this.placeholder,
-            hideOnClick: true
-          },
-          toolbar: {
-            static: true,
-            updateOnEmptySelection: true,
-            buttons: [
-              'bold',
-              'italic',
-              'underline',
-              'strikethrough',
-              'anchor',
-              'quote',
-              'h2', 'h3',
-              'unorderedlist',
-              'orderedlist'
-            ]
+      },
+      focused(focused) {
+        if (focused) {
+          if (this.editor) {
+            this.editor.focus();
           }
-        }, this.options);
+          this.onFocus();
+        } else {
+          if (this.editor) {
+            this.editor.blur();
+          }
+          this.onBlur();
+        }
+      },
+      disabled(disabled) {
+        if (disabled) {
+          this.destroyEditor();
+        } else {
+          this.buildEditor();
+        }
       }
     },
     mounted() {
-      this.$refs.editor.innerHTML = this.value || '';
-
-      if (!this.mergedOptions.toolbar.hasOwnProperty('relativeContainer')) {
-        this.mergedOptions.toolbar.relativeContainer = this.$refs.toolbar;
-      }
-      this.editor = new MediumEditor(this.$refs.editor, this.mergedOptions);
-      this.editor.subscribe('focus', this.onFocus);
-      this.editor.subscribe('blur', this.onBlur);
-
-      this.editor.subscribe('blur', () => {
-        if (this.isEmpty()) {
-          this.$refs.editor.innerHTML = '';
-        }
-      });
-      this.editor.subscribe('editableInput', () => {
-        const value = this.getFilteredContent();
-        this.setParentValue();
-        this.parentContainer.inputLength = value ? value.length : 0;
-        this.$emit('change', value);
-        this.$emit('input', value);
-      });
-
-      Object.keys(iconMap).forEach((action) => {
-        this.$refs.toolbar.querySelectorAll('button.medium-editor-action-' + action).forEach((button) => {
-          button.innerHTML = '<i class="md-icon material-icons">' + iconMap[action] + '</i>';
-        });
-      });
+      this.mounted = true;
+      this.buildEditor();
     },
     beforeDestroy() {
-      if (this.editor) {
-        this.editor.destroy();
-      }
+      this.destroyEditor();
+      this.mounted = false;
     },
     methods: {
+      detectFocus(event) {
+        this.focused = this.$el.contains(event.target);
+      },
+      buildEditor() {
+        if (!this.editor && this.mounted) {
+          this.$refs.editor.innerHTML = this.value || '';
+
+          this.editor = new Quill(this.$refs.editor, {
+            theme: 'snow',
+            placeholder: this.placeholder,
+          });
+          this.editor.on('text-change', () => {
+            const value = this.getFilteredHTML();
+
+            this.setParentValue();
+            this.parentContainer.inputLength = value ? value.length : 0;
+            this.$emit('change', value);
+            this.$emit('input', value);
+          });
+
+          if (!this.allowClipboardAttributes) {
+            this.editor.clipboard.matchers.forEach((matcher, i) => {
+              if (matcher[1].toString().substr(0, 24) === 'function matchAttributor') {
+                this.editor.clipboard.matchers.splice(i, 1);
+              }
+            });
+          }
+
+          this.toolbar = this.$el.querySelector('.ql-toolbar');
+          document.body.addEventListener('click', this.detectFocus);
+        }
+      },
+      destroyEditor() {
+        if (this.editor && this.mounted) {
+          this.focused = false;
+          delete this.editor;
+          this.$refs.editor.innerHTML = this.value || '';
+          this.toolbar.parentNode.removeChild(this.toolbar);
+          document.body.removeEventListener('click', this.detectFocus);
+        }
+      },
+      getFilteredHTML() {
+        return this.editor && this.getFilteredContent().length ? this.editor.root.innerHTML : '';
+      },
       getFilteredContent() {
-        if (!this.$refs.editor) {
+        if (!this.editor) {
           return '';
         }
-        const content = this.$refs.editor.textContent || this.$refs.editor.innerText || '';
+        const content = this.editor.root.textContent || this.editor.root.innerText || '';
         return content.trim();
       },
       isEmpty() {
@@ -149,131 +135,62 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-  @import '~medium-editor/dist/css/medium-editor.css';
-  .md-editor {
-    margin: -1em 0;
-    position: relative;
-    top: 3px;
-    .md-editor-toolbar {
-      max-height: 1px;
-      overflow: hidden;
-      opacity: 0;
-      transition: all 0.2s;
-      position: relative;
-      z-index: 0;
-      .medium-editor-toolbar {
-        visibility: visible;
-        position: relative;
-      }
-    }
-    .md-editor-editor {
-      font-size: 16px;
-      position: relative;
-      z-index: 1;
-      margin: 1em 0;
-      min-height: 20px;
-      &:focus {
-        outline: none;
-      }
-      &:after {
-        margin: 0;
-        color: rgba(#000, .54);
-        font-style: normal;
-        font-size: 16px;
-        cursor: text;
-      }
-    }
-    &.md-editor-notempty .md-editor-editor:after {
-      display: none;
-    }
-  }
-  .md-input-focused {
-    .md-editor {
-      margin: 0;
-      .md-editor-toolbar {
-        transition: all 0.2s;
-        max-height: 500px;
-        opacity: 1;
-        margin-bottom: -3px;
-      }
-    }
-  }
-
-  /* --------------------- Editor theme -------------------------*/
+  @import '~quill/dist/quill.snow.css';
   .md-editor {
     width: 100%;
-
-    .medium-toolbar-arrow-under:after {
-      top: 60px;
-      border-color: #57ad68 transparent transparent transparent;
+    > input {
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      position: absolute;
+      clip: rect(0 0 0 0);
+      border: 0;
     }
-    .medium-toolbar-arrow-over:before {
-      top: -8px;
-      border-color: transparent transparent #57ad68 transparent;
+    .ql-toolbar {
+      margin-top: -2px;
+      max-height: 1px;
+      padding: 0;
+      border: none;
+      border-bottom: 1px solid rgba(#000, 0);
+      overflow: visible;
+      transition: max-height 0.2s, border-color 0.2s, padding 0.2s;
+      position: relative;
+      z-index: 1;
+      button {
+        color: #707070;
+      }
     }
-
-    .medium-editor-toolbar {
-      border-bottom: 1px solid rgba(#000, 0.12);
-      li {
-        padding: 0;
-        button {
-          min-width: 40px;
-          height: 40px;
-          padding: 8px;
-          border: none;
-          background-color: transparent;
-          -webkit-transition: background-color .2s ease-in, color .2s ease-in;
-          transition: background-color .2s ease-in, color .2s ease-in;
-
-          text-decoration: none;
-          line-height: 24px;
-          b {
-            font-size: 18px;
-            line-height: 24px;
-          }
-          .md-icon {
-            margin: 0;
-          }
-        }
+    &.md-editor-focused .ql-toolbar {
+      z-index: 3;
+      border-color: rgba(#000, 0.12);
+      max-height: 72px;
+      padding: 8px 0;
+      transition: max-height 0.2s, border-color 0.2s, padding 0.2s, z-index 0s 0.2s;
+    }
+    .ql-container {
+      background: #fff;
+      z-index: 2;
+      border: none;
+      height: auto;
+      font-family: inherit;
+      line-height: inherit;
+      margin-bottom: 2px;
+    }
+    .ql-editor {
+      padding: 5px 0 3px;
+      font-size: 16px;
+      &.ql-blank:before {
+        color: rgba(#000, 0.56);
+        font-style: normal;
       }
-
-      .medium-editor-toolbar-form {
-        .medium-editor-toolbar-input {
-          height: 60px;
-          background: #57ad68;
-          color: #fff;
-          &::-webkit-input-placeholder {
-            color: #fff;
-            color: rgba(255, 255, 255, 0.8);
-          }
-          &:-moz-placeholder {
-            /* Firefox 18- */
-            color: #fff;
-            color: rgba(255, 255, 255, 0.8);
-          }
-          &::-moz-placeholder {
-            /* Firefox 19+ */
-            color: #fff;
-            color: rgba(255, 255, 255, 0.8);
-          }
-          &:-ms-input-placeholder {
-            color: #fff;
-            color: rgba(255, 255, 255, 0.8);
-          }
-        }
-        a {
-          color: #fff;
-        }
-      }
-
-      .medium-editor-toolbar-anchor-preview {
-        background: #57ad68;
-        color: #fff;
-      }
-
-      .medium-editor-placeholder:after {
-        color: #9ccea6;
-      }
+    }
+    .ql-stroke, .ql-stroke-miter {
+      stroke: currentColor !important;
+    }
+    .ql-fill {
+      fill: currentColor !important;
     }
   }
 </style>

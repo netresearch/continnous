@@ -19,7 +19,6 @@
     "extend": "^3.0.0",
     "firebase": "^3.6.4",
     "masonry-layout": "^4.1.1",
-    "medium-editor": "^5.23.0",
     "moment": "^2.17.1",
     "mutation-observer": "^1.0.2",
     "nouislider": "^9.2.0",

@@ -4,7 +4,7 @@
       <h2>{{item.title}}</h2>
       <p class="resource-detail-subtitle" v-if="item.subtitle">{{item.subtitle}}</p>
       <resource-image :image="item.image"></resource-image>
-      <div class="resource-detail-description" v-if="item.description">{{item.description}}</div>
+      <md-text class="resource-detail-description" v-if="item.description" :text="item.description"></md-text>
     </template>
 
     <slot></slot>
@@ -31,5 +31,8 @@
   }
   .resource-detail-subtitle {
     color: rgba(#000, 0.56);
+  }
+  .resource-detail-description {
+    margin: 1em 0;
   }
 </style>

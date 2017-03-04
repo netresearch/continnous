@@ -1,16 +1,5 @@
 .md-editor {
-    button {
-        &, .md-icon {
-            color: rgba(#000, 0.54) !important;
-        }
-        &:hover, &:hover .md-icon {
-            color: rgba(#000, 0.8) !important;
-        }
-
-        &.medium-editor-button-active {
-            &, .md-icon {
-                color: #{'PRIMARY-COLOR'} !important;
-            }
-        }
+    .ql-snow.ql-toolbar button:hover, .ql-snow .ql-toolbar button:hover, .ql-snow.ql-toolbar button.ql-active, .ql-snow .ql-toolbar button.ql-active, .ql-snow.ql-toolbar .ql-picker-label:hover, .ql-snow .ql-toolbar .ql-picker-label:hover, .ql-snow.ql-toolbar .ql-picker-label.ql-active, .ql-snow .ql-toolbar .ql-picker-label.ql-active, .ql-snow.ql-toolbar .ql-picker-item:hover, .ql-snow .ql-toolbar .ql-picker-item:hover, .ql-snow.ql-toolbar .ql-picker-item.ql-selected, .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
+        color: #{'PRIMARY-COLOR'};
     }
 }
