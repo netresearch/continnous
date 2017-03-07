@@ -14,9 +14,11 @@
       <md-button v-if="trash" @click.native.stop="toggleTrash(item)" :title="$t('actions.restore')" class="md-icon-button">
         <md-icon>delete_sweep</md-icon>
       </md-button>
-      <resource-links v-else
+      <resource-links
+          v-else
+          badges
           :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions"
-          apart
+
       ></resource-links>
       <div style="flex: 1"></div>
       <md-button @click.native="setLike(item, !like)" :class="['md-icon-button', {'md-accent': like}]">
@@ -38,7 +40,7 @@
           </md-menu-item>
           <resource-links
               :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions" v-if="!trash"
-              sub-menu
+              menu
           ></resource-links>
         </md-menu-content>
       </md-menu>

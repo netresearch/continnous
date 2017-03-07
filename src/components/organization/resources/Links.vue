@@ -1,27 +1,40 @@
 <template>
-  <div :class="['resource-links', {'resource-links-list-item': subMenu}]">
-    <md-menu v-if="permissions[type].write && !apart" md-size="4" :md-offset-x="subMenu ? 60 : 0">
-      <md-list-item v-if="subMenu" md-menu-trigger>
+  <div :class="['resource-links', {'resource-links-list-menu': menu}]">
+    <template v-if="links.length && menu">
+      <md-divider></md-divider>
+      <md-menu-item v-for="link in links.assign" @selected="dialogLink = link" v-if="link.reverse || !link.exclusive || !link.items.length">
+        <md-icon class="link-icon">{{resources[link.resource].icon}}</md-icon>
+        <span>{{$t('links.assign', {resource: $tc(link.resource + '.title', 1)})}}</span>
+      </md-menu-item>
+      <md-menu-item v-if="links.normal.length" @selected="dialogLink = true">
         <md-icon>link</md-icon>
-        <span v-if="subMenu">Verknüpfen</span>
-      </md-list-item>
-      <md-button v-else class="md-icon-button" md-menu-trigger><md-icon>link</md-icon></md-button>
-      <md-menu-content>
-        <md-menu-item v-for="linkConfig in links" @selected="link = linkConfig" v-if="linkConfig.reverse || !linkConfig.exclusive || !item.links || !item.links[linkConfig.resource]">
-          <md-icon>{{resources[linkConfig.resource].icon}}</md-icon>
-          <span>{{$tc(linkConfig.resource + '.title', 1)}}</span>
-        </md-menu-item>
-        <slot></slot>
-      </md-menu-content>
-    </md-menu>
-    <template v-if="apart">
-      <md-button class="md-icon-button" v-for="linkConfig in links" v-if="linkConfig.apart">
-        <md-icon>{{resources[linkConfig.resource].icon}}</md-icon>
-      </md-button>
+        <span>{{$t('links.link')}}</span>
+      </md-menu-item>
+    </template>
+    <template v-if="badges">
+      <md-menu md-size="5" ref="assignLinks" v-for="link in links.assign" v-if="link.items.length">
+        <md-button class="md-icon-button" @click.native="loadLinks.push(link.resource)" md-menu-trigger>
+          <md-icon>{{resources[link.resource].icon}}</md-icon>
+          <span class="md-badge">{{link.items.length}}</span>
+        </md-button>
+        <md-menu-content>
+          <inline-list
+              :organization="organization"
+              :permissions="permissions"
+              :type="link.resource"
+              :entries="link.items"
+              :load="loadLinks.indexOf(link.resource) > -1"
+              @click.native="$refs.assignLinks.forEach(function(assignLink) { assignLink.close(); })"
+              clearable
+              @clear="removeLink"
+              link
+          ></inline-list>
+        </md-menu-content>
+      </md-menu>
     </template>
     <div class="resource-links-list" v-if="list">
       <div class="resource-detail-link" v-for="link in links">
-        <div class="resource-detail-link-title" v-if="link.config.apart">
+        <div class="resource-detail-link-title" v-if="link.config.assign">
           {{$tc(link.config.resource + '.title', link.config.exclusive && !link.config.reverse ? 1 : 2)}}
         </div>
         <inline-list
@@ -33,21 +46,31 @@
         ></inline-list>
       </div>
     </div>
-    <md-dialog v-if="link !== undefined" ref="dialog">
-      <md-dialog-title>
-        <span>{{$t(type + '.link.' + link.resource)}}</span>
+    <md-dialog v-if="dialogLink !== undefined" ref="dialog" @close="dialogLink = false">
+      <md-dialog-title v-if="dialogLink">
+        <span>{{dialogLink === true ? $t('links.link') : $t('links.assign', {resource: $tc(dialogLink.resource + '.title', 1)})}}</span>
       </md-dialog-title>
       <md-dialog-content>
         <inline-list
+            v-if="typeof dialogLink === 'object'"
             :organization="organization"
             :permissions="permissions"
             :personal="personal"
-            :multiple="!link.exclusive"
-            :all="!link.reverse && link.all"
-            :type="link.resource"
-            :search="link.reverse || !link.all"
+            :all="!dialogLink.reverse"
+            :type="dialogLink.resource"
+            :search="dialogLink.reverse"
             selectable
-            @selected="addLink(link, $event)"
+            @selected="addLink($event)"
+        ></inline-list>
+        <inline-list
+            v-else-if="dialogLink === true"
+            :organization="organization"
+            :permissions="permissions"
+            :personal="personal"
+            :type="links.normal.map(function (link) { return link.resource; })"
+            search
+            selectable
+            @selected="addLink($event)"
         ></inline-list>
       </md-dialog-content>
     </md-dialog>
@@ -70,25 +93,24 @@
       organization: Object,
       permissions: Object,
       list: Boolean,
-      subMenu: Boolean,
-      apart: Boolean
+      menu: Boolean,
+      badges: Boolean
     },
     data() {
       return {
         resources: Config.resources,
-        link: undefined
+        dialogLink: undefined,
+        loadLinks: []
       };
     },
     watch: {
-      link(link) {
+      dialogLink(link) {
         if (link) {
           this.$nextTick(() => {
             this.$nextTick(() => {
               this.$refs.dialog.open();
             });
           });
-        } else {
-          this.$refs.dialog.close();
         }
       }
     },
@@ -133,14 +155,16 @@
           }
           return 0;
         });
+        links.assign = links.filter(link => !!link.assign);
+        links.normal = links.filter(link => !link.assign);
         return links;
-      }
+      },
     },
     methods: {
-      removeLink(link, item) {
+      removeLink(item) {
         return new Promise((resolve) => {
           this.getFirebaseRef('resources', this.item.id)
-            .child('links/' + item.resource + (link.exclusive ? '/' + item.id : ''))
+            .child('links/' + item.resource + '/' + item.id)
             .remove().then(() => {
               this.getFirebaseRef(
                 'resources', item.id, this.personal, item.resource
@@ -152,11 +176,8 @@
             });
         });
       },
-      addLink(link, item) {
+      addLink(item) {
         const promises = [];
-        if (link.exclusive && this.item.links && this.item.links[item.resource]) {
-          promises.push(this.removeLink(link, { resource: item.resource }));
-        }
         Promise.all(promises).then(() => {
           const ourRef = this.getFirebaseRef('resources', this.item.id)
             .child('links/' + item.resource + '/' + item.id);
@@ -166,17 +187,35 @@
           ourRef.set(true);
           theirRef.set(true);
         });
-        this.link = false;
+        if (this.$refs.dialog) {
+          this.$refs.dialog.close();
+        }
       }
     }
   };
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-  .resource-links-list-item {
+  .link-icon {
+    position: relative;
+    &:after {
+      content: "\E157";
+      font-size: 16px;
+      line-height: 10px;
+      height: 10px;
+      position: absolute;
+      bottom: 0;
+      right: -2px;
+      background: rgba(#fff, 0.8);
+      border-radius: 50%;
+    }
+  }
+  .resource-links-list-menu {
     width: 100%;
     > .md-menu  {
       width: 100%;
+    }
+    .md-subheader {
     }
   }
 </style>

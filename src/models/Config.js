@@ -22,7 +22,7 @@ const Config = {
       results: true,
       links: {
         ideas: {
-          apart: true,
+          assign: true,
           priority: 1
         }
       }
@@ -45,8 +45,7 @@ const Config = {
       scoring: ['strategy', 'need', 'impact', 'feasability', 'feel'],
       results: false,
       links: {
-        ideas: true,
-        insights: true
+        ideas: true
       }
     },
     insights: {
@@ -65,7 +64,10 @@ const Config = {
       },
       periodical: false,
       scoring: [],
-      results: false
+      results: false,
+      links: {
+        ideas: true
+      }
     },
     roadmaps: {
       icon: 'format_list_bulleted',
@@ -86,9 +88,7 @@ const Config = {
       results: false,
       links: {
         ideas: {
-          exclusive: true,
-          apart: true,
-          all: true,
+          assign: true,
           priority: 2
         }
       }

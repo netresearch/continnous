@@ -3,6 +3,7 @@ import moment from 'moment';
 import Firebase from '../../../firebase';
 import auth from '../../../auth';
 import ResourceImage from './Image';
+import Config from '../../../models/Config';
 
 const viewed = {};
 
@@ -28,6 +29,14 @@ export default {
       if (personal !== undefined) {
         item.personal = personal;
       }
+      if (!item.links) {
+        item.links = {};
+      }
+      Object.keys(Config.resources).forEach((key) => {
+        if (!item.links[key]) {
+          item.links[key] = {};
+        }
+      });
       return item;
     },
     prepareItemForFirebase(item) {

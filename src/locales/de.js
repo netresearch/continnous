@@ -111,9 +111,6 @@ module.exports = {
     personal_accusative: 'persönliche Ideen',
     accusative_one: 'eine',
     new: 'Neue Idee',
-    link: {
-      roadmaps: 'Auf Roadmap'
-    }
   },
   insights: {
     title: 'Erkenntnis | Erkenntnisse',
@@ -155,6 +152,10 @@ module.exports = {
       feasability: 'Wie einfach wird das umzusetzen sein?',
       feel: 'Wie überzeugt bist Du hiervon?',
     }
+  },
+  links: {
+    link: 'Verknüpfen',
+    assign: '{resource} zuweisen'
   },
   thereAreNo: 'Es gibt noch keine {accusative}',
   youDontHave: 'Du hast noch keine {accusative}',

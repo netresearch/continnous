@@ -12,6 +12,9 @@
       >
         <md-icon>{{resources[item.resource].icon}}</md-icon>
         <div>{{item.title}}</div>
+        <md-button v-if="clearable" class="md-icon-button" @click.native="$emit('clear', item)">
+          <md-icon>clear</md-icon>
+        </md-button>
       </md-list-item>
     </md-list>
   </div>
@@ -28,12 +31,17 @@
       entries: [Array, Object],
       type: [Array, String],
       selectable: Boolean,
+      clearable: Boolean,
       all: Boolean,
       personal: Boolean,
       organization: Object,
       search: Boolean,
       permissions: Object,
-      link: Boolean
+      link: Boolean,
+      load: {
+        type: Boolean,
+        default: true
+      }
     },
     data() {
       return {
@@ -64,7 +72,8 @@
       all: 'loadItems',
       entries: 'loadItems',
       personal: 'loadItems',
-      types: 'loadItems'
+      types: 'loadItems',
+      load: 'loadItems'
     },
     methods: {
       doSearch(sword) {
@@ -104,7 +113,7 @@
             this.$emit('change', value);
           };
 
-          if (this.all) {
+          if (this.all && this.load) {
             this.types.forEach((type) => {
               const ref = this.getFirebaseRef('resources', undefined, this.personal, type);
               this.refs.push(ref);
@@ -127,7 +136,11 @@
               });
             });
           } else if (this.entries) {
-            const createRef = (type, id) => {
+            const createRef = (type, id, title) => {
+              if (!this.load) {
+                this.items.push({ id, resource: type, title: title || '...' });
+                return;
+              }
               if (!type) {
                 throw new Error('Missing type for item ' + id);
               }
@@ -147,12 +160,16 @@
                 if (typeof entry === 'string') {
                   createRef(singleType, entry);
                 } else {
-                  createRef(entry.resource || singleType, entry.id);
+                  createRef(entry.resource || singleType, entry.id, entry.title);
                 }
               });
             } else {
               Object.keys(this.entries).forEach((id) => {
-                createRef(this.entries[id].resource || singleType, this.entries[id].id || id);
+                createRef(
+                  this.entries[id].resource || singleType,
+                  this.entries[id].id || id,
+                  this.entries[id].title
+                );
               });
             }
           }
