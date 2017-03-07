@@ -105,7 +105,7 @@ module.exports = {
   ideas: {
     title: 'Idee | Ideen',
     titlePlaceholder: 'Kurzer Titel Deiner Idee',
-    personal: 'Persönliche Erkenntnisse',
+    personal: 'Persönliche Ideen',
     this: 'Diese Idee',
     accusative: 'Ideen',
     personal_accusative: 'persönliche Ideen',
@@ -197,6 +197,7 @@ module.exports = {
   search: 'Suche',
   and: 'und',
   trash: 'Papierkorb',
+  noMatches: 'Keine passenden Ergebnisse gefunden',
   sort: {
     sort: 'Sortieren nach',
     order: 'Reihenfolge',

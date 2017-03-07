@@ -1,9 +1,11 @@
 <template>
   <div :class="['resource-inline-list', {'resource-inline-link-list': link, 'resource-inline-selectable-list': selectable}]">
     <md-input-container v-if="search">
+      <label>{{$t('search')}}</label>
       <md-input @input="doSearch" :placeholder="$t('search')"></md-input>
     </md-input-container>
-    <md-list class="md-dense">
+    <md-progress md-indeterminate v-if="loading"></md-progress>
+    <md-list class="md-dense" v-if="items.length">
       <md-list-item
           v-for="item in items"
           @click.native="selectable ? $emit('selected', item) : null"
@@ -17,6 +19,9 @@
         </md-button>
       </md-list-item>
     </md-list>
+    <p class="md-caption" v-if="loading === false && !items.length">
+      {{$t('noMatches')}}
+    </p>
   </div>
 </template>
 
@@ -46,7 +51,8 @@
     data() {
       return {
         items: [],
-        resources: Config.resources
+        resources: Config.resources,
+        loading: undefined
       };
     },
     created() {
@@ -80,12 +86,16 @@
         if (!this.flashlight) {
           this.flashlight = new Flashlight(this.organization, this.permissions);
         }
+        this.loading = true;
         this.flashlight.suggest(sword, ...this.types).then((results) => {
           this.items = [];
+          this.loading = false;
           results.forEach((result) => {
             result.hits.forEach((hit) => {
               /* eslint-disable no-underscore-dangle */
-              this.items.push(this.createItem(hit._id, hit._source, result.resource));
+              if (this.ids.indexOf(hit._id) < 0) {
+                this.items.push(this.createItem(hit._id, hit._source, result.resource));
+              }
             });
           });
         });
@@ -102,7 +112,7 @@
             let value;
             if (this.$isArray(this.value)) {
               value = this.value.filter(
-                entry => (typeof entry === 'string' && ids.indexOf(entry) < 0) || ids.indexOf(entry.id) < 0
+                  entry => (typeof entry === 'string' && ids.indexOf(entry) < 0) || ids.indexOf(entry.id) < 0
               );
             } else {
               value = Object.assign({}, this.value);
@@ -114,16 +124,20 @@
           };
 
           if (this.all && this.load) {
+            this.loading = true;
             this.types.forEach((type) => {
               const ref = this.getFirebaseRef('resources', undefined, this.personal, type);
               this.refs.push(ref);
               ref.on('value', (sn) => {
+                this.loading = false;
                 this.items = this.items.filter(item => item.resource !== type);
                 const ids = [];
                 const missingIds = [];
                 sn.forEach((csn) => {
                   ids.push(csn.key);
-                  this.items.push({ id: csn.key, resource: type, title: csn.val().title });
+                  if (this.ids.indexOf(csn.key) < 0) {
+                    this.items.push({ id: csn.key, resource: type, title: csn.val().title });
+                  }
                 });
                 this.ids.forEach((id) => {
                   if (ids.indexOf(id) < 0) {
@@ -135,7 +149,7 @@
                 }
               });
             });
-          } else if (this.entries) {
+          } else if (this.entries && !this.search) {
             const createRef = (type, id, title) => {
               if (!this.load) {
                 this.items.push({ id, resource: type, title: title || '...' });
@@ -166,9 +180,9 @@
             } else {
               Object.keys(this.entries).forEach((id) => {
                 createRef(
-                  this.entries[id].resource || singleType,
-                  this.entries[id].id || id,
-                  this.entries[id].title
+                    this.entries[id].resource || singleType,
+                    this.entries[id].id || id,
+                    this.entries[id].title
                 );
               });
             }

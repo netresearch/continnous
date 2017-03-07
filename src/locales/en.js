@@ -151,6 +151,10 @@ module.exports = {
       feel: 'How confident do you feel about your idea?',
     }
   },
+  links: {
+    link: 'Link',
+    assign: 'Assign {resource}'
+  },
   thereAreNo: 'There are no {accusative} yet',
   youDontHave: 'You don\'t have {accusative} yet',
   trashEmpty: 'There are no items in the trash.',
@@ -191,6 +195,7 @@ module.exports = {
   search: 'Search',
   and: 'and',
   trash: 'Trash',
+  noMatches: 'No matching items found',
   sort: {
     sort: 'Sort by',
     order: 'Order',

@@ -1,12 +1,22 @@
+<!--
+ This handles every display of links:
+  - badges on the list items (badges)
+  - menu entries in the items menus in list and detail view (menu)
+  - list of all links (list)
+
+ @TODO: Handle links to personal resources as well
+ @TODO: Add journal entries for link actions
+-->
+
 <template>
   <div :class="['resource-links', {'resource-links-list-menu': menu}]">
     <template v-if="links.length && menu">
       <md-divider></md-divider>
-      <md-menu-item v-for="link in links.assign" @selected="dialogLink = link" v-if="link.reverse || !link.exclusive || !link.items.length">
+      <md-menu-item v-for="link in links.assign" @selected="dialogLink = link" v-if="link.mayEdit">
         <md-icon class="link-icon">{{resources[link.resource].icon}}</md-icon>
         <span>{{$t('links.assign', {resource: $tc(link.resource + '.title', 1)})}}</span>
       </md-menu-item>
-      <md-menu-item v-if="links.normal.length" @selected="dialogLink = true">
+      <md-menu-item v-if="links.mayLink && links.normal.length" @selected="dialogLink = true">
         <md-icon>link</md-icon>
         <span>{{$t('links.link')}}</span>
       </md-menu-item>
@@ -25,7 +35,7 @@
               :entries="link.items"
               :load="loadLinks.indexOf(link.resource) > -1"
               @click.native="$refs.assignLinks.forEach(function(assignLink) { assignLink.close(); })"
-              clearable
+              :clearable="link.mayEdit"
               @clear="removeLink"
               link
           ></inline-list>
@@ -41,7 +51,7 @@
             :permissions="permissions"
             :type="link.resource"
             :entries="link.items"
-            clearable
+            :clearable="link.mayEdit"
             @clear="removeLink"
             link
         ></inline-list>
@@ -51,7 +61,7 @@
       <md-dialog-title v-if="dialogLink">
         <span>{{dialogLink === true ? $t('links.link') : $t('links.assign', {resource: $tc(dialogLink.resource + '.title', 1)})}}</span>
       </md-dialog-title>
-      <md-dialog-content>
+      <md-dialog-content class="resource-links-dialog-content">
         <inline-list
             v-if="typeof dialogLink === 'object'"
             :organization="organization"
@@ -60,6 +70,7 @@
             :all="!dialogLink.reverse"
             :type="dialogLink.resource"
             :search="dialogLink.reverse"
+            :entries="Array.prototype.concat.apply([{id: item.id, resource: type}], dialogLink.items.map(function(item) { return {id: item, resource: dialogLink.resource}; }))"
             selectable
             @selected="addLink($event)"
         ></inline-list>
@@ -68,7 +79,8 @@
             :organization="organization"
             :permissions="permissions"
             :personal="personal"
-            :type="links.normal.map(function (link) { return link.resource; })"
+            :type="links.normal.filter(function(link) { return link.mayEdit; }).map(function (link) { return link.resource; })"
+            :entries="Array.prototype.concat.apply([{id: item.id, resource: type}], links.normal.map(function(link) { return link.items.map(function(item) { return {id: item, resource: link.resource}; }); }))"
             search
             selectable
             @selected="addLink($event)"
@@ -117,11 +129,14 @@
     },
     computed: {
       links() {
-        if (!this.type) {
+        if (!this.type || !this.permissions) {
           return [];
         }
         const links = [];
         Object.keys(this.resources).forEach((resource) => {
+          if (!this.permissions[resource].read) {
+            return;
+          }
           const rc = this.resources[resource];
           if (rc.links && rc.links[this.type]) {
             let link = rc.links[this.type];
@@ -140,7 +155,13 @@
           }
         });
         links.numItems = 0;
+        links.mayLink = false;
+        const mayEdit = this.permissions[this.type].write;
         links.forEach((link) => {
+          link.mayEdit = mayEdit || this.permissions[link.resource].write;
+          if (!link.assign && link.mayEdit) {
+            links.mayLink = true;
+          }
           if (this.item.links && this.item.links[link.resource]) {
             link.items = Object.keys(this.item.links[link.resource]);
             links.numItems += link.items.length;
@@ -240,6 +261,11 @@
           opacity: 1;
         }
       }
+    }
+  }
+  .resource-links-dialog-content {
+    .md-input-container {
+      margin-top: 0;
     }
   }
 </style>

@@ -29,6 +29,8 @@ export default {
       if (personal !== undefined) {
         item.personal = personal;
       }
+
+      // The links objects need to be given for proper binding
       if (!item.links) {
         item.links = {};
       }
