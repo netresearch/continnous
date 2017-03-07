@@ -86,6 +86,8 @@
                 <md-icon>delete</md-icon>
                 <span>{{$t('actions.delete')}}</span>
               </md-menu-item>
+              <resource-links menu :organization="organization" :type="type" :item="item" :permissions="permissions">
+              </resource-links>
             </md-menu-content>
           </md-menu>
           <md-button class="md-icon-button resource-detail-close" @click.native="close()">
@@ -118,7 +120,14 @@
               <md-icon>thumbs_up_down</md-icon>
               <resource-scoring :criteria="config.scoring" :is-new="!id" :organization="organization" :type="type" :item="item"></resource-scoring>
             </div>
-            <resource-links class="resource-detail-section" :organization="organization" :type="type" :item="item" :permissions="permissions">
+            <resource-links
+                class="resource-detail-links resource-detail-section"
+                list
+                :organization="organization"
+                :type="type" :item="item"
+                :permissions="permissions"
+                v-if="hasLinks"
+            >
               <md-icon>link</md-icon>
             </resource-links>
           </template>
@@ -231,7 +240,8 @@
         trash: false,
         edit: false,
         scrollTop: 0,
-        comments: 0
+        comments: 0,
+        hasLinks: false
       };
     },
     watch: {
@@ -270,6 +280,7 @@
         return title && title.length > 2;
       },
       firebaseReceive(snapshot) {
+        this.hasLinks = !!(snapshot.val().links);
         const item = this.createItem(snapshot.key, snapshot.val());
         this.item = item;
         if (this.id) {
@@ -378,6 +389,18 @@
     padding-right: $padding;
     float:right;
     width: 296px;
+  }
+  .resource-detail-links {
+    padding-top: 1px;
+    .resource-link {
+      &:first-of-type {
+        margin-top: -8px;
+      }
+      .md-list {
+        margin: 0;
+        padding: 0;
+      }
+    }
   }
   .resource-detail-comments {
     &:before {

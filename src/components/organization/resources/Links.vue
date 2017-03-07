@@ -32,20 +32,21 @@
         </md-menu-content>
       </md-menu>
     </template>
-    <div class="resource-links-list" v-if="list">
-      <div class="resource-detail-link" v-for="link in links">
-        <div class="resource-detail-link-title" v-if="link.config.assign">
-          {{$tc(link.config.resource + '.title', link.config.exclusive && !link.config.reverse ? 1 : 2)}}
-        </div>
+    <template v-if="list && links.numItems">
+      <slot></slot>
+      <div class="resource-links-list">
         <inline-list
+            class="resource-link" v-for="link in links" v-if="link.items.length"
             :organization="organization"
             :permissions="permissions"
-            :type="link.config.resource"
+            :type="link.resource"
             :entries="link.items"
+            clearable
+            @clear="removeLink"
             link
         ></inline-list>
       </div>
-    </div>
+    </template>
     <md-dialog v-if="dialogLink !== undefined" ref="dialog" @close="dialogLink = false">
       <md-dialog-title v-if="dialogLink">
         <span>{{dialogLink === true ? $t('links.link') : $t('links.assign', {resource: $tc(dialogLink.resource + '.title', 1)})}}</span>
@@ -138,9 +139,11 @@
             });
           }
         });
+        links.numItems = 0;
         links.forEach((link) => {
           if (this.item.links && this.item.links[link.resource]) {
             link.items = Object.keys(this.item.links[link.resource]);
+            links.numItems += link.items.length;
           } else {
             link.items = [];
           }
@@ -215,7 +218,28 @@
     > .md-menu  {
       width: 100%;
     }
-    .md-subheader {
+  }
+  .resource-links-list {
+    .md-list-item-container {
+      padding-right: 0;
+      padding-left: 8px;
+      margin-left: -8px;
+      &:hover {
+        background-color: rgba(#000, 0.03) !important;
+      }
+    }
+  }
+  .has-mouse {
+    .resource-links-list {
+      .md-list-item-container {
+        .md-button {
+          opacity: 0;
+          transition: opacity 0.2s;
+        }
+        &:hover .md-button {
+          opacity: 1;
+        }
+      }
     }
   }
 </style>

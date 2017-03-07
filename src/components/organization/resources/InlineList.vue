@@ -1,5 +1,5 @@
 <template>
-  <div class="resource-inline-list">
+  <div :class="['resource-inline-list', {'resource-inline-link-list': link, 'resource-inline-selectable-list': selectable}]">
     <md-input-container v-if="search">
       <md-input @input="doSearch" :placeholder="$t('search')"></md-input>
     </md-input-container>
@@ -7,11 +7,11 @@
       <md-list-item
           v-for="item in items"
           @click.native="selectable ? $emit('selected', item) : null"
-          :href="link ? getUrl(item.id, personal, false, item.resource) : ''"
           class="resource-inline-list-item"
       >
         <md-icon>{{resources[item.resource].icon}}</md-icon>
-        <div>{{item.title}}</div>
+        <a v-if="link" :href="getUrl(item.id, personal, false, item.resource)">{{item.title}}</a>
+        <div v-else>{{item.title}}</div>
         <md-button v-if="clearable" class="md-icon-button" @click.native="$emit('clear', item)">
           <md-icon>clear</md-icon>
         </md-button>
@@ -80,7 +80,7 @@
         if (!this.flashlight) {
           this.flashlight = new Flashlight(this.organization, this.permissions);
         }
-        this.flashlight.search({ q: sword }, ...this.types).then((results) => {
+        this.flashlight.suggest(sword, ...this.types).then((results) => {
           this.items = [];
           results.forEach((result) => {
             result.hits.forEach((hit) => {
@@ -178,3 +178,19 @@
     }
   };
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .resource-inline-list {
+    .md-button-ghost {
+      display: none;
+    }
+    .md-list-item-container {
+      cursor: default;
+    }
+    &.resource-inline-selectable-list {
+      .md-list-item-container {
+        cursor: pointer;
+      }
+    }
+  }
+</style>

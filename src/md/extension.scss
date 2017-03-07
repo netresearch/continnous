@@ -132,9 +132,12 @@ p.md-caption {
   }
 }
 
-.md-list-item .md-list-item-container>.md-icon:first-child {
+.md-list-item .md-list-item-container > .md-icon:first-child {
   margin-right: 16px;
 }
 .md-list-item.md-inset .md-list-item-container {
   padding-left: 56px;
+}
+.md-list-item-container > .md-button {
+  margin: 0;
 }
