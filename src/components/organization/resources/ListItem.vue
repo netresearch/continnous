@@ -11,17 +11,37 @@
     </md-card-media>
     <router-link class="resource-list-item-link" :to="to"></router-link>
     <md-card-actions>
-      <template v-if="trash">
-        <md-button v-if="trash" @click.stop="toggleTrash(item)" :title="$t('actions.restore')" class="md-icon-button">
-          <md-icon>delete_sweep</md-icon>
-        </md-button>
-        <div style="flex: 1"></div>
-      </template>
+      <md-button v-if="trash" @click.stop="toggleTrash(item)" :title="$t('actions.restore')" class="md-icon-button">
+        <md-icon>delete_sweep</md-icon>
+      </md-button>
+      <resource-links v-else
+          :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions" v-if="!trash"
+          apart
+      ></resource-links>
+      <div style="flex: 1"></div>
       <md-button @click="setLike(item, !like)" :class="['md-icon-button', {'md-accent': like}]">
         <md-icon>favorite</md-icon>
       </md-button>
       <share v-if="!trash && !personal" :url="getUrl(item.id)"></share>
-      <item-menu :organization="organization" :item="item" :type="type" :personal="personal" :trash="trash" :permissions="permissions"></item-menu>
+      <md-menu v-if="!trash && permissions[type].write" md-size="4">
+        <md-button class="md-icon-button" md-menu-trigger>
+          <md-icon>more_vert</md-icon>
+        </md-button>
+        <md-menu-content>
+          <md-menu-item @selected="$router.push({ path: to.path + '/edit', query: to.query })">
+            <md-icon>edit</md-icon>
+            <span>{{$t('actions.edit')}}</span>
+          </md-menu-item>
+          <md-menu-item @selected="toggleTrash(redirect ? undefined : item)" v-if="!trash && permissions[type].write">
+            <md-icon>delete</md-icon>
+            <span>{{$t('actions.delete')}}</span>
+          </md-menu-item>
+          <resource-links
+              :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions" v-if="!trash"
+              sub-menu
+          ></resource-links>
+        </md-menu-content>
+      </md-menu>
     </md-card-actions>
   </md-card>
 </template>
@@ -31,11 +51,11 @@
   import mixin from './mixin';
   import ResourceImage from './Image';
   import Share from '../../Share';
-  import ItemMenu from './ItemMenu';
+  import ResourceLinks from './Links';
 
   export default {
     mixins: [mixin],
-    components: { ResourceImage, Share, ItemMenu },
+    components: { ResourceImage, Share, ResourceLinks },
     props: {
       personal: Boolean,
       item: Object,

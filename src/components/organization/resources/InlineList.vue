@@ -1,25 +1,39 @@
 <template>
-  <md-list class="resource-inline-list md-dense">
-    <md-list-item v-for="item in items" @click.native="selectable ? $emit('selected', item) : null" class="resource-inline-list-item">
-      <md-icon>{{resources[item.resource].icon}}</md-icon>
-      <div>{{item.title}}</div>
-    </md-list-item>
-  </md-list>
+  <div class="resource-inline-list">
+    <md-input-container v-if="search">
+      <md-input @input="doSearch" :placeholder="$t('search')"></md-input>
+    </md-input-container>
+    <md-list class="md-dense">
+      <md-list-item
+          v-for="item in items"
+          @click.native="selectable ? $emit('selected', item) : null"
+          :href="link ? getUrl(item.id, personal, false, item.resource) : ''"
+          class="resource-inline-list-item"
+      >
+        <md-icon>{{resources[item.resource].icon}}</md-icon>
+        <div>{{item.title}}</div>
+      </md-list-item>
+    </md-list>
+  </div>
 </template>
 
 <script>
   import mixin from './mixin';
   import Config from '../../../models/Config';
+  import Flashlight from '../../../models/Flashlight';
 
   export default {
     mixins: [mixin],
     props: {
-      value: [Array, Object],
+      entries: [Array, Object],
       type: [Array, String],
       selectable: Boolean,
       all: Boolean,
       personal: Boolean,
-      organization: Object
+      organization: Object,
+      search: Boolean,
+      permissions: Object,
+      link: Boolean
     },
     data() {
       return {
@@ -38,25 +52,39 @@
         return Object.keys(this.resources);
       },
       ids() {
-        if (this.$isArray(this.value)) {
-          return this.value.map(entry => (typeof entry === 'string' ? entry : entry.id));
-        } else if (this.value) {
-          return Object.keys(this.value);
+        if (this.$isArray(this.entries)) {
+          return this.entries.map(entry => (typeof entry === 'string' ? entry : entry.id));
+        } else if (this.entries) {
+          return Object.keys(this.entries);
         }
         return [];
       }
     },
     watch: {
       all: 'loadItems',
-      value: 'loadItems',
+      entries: 'loadItems',
       personal: 'loadItems',
       types: 'loadItems'
     },
     methods: {
+      doSearch(sword) {
+        if (!this.flashlight) {
+          this.flashlight = new Flashlight(this.organization, this.permissions);
+        }
+        this.flashlight.search({ q: sword }, ...this.types).then((results) => {
+          this.items = [];
+          results.forEach((result) => {
+            result.hits.forEach((hit) => {
+              /* eslint-disable no-underscore-dangle */
+              this.items.push(this.createItem(hit._id, hit._source, result.resource));
+            });
+          });
+        });
+      },
       loadItems() {
         this.$nextTick(() => {
           if (this.refs) {
-            this.refs.forEach(ref => ref.off('value'));
+            this.refs.forEach((ref) => { ref.off('value'); });
           }
           this.refs = [];
           this.items = [];
@@ -98,7 +126,7 @@
                 }
               });
             });
-          } else {
+          } else if (this.entries) {
             const createRef = (type, id) => {
               if (!type) {
                 throw new Error('Missing type for item ' + id);

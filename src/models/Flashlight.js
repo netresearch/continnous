@@ -20,7 +20,7 @@ module.exports = class Flashlight {
     this.lastQuery = query;
 
     (resources[0] === '*' ? Object.keys(Config.resources) : resources).forEach((r) => {
-      [r, 'personal_' + r].forEach((resource) => {
+      (resources[0] === '*' ? [r, 'personal_' + r] : [r]).forEach((resource) => {
         if (resources.indexOf(resource) > -1 || this.permissions[resource].read) {
           promises.push(new Promise((resolve, reject) => {
             if (!this.permissions[resource].read) {

@@ -118,6 +118,9 @@
               <md-icon>thumbs_up_down</md-icon>
               <resource-scoring :criteria="config.scoring" :is-new="!id" :organization="organization" :type="type" :item="item"></resource-scoring>
             </div>
+            <resource-links class="resource-detail-section" :organization="organization" :type="type" :item="item" :permissions="permissions">
+              <md-icon>link</md-icon>
+            </resource-links>
           </template>
         </div>
         <div class="resource-detail-aside" :style="{top: scrollTop + (scrollTop ? 'px' : '')}">
@@ -183,6 +186,7 @@
   import ResourceScoring from './detail/Scoring';
   import ResourceTags from './detail/Tags';
   import ResourceLikes from './detail/Likes';
+  import ResourceLinks from './Links';
   import Journal from '../Journal';
   import ElasticList from '../../ElasticList';
   import Avatar from '../../Avatar';
@@ -199,6 +203,7 @@
     ResourceScoring,
     ResourceTags,
     ResourceLikes,
+    ResourceLinks,
     Journal,
     ElasticList,
     Avatar,

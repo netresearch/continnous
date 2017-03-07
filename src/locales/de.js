@@ -110,7 +110,10 @@ module.exports = {
     accusative: 'Ideen',
     personal_accusative: 'persönliche Ideen',
     accusative_one: 'eine',
-    new: 'Neue Idee'
+    new: 'Neue Idee',
+    link: {
+      roadmaps: 'Auf Roadmap'
+    }
   },
   insights: {
     title: 'Erkenntnis | Erkenntnisse',
@@ -130,7 +133,10 @@ module.exports = {
     accusative: 'Roadmaps',
     personal_accusative: 'persönliche roadmaps',
     accusative_one: 'eine',
-    new: 'Neue Roadmap'
+    new: 'Neue Roadmap',
+    link: {
+      ideas: 'Idee hinzufügen'
+    }
   },
   scoring: {
     title: 'Dein Scoring',

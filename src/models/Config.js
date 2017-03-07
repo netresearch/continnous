@@ -19,7 +19,13 @@ const Config = {
       },
       periodical: true,
       scoring: [],
-      results: true
+      results: true,
+      links: {
+        ideas: {
+          apart: true,
+          priority: 1
+        }
+      }
     },
     ideas: {
       icon: 'lightbulb_outline',
@@ -37,7 +43,11 @@ const Config = {
       },
       periodical: false,
       scoring: ['strategy', 'need', 'impact', 'feasability', 'feel'],
-      results: false
+      results: false,
+      links: {
+        ideas: true,
+        insights: true
+      }
     },
     insights: {
       icon: 'chat_bubble_outline',
@@ -78,8 +88,8 @@ const Config = {
         ideas: {
           exclusive: true,
           apart: true,
-          add: true,
-          all: true
+          all: true,
+          priority: 2
         }
       }
     }

@@ -39,10 +39,10 @@ export default {
     moment(time) {
       return moment(time);
     },
-    getUrlPath(id, personal, trash) {
+    getUrlPath(id, personal, trash, type) {
       const p = personal === undefined ? this.personal : personal;
       const t = trash === undefined ? this.trash : trash;
-      let path = '/' + this.organization.key + '/' + this.type;
+      let path = '/' + this.organization.key + '/' + (type || this.type);
       if (p) {
         path += '/personal';
       }
@@ -54,11 +54,11 @@ export default {
       }
       return path;
     },
-    getUrl(id) {
+    getUrl(...args) {
       /* global document */
       return document.location.origin
         + (this.$router.mode === 'hash' ? '/#' : '')
-        + this.getUrlPath(id);
+        + this.getUrlPath(...args);
     },
     togglePersonal(item) {
       const it = item || this.item;
