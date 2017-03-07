@@ -11,15 +11,15 @@
     </md-card-media>
     <router-link class="resource-list-item-link" :to="to"></router-link>
     <md-card-actions>
-      <md-button v-if="trash" @click.stop="toggleTrash(item)" :title="$t('actions.restore')" class="md-icon-button">
+      <md-button v-if="trash" @click.native.stop="toggleTrash(item)" :title="$t('actions.restore')" class="md-icon-button">
         <md-icon>delete_sweep</md-icon>
       </md-button>
       <resource-links v-else
-          :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions" v-if="!trash"
+          :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions"
           apart
       ></resource-links>
       <div style="flex: 1"></div>
-      <md-button @click="setLike(item, !like)" :class="['md-icon-button', {'md-accent': like}]">
+      <md-button @click.native="setLike(item, !like)" :class="['md-icon-button', {'md-accent': like}]">
         <md-icon>favorite</md-icon>
       </md-button>
       <share v-if="!trash && !personal" :url="getUrl(item.id)"></share>

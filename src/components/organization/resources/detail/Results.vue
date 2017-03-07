@@ -84,7 +84,7 @@
         </div>
       </div>
     </template>
-    <md-button @click="$refs.form.reset(); edit = false;" slot="secondaryButtons">{{$t('actions.cancel')}}</md-button>
+    <md-button @click.native="$refs.form.reset(); edit = false;" slot="secondaryButtons">{{$t('actions.cancel')}}</md-button>
   </base-form>
 </template>
 

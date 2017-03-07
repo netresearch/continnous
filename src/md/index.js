@@ -3,15 +3,13 @@ import mdExtensionTheme from './extension.theme';
 import MdAvatarButton from './AvatarButton';
 import MdMessage from './Message';
 import MdApp from './App';
-import MdInkRipple from './mdInkRipple';
 
 import './extension.scss';
 
 const components = {
   MdAvatarButton,
   MdMessage,
-  MdApp,
-  MdInkRipple
+  MdApp
 };
 
 const registeredThemes = ['default'];

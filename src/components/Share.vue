@@ -1,6 +1,6 @@
 <template>
   <span class="resource-share">
-    <md-button class="md-icon-button" @click="$refs.dialog.open()">
+    <md-button class="md-icon-button" @click.native="$refs.dialog.open()">
       <md-icon>share</md-icon>
       <md-tooltip>{{$t('actions.share')}}</md-tooltip>
     </md-button>

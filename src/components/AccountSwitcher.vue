@@ -1,7 +1,7 @@
 <template>
   <div class="auth">
     <template v-if="auth.ready">
-      <md-button @click="auth.login()" v-if="!auth.user">Login</md-button>
+      <md-button @click.native="auth.login()" v-if="!auth.user">Login</md-button>
       <md-menu md-direction="bottom left" md-size="6" v-else>
         <md-avatar-button md-menu-trigger><img :src="auth.user.photoURL"></md-avatar-button>
         <md-menu-content>
@@ -12,7 +12,7 @@
             <div class="account-card-info">
               <div>{{auth.user.email}}</div>
               <div class="author-card-links">
-                <md-button class="md-primary md-link" @click="auth.logout()">Logout</md-button>
+                <md-button class="md-primary md-link" @click.native="auth.logout()">Logout</md-button>
               </div>
               <div class="account-language">
                 <hr>

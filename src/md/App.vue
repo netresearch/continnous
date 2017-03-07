@@ -2,7 +2,7 @@
   <div class="md-app">
     <md-whiteframe md-elevation="2">
       <md-toolbar :class="toolbarClass">
-        <md-button v-if="isMobile" class="md-icon-button md-sidenav-trigger" @click="sidenavActive = true">
+        <md-button v-if="isMobile" class="md-icon-button md-sidenav-trigger" @click.native="sidenavActive = true">
           <md-icon>menu</md-icon>
         </md-button>
         <slot name="title"></slot>

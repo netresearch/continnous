@@ -7,10 +7,10 @@
         v-if="open !== undefined">
       <md-dialog-content>{{$t('unload.text')}}</md-dialog-content>
       <md-dialog-actions>
-        <md-button v-if="canSave" class="md-primary md-raised" @click="save()">{{$t('unload.save')}}</md-button>
-        <md-button class="md-primary" @click="close(true)">{{$t('unload.continue')}}</md-button>
+        <md-button v-if="canSave" class="md-primary md-raised" @click.native="save()">{{$t('unload.save')}}</md-button>
+        <md-button class="md-primary" @click.native="close(true)">{{$t('unload.continue')}}</md-button>
         <span style="flex: 1"></span>
-        <md-button @click="close()">{{$t('actions.abort')}}</md-button>
+        <md-button @click.native="close()">{{$t('actions.abort')}}</md-button>
       </md-dialog-actions>
       <md-message :status="status" :progress="progress"></md-message>
     </md-dialog>

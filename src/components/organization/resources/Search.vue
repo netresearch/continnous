@@ -11,7 +11,7 @@
     <md-button
         slot="buttons"
         v-for="result in results"
-        @click="$router.push({
+        @click.native="$router.push({
           path: '/' + organization.key + '/search' +
             ((type && result.resource === (personal ? 'personal_' : '') + type) ? '' : '/' + result.resource.replace(/^(personal)_(.+)$/, '$2/$1')),
           query: $route.query

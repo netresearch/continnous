@@ -2,7 +2,7 @@
   <md-button
       :class="{'md-primary': action === 'save'}"
       :disabled="!form || action !== 'cancel' && !form.hasChanged(action !== 'save', recursive)"
-      @click="action === 'save' ? form.save(recursive) : (action === 'reset' ? form.reset(false, recursive) : form.protector.cancel(recursive))"
+      @click.native="action === 'save' ? form.save(recursive) : (action === 'reset' ? form.reset(false, recursive) : form.protector.cancel(recursive))"
   >
     <slot>
       <md-icon v-if="icon">{{icon}}</md-icon> {{$t('actions.' + action)}}

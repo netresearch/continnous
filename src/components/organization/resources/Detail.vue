@@ -17,7 +17,7 @@
       <md-toolbar class="md-dense resource-detail-mobile-head">
         <md-whiteframe md-elevation="2"></md-whiteframe>
         <h2 class="md-title" style="flex: 1">{{personal ? $tc(type + '.personal', 2) : organization.name + ' ' + $tc(type + '.personal', 2)}}</h2>
-        <md-button class="md-icon-button" @click="close()"><md-icon>chevron_left</md-icon></md-button>
+        <md-button class="md-icon-button" @click.native="close()"><md-icon>chevron_left</md-icon></md-button>
       </md-toolbar>
       <div :class="['resource-detail-head', {'resource-detail-head-elevate': scrollTop > 0}]" v-if="item">
         <avatar v-if="id" :uid="item.creator" :organization="organization">
@@ -34,7 +34,7 @@
         <template v-else>
           <h3 v-if="type" style="flex: 1">{{$t(type + '.new')}}</h3>
         </template>
-        <md-button v-if="!id || personal" :class="['md-icon-button', {'md-warn': personal}]" @click="id ? togglePersonal() : personal = !personal">
+        <md-button v-if="!id || personal" :class="['md-icon-button', {'md-warn': personal}]" @click.native="id ? togglePersonal() : personal = !personal">
           <md-icon>
             lock_outline
             <md-tooltip>
@@ -64,12 +64,12 @@
           </form-button>
         </template>
         <template v-else>
-          <md-button v-if="trash" class="md-icon-button" @click="toggleTrash()">
+          <md-button v-if="trash" class="md-icon-button" @click.native="toggleTrash()">
             <md-icon>delete_sweep</md-icon>
             <md-tooltip>{{$t('actions.restore')}}</md-tooltip>
           </md-button>
           <share v-if="!trash && !personal" :url="getUrl()"></share>
-          <md-button class="md-icon-button" @click="$router.push({path: $route.path + '/edit', query: $route.query})">
+          <md-button class="md-icon-button" @click.native="$router.push({path: $route.path + '/edit', query: $route.query})">
             <md-icon>mode_edit</md-icon>
             <md-tooltip>{{$t('actions.editAll')}}</md-tooltip>
           </md-button>
@@ -88,7 +88,7 @@
               </md-menu-item>
             </md-menu-content>
           </md-menu>
-          <md-button class="md-icon-button resource-detail-close" @click="close()">
+          <md-button class="md-icon-button resource-detail-close" @click.native="close()">
             <md-icon>close</md-icon>
           </md-button>
         </template>

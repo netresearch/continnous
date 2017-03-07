@@ -20,6 +20,12 @@
     mounted() {
       /* eslint-disable no-underscore-dangle */
       this.form._registerFormElement(this);
+      if (['md-input', 'md-textarea', 'md-editor'].indexOf(this.type) > -1) {
+        this.$refs.el.parentContainer = this.$refs.container;
+      }
+      if (this.type === 'form-file') {
+        this.$refs.el.$refs.mdFile.$refs.textInput.parentContainer = this.$refs.container;
+      }
       /* eslint-enable no-underscore-dangle */
     },
     beforeDestroy() {
@@ -69,7 +75,8 @@
               props: {
                 mdInline: this.mdInline || (this.form && this.form.mdInline),
                 mdHasPassword: this.mdHasPassword
-              }
+              },
+              ref: 'container'
             },
             this.label ? [h('label', this.label), element] : [element]
           )

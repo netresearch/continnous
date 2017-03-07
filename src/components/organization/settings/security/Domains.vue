@@ -17,11 +17,11 @@
                 <label>{{$tc('domain', 1)}}</label>
                 <md-input required :value="domain" @input="onDomainChange(key, index, $event)"></md-input>
               </md-input-container>
-              <md-button class="md-icon-button" @click="removeDomain(key, index)">
+              <md-button class="md-icon-button" @click.native="removeDomain(key, index)">
                 <md-icon>clear</md-icon>
               </md-button>
             </div>
-            <md-button class="md-link" v-if="(!form.values[key] || form.values[key].length < 5) && !form.errors[key]" @click="addDomain(key)">{{$t('addDomain')}}</md-button>
+            <md-button class="md-link" v-if="(!form.values[key] || form.values[key].length < 5) && !form.errors[key]" @click.native="addDomain(key)">{{$t('addDomain')}}</md-button>
           </div>
         </div>
       </template>

@@ -18,12 +18,12 @@
       <template v-if="period">
         <md-button
             class="md-icon-button resources-list-period-button"
-            @click="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '/trash' : '') + '/' + period.getPrevious().getId())"
+            @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '/trash' : '') + '/' + period.getPrevious().getId())"
         ><md-icon>chevron_left</md-icon></md-button>
         <span class="resources-list-period">{{period.format()}}</span>
         <md-button
             class="md-icon-button resources-list-period-button"
-            @click="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '/trash' : '') + '/' + period.getNext().getId())"
+            @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '/trash' : '') + '/' + period.getNext().getId())"
         ><md-icon>chevron_right</md-icon></md-button>
         <div style="flex: 1"></div>
       </template>
@@ -53,10 +53,10 @@
           </md-menu-item>
         </md-menu-content>
       </md-menu>
-      <md-button class="md-icon-button" @click="masonry = !masonry">
+      <md-button class="md-icon-button" @click.native="masonry = !masonry">
         <md-icon>{{'view_' + (masonry ? 'stream' : 'quilt')}}</md-icon>
       </md-button>
-      <md-button v-if="trashEnabled" @click="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '' : '/trash'))" :class="{'md-contrast': trash}">
+      <md-button v-if="trashEnabled" @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '' : '/trash'))" :class="{'md-contrast': trash}">
         <md-icon>delete</md-icon>
         <span>{{$t('trash')}}</span>
       </md-button>

@@ -28,7 +28,7 @@
     <card-form @saved="onThemeSaved" v-model="organization" :firebase-path="'/organizations/' + organization.key">
       <form-element type="form-theme" name="theme" ref="theme" naked>
       </form-element>
-      <md-button slot="secondaryButtons" @click="$refs.theme.$refs.el.resetToDefaults()" class="md-dense">{{$t('actions.resetToDefaults')}}</md-button>
+      <md-button slot="secondaryButtons" @click.native="$refs.theme.$refs.el.resetToDefaults()" class="md-dense">{{$t('actions.resetToDefaults')}}</md-button>
     </card-form>
   </div>
 </template>

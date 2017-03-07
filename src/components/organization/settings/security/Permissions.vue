@@ -52,7 +52,7 @@
         </div>
       </template>
 
-      <md-button slot="secondaryButtons" @click="resetPermissionsToDefaults()" class="md-dense">{{$t('actions.resetToDefaults')}}</md-button>
+      <md-button slot="secondaryButtons" @click.native="resetPermissionsToDefaults()" class="md-dense">{{$t('actions.resetToDefaults')}}</md-button>
     </card-form>
   </div>
 </template>

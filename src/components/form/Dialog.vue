@@ -15,7 +15,7 @@
         <slot name="centerButtons">
           <span style="flex: 1"></span>
         </slot>
-        <md-button @click="$refs.dialog.close()">{{$t('actions.cancel')}}</md-button>
+        <md-button @click.native="$refs.dialog.close()">{{$t('actions.cancel')}}</md-button>
         <form-button action="save" class="md-primary md-raised"></form-button>
       </md-dialog-actions>
       <md-message :status="status" :progress="progress"></md-message>
