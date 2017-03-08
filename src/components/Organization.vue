@@ -28,20 +28,20 @@
 
       <md-list slot="sidebar">
         <md-list-item class="menu-entry">
-          <router-link :to="'/' + organization.key" exact>
+          <router-link :to="getUrlPath()" exact>
             <md-icon>home</md-icon>
             <span>{{$t('overview')}}</span>
-            <router-link v-if="role === 'admin'" :to="'/' + organization.key + '/settings'" class="md-button md-icon-button md-list-action">
+            <router-link v-if="role === 'admin'" :to="getUrlPath({settings: true})" class="md-button md-icon-button md-list-action">
               <md-icon>settings</md-icon>
               <md-tooltip>{{$t('settings')}}</md-tooltip>
             </router-link>
           </router-link>
         </md-list-item>
         <md-list-item v-for="(resource, key) in resources" v-if="permissions[key].write || permissions['personal_' + key].write || permissions[key].read || permissions['personal_' + key].read">
-          <router-link :to="'/' + organization.key + '/' + key">
+          <router-link :to="getUrlPath({type: key})">
             <md-icon>{{resource.icon}}</md-icon>
             <span>{{$tc(key + '.title', 2)}}</span>
-            <router-link v-if="permissions[key].write || permissions['personal_' + key].write" :to="'/' + organization.key + '/' + key + '/create'" class="md-button md-icon-button md-list-action">
+            <router-link v-if="permissions[key].write || permissions['personal_' + key].write" :to="getUrlPath({type: key, create: true})" class="md-button md-icon-button md-list-action">
               <md-icon>add</md-icon>
             </router-link>
           </router-link>
@@ -89,8 +89,8 @@
       AccountSwitcher,
       Journal
     },
-    created() {
-      this.fetchOrganization();
+    props: {
+      domain: String
     },
     data() {
       return {
@@ -99,56 +99,84 @@
         permissions: new Permissions(),
         resources: Config.resources,
         auth,
-        title: undefined
+        title: undefined,
+        key: undefined
       };
     },
     watch: {
-      $route: 'fetchOrganization',
+      $route: {
+        immediate: true,
+        handler($route) {
+          if ($route.params.organization_key) {
+            this.key = $route.params.organization_key;
+          }
+        }
+      },
+      domain: {
+        immediate: true,
+        handler(domain) {
+          if (domain) {
+            Firebase.database().ref('domains/' + domain.replace(/\./g, ':')).once('value',
+              (sn) => {
+                this.key = sn.val();
+              },
+              () => {
+                locales.setFromNavigator().then(() => {
+                  this.organization = false;
+                });
+              }
+            );
+          }
+        }
+      },
+      key: {
+        immediate: true,
+        handler(key) {
+          if (!key || (this.organization && this.organization.key === key)) {
+            return;
+          }
+          if (this.orgsRef) {
+            this.orgsRef.off('value');
+          }
+          this.orgsRef = Firebase.database().ref('organizations/' + key);
+          this.orgsRef.on('value',
+            (snapshot) => {
+              if (snapshot.val()) {
+                const organization = new Organization(snapshot.key, snapshot.val());
+                auth.user.bind(organization).once('value', (sn) => {
+                  const ul = sn.val() ? sn.val().lang : null;
+                  (ul ? locales.set(ul) : locales.setFromNavigator()).then(() => {
+                    this.organization = organization;
+                    this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
+                    this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
+                    titleElement.innerText = this.title;
+                  });
+                });
+              } else {
+                locales.setFromNavigator().then(() => {
+                  this.organization = null;
+                  this.title = null;
+                  titleElement.innerHTML = defaultTitle;
+                });
+              }
+            },
+            () => {
+              locales.setFromNavigator().then(() => {
+                this.organization = false;
+                this.fetchOrganization();
+              });
+            }
+          );
+        }
+      },
       'auth.user': 'fetchRoleAndPermissions',
       organization: 'fetchRoleAndPermissions'
     },
     methods: {
-      fetchOrganization() {
-        if (this.organization && this.organization.key === this.$route.params.organization_key) {
-          return;
-        }
-        if (this.orgsRef) {
-          this.orgsRef.off('value');
-        }
-        this.orgsRef = Firebase.database().ref('organizations/' + this.$route.params.organization_key);
-        this.orgsRef.on('value',
-          (snapshot) => {
-            if (snapshot.val()) {
-              const organization = new Organization(snapshot.key, snapshot.val());
-              auth.user.bind(organization).once('value', (sn) => {
-                const ul = sn.val() ? sn.val().lang : null;
-                (ul ? locales.set(ul) : locales.setFromNavigator()).then(() => {
-                  this.organization = organization;
-                  this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
-                  this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
-                  titleElement.innerText = this.title;
-                });
-              });
-            } else {
-              locales.setFromNavigator().then(() => {
-                this.organization = null;
-                this.title = null;
-                titleElement.innerHTML = defaultTitle;
-              });
-            }
-          },
-          () => {
-            locales.setFromNavigator().then(() => {
-              this.organization = false;
-              this.fetchOrganization();
-            });
-          }
-        );
-      },
       fetchRoleAndPermissions() {
         this.$nextTick(() => {
           const user = this.auth.user;
-          const orgKey = this.$route.params.organization_key;
+          const orgKey = this.key;
           this.permissions.bind(orgKey, user, () => {
             this.role = this.permissions.role;
             if ((this.role || this.organization) && user) {
@@ -168,13 +196,13 @@
       },
       requestMembership() {
         const user = this.auth.user;
-        const orgKey = this.$route.params.organization_key;
+        const orgKey = this.key;
         Firebase.database().ref('/security/organizations/' + orgKey + '/users/' + user.uid).set('?');
       },
       handleSearch(search) {
-        const path = '/' + this.organization.key + '/search';
+        const path = this.getUrlPath({ search: true });
         if (search === false) {
-          this.$router.replace(this.previousRoute || '/' + this.organization.key);
+          this.$router.replace(this.previousRoute || '/' + this.getUrlPath());
         } else {
           const query = Object.assign({}, this.$route.query);
           if (search) {

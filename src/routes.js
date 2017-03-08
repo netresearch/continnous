@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import Index from './components/Index';
 import Organization from './components/Organization';
 import OrganizationOverview from './components/organization/Overview';
@@ -10,6 +11,58 @@ import OrganizationResourcesSearch from './components/organization/resources/Sea
 import OrganizationResourcesResource from './components/organization/resources/Detail';
 
 import Config from './models/Config';
+
+const config = require('../.firebaserc').config;
+
+Vue.mixin({
+  methods: {
+    getUrlPath(id, personal, trash, type) {
+      const params = typeof id === 'object' ? id : { id, personal, trash, type };
+      ['type', 'personal', 'trash'].forEach((key) => {
+        if (params[key] === undefined) {
+          params[key] = this[key];
+        }
+      });
+      let path = '';
+      if (this.$route.params.organization_key) {
+        path += '/' + this.$route.params.organization_key;
+      }
+      if (params.settings) {
+        path += '/settings' + (params.settings === true ? '' : '/' + params.settings);
+      } else {
+        if (params.search) {
+          path += '/search';
+        }
+        if (params.type) {
+          path += '/' + params.type;
+        }
+        if (params.personal) {
+          path += '/personal';
+        }
+        if (params.trash) {
+          path += '/trash';
+        }
+        if (params.period) {
+          path += '/' + params.period;
+        }
+        if (params.create) {
+          path += '/create';
+        }
+        if (params.id) {
+          path += '/' + params.id;
+        }
+      }
+      return path;
+    },
+    getUrl(...args) {
+      /* global document */
+      return document.location.origin + this.getHref(...args);
+    },
+    getHref(...args) {
+      return (this.$router.mode === 'hash' ? '/#' : '') + this.getUrlPath(...args);
+    }
+  }
+});
 
 const organizationRoute = {
   path: '/:organization_key',
@@ -52,9 +105,16 @@ Object.keys(Config.resources).forEach((resource) => {
   });
 });
 
-export default {
-  routes: [
-    { path: '/', component: Index },
-    organizationRoute
-  ]
-};
+const routes = [];
+
+/* global document */
+if ([config.authDomain, 'localhost'].indexOf(document.location.hostname) < 0) {
+  organizationRoute.path = '/';
+  organizationRoute.props = { domain: document.location.hostname };
+} else {
+  routes.push({ path: '/', component: Index });
+}
+
+routes.push(organizationRoute);
+
+export default { routes };

@@ -8,16 +8,15 @@
       :personal="personal"
       additional-sort="_score"
   >
-    <md-button
+    <router-link
         slot="buttons"
         v-for="result in results"
-        @click.native="$router.push({
-          path: '/' + organization.key + '/search' +
-            ((type && result.resource === (personal ? 'personal_' : '') + type) ? '' : '/' + result.resource.replace(/^(personal)_(.+)$/, '$2/$1')),
+        :to="{
+          path: getUrlPath(type === result.resource && personal === result.personal ? {search: true, type: null, personal: null} : {search: true, type: result.resource, personal: result.personal}),
           query: $route.query
-        })"
-        :class="{'router-link-active': type && result.resource === (personal ? 'personal_' : '') + type}"
-    >{{$t('resources.' + result.resource)}}</md-button>
+        }"
+        class="md-button"
+    >{{$tc(result.resource + '.' + (result.personal ? 'personal' : 'title'), 2)}}</router-link>
 
     <router-view :organization="organization" :permissions="permissions"></router-view>
   </resource-list>
@@ -108,8 +107,8 @@
         const order = {};
         const items = [];
         this.results.forEach((result) => {
-          const resource = result.resource.replace(/^personal_/, '');
-          const personal = result.resource.indexOf('personal_') === 0;
+          const resource = result.resource;
+          const personal = result.personal;
           result.hits.forEach((hit) => {
             /* eslint-disable no-underscore-dangle */
             if (!this.type || (this.type === resource && this.personal === personal)) {

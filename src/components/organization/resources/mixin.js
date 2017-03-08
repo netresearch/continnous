@@ -50,27 +50,6 @@ export default {
     moment(time) {
       return moment(time);
     },
-    getUrlPath(id, personal, trash, type) {
-      const p = personal === undefined ? this.personal : personal;
-      const t = trash === undefined ? this.trash : trash;
-      let path = '/' + this.organization.key + '/' + (type || this.type);
-      if (p) {
-        path += '/personal';
-      }
-      if (t) {
-        path += '/trash';
-      }
-      if (id) {
-        path += '/' + id;
-      }
-      return path;
-    },
-    getUrl(...args) {
-      /* global document */
-      return document.location.origin
-        + (this.$router.mode === 'hash' ? '/#' : '')
-        + this.getUrlPath(...args);
-    },
     togglePersonal(item) {
       const it = item || this.item;
       this.organization.journal.getRef()

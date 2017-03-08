@@ -164,3 +164,12 @@ path /{branch}/organizations/{oid}/{scope}/{type}/{rid}/{key} {
         && isAllowedScope(scope, type, 'read', oid)
     }
 }
+
+path /domains/{domain} {
+    read() {
+        isAuthenticated() && (isAllowed('organization', 'read', this) || isAdmin(this))
+    }
+    write() {
+        isAuthenticated() && (this != null && isAdmin(this) || this == null && isAdmin(prior(this)))
+    }
+}

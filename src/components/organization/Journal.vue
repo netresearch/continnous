@@ -23,7 +23,7 @@
               {{entry.fields && !noResource ? $t('journal.on') : ''}}
             </span>
             <span v-if="!noResource" class="journal-resource">
-              <router-link :to="organization.key + '/' + entry.resource + '/' + (entry.personal ? 'personal/' : '') + entry.id" class="md-icon-link">
+              <router-link :to="getUrlPath({id: entry.id, personal: entry.personal, type: entry.resource})" class="md-icon-link">
                 <md-icon class="md-small">{{resources[entry.resource].icon}}</md-icon>
                 {{entry.title}}
               </router-link>

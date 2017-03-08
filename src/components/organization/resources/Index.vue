@@ -15,10 +15,10 @@
   >
     <md-button
         slot="buttons"
-        v-for="(name, path) in {'': organization.name + ' ' + $tc(type + '.title', 2), 'personal': $tc(type + '.personal', 2)}"
-        @click.native="$router.push('/' + organization.key + '/' + type + (path ? '/' + path : ''))"
-        v-if="permissions[(path ? path + '_' : '') + type].read || permissions[(path ? path + '_' : '') + type].write"
-        :class="{'router-link-active': path === '' && !personal || path !== '' && personal}">
+        v-for="(name, p) in [organization.name + ' ' + $tc(type + '.title', 2), $tc(type + '.personal', 2)]"
+        :href="getHref({personal: !!p})"
+        v-if="permissions[(p ? 'personal_' : '') + type].read || permissions[(p ? 'personal_' : '') + type].write"
+        :class="{'router-link-active': !p && !personal || p && personal}">
       {{name}}
     </md-button>
 

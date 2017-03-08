@@ -88,7 +88,8 @@ module.exports = class Flashlight {
           results.forEach((result) => {
             if (result.hits.total) {
               filteredResults.push({
-                resource: result.resource,
+                resource: result.resource.replace(/^personal_/, ''),
+                personal: result.resource.indexOf('personal_') === 0,
                 total: result.hits.total,
                 hits: result.hits.hits
               });

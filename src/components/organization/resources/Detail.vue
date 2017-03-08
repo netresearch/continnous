@@ -280,7 +280,7 @@
         return title && title.length > 2;
       },
       firebaseReceive(snapshot) {
-        this.hasLinks = !!(snapshot.val().links);
+        this.hasLinks = snapshot.val() ? !!(snapshot.val().links) : false;
         const item = this.createItem(snapshot.key, snapshot.val());
         this.item = item;
         if (this.id) {

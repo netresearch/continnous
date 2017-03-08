@@ -18,12 +18,12 @@
       <template v-if="period">
         <md-button
             class="md-icon-button resources-list-period-button"
-            @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '/trash' : '') + '/' + period.getPrevious().getId())"
+            :href="getHref({period: period.getPrevious().getId()})"
         ><md-icon>chevron_left</md-icon></md-button>
         <span class="resources-list-period">{{period.format()}}</span>
         <md-button
             class="md-icon-button resources-list-period-button"
-            @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '/trash' : '') + '/' + period.getNext().getId())"
+            :href="getHref({period: period.getNext().getId()})"
         ><md-icon>chevron_right</md-icon></md-button>
         <div style="flex: 1"></div>
       </template>
@@ -56,7 +56,7 @@
       <md-button class="md-icon-button" @click.native="masonry = !masonry">
         <md-icon>{{'view_' + (masonry ? 'stream' : 'quilt')}}</md-icon>
       </md-button>
-      <md-button v-if="trashEnabled" @click.native="$router.push('/' + organization.key + '/' + type + (personal ? '/personal' : '') + (trash ? '' : '/trash'))" :class="{'md-contrast': trash}">
+      <md-button v-if="trashEnabled" :href="getHref({trash: !trash})" :class="{'md-contrast': trash}">
         <md-icon>delete</md-icon>
         <span>{{$t('trash')}}</span>
       </md-button>
@@ -75,7 +75,7 @@
           }}
           <template v-if="permissions[(personal ? 'personal_' : '') + type].write">
             - {{$t('howAbout')}}
-            <router-link :to="'/' + organization.key + '/' + type + (personal ? '/personal' : '') + '/create'">
+            <router-link :to="getUrlPath({create: true})">
               {{$t('addingOne', {accusative_one: $t(type + '.accusative_one')})}}</router-link>?
           </template>
         </template>
