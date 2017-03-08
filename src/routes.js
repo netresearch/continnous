@@ -113,4 +113,4 @@ if ([config.authDomain, 'localhost'].indexOf(document.location.hostname) < 0) {
 
 routes.push(organizationRoute);
 
-export default { routes };
+export default { mode: 'history', routes };
