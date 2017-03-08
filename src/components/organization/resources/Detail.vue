@@ -68,7 +68,7 @@
             <md-icon>delete_sweep</md-icon>
             <md-tooltip>{{$t('actions.restore')}}</md-tooltip>
           </md-button>
-          <share v-if="!trash && !personal" :url="getUrl()"></share>
+          <share v-if="!trash && !personal"  :type="type" :id="id"></share>
           <md-button class="md-icon-button" @click.native="$router.push({path: $route.path + '/edit', query: $route.query})">
             <md-icon>mode_edit</md-icon>
             <md-tooltip>{{$t('actions.editAll')}}</md-tooltip>

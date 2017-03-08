@@ -54,10 +54,6 @@ Vue.mixin({
       }
       return path;
     },
-    getUrl(...args) {
-      /* global document */
-      return document.location.origin + this.getHref(...args);
-    },
     getHref(...args) {
       return (this.$router.mode === 'hash' ? '/#' : '') + this.getUrlPath(...args);
     }

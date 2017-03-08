@@ -12,7 +12,7 @@
           class="resource-inline-list-item"
       >
         <md-icon>{{resources[item.resource].icon}}</md-icon>
-        <a v-if="link" :href="getUrl(item.id, personal, false, item.resource)">{{item.title}}</a>
+        <a v-if="link" :href="getHref(item.id, personal, false, item.resource)">{{item.title}}</a>
         <div v-else>{{item.title}}</div>
         <md-button v-if="clearable" class="md-icon-button" @click.native="$emit('clear', item)">
           <md-icon>clear</md-icon>

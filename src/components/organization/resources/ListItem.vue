@@ -24,7 +24,7 @@
       <md-button @click.native="setLike(item, !like)" :class="['md-icon-button', {'md-accent': like}]">
         <md-icon>favorite</md-icon>
       </md-button>
-      <share v-if="!trash && !personal" :url="getUrl(item.id)"></share>
+      <share v-if="!trash && !personal" :type="type" :id="item.id"></share>
       <md-menu v-if="!trash && permissions[type].write" md-size="4">
         <md-button class="md-icon-button" md-menu-trigger>
           <md-icon>more_vert</md-icon>

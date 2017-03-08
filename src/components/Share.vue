@@ -5,7 +5,7 @@
       <md-tooltip>{{$t('actions.share')}}</md-tooltip>
     </md-button>
     <md-dialog-alert
-        :md-content="url"
+        :md-content="origin + getHref({type: type, id: id})"
         md-ok-text="OK"
         ref="dialog">
     </md-dialog-alert>
@@ -15,7 +15,14 @@
 <script>
   export default {
     props: {
-      url: String
+      type: String,
+      id: String
+    },
+    data() {
+      /* global document */
+      return {
+        origin: document.location.origin
+      };
     }
   };
 </script>
