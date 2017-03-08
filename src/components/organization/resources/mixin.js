@@ -68,16 +68,16 @@ export default {
         });
       });
     },
-    toggleTrash(item) {
-      const trash = this.trash;
+    toggleArchive(item) {
+      const archive = this.archive;
       const it = item || this.item;
-      this.getFirebaseRef(!trash ? 'trash' : 'resources', it.id)
+      this.getFirebaseRef(!archive ? 'archive' : 'resources', it.id)
         .set(this.prepareItemForFirebase(it))
         .then(() => {
-          this.organization.journal.addEntry(this.type, this.personal, it.id, trash ? 'restore' : 'remove');
-          this.getFirebaseRef(trash ? 'trash' : 'resources', it.id).remove().then(() => {
+          this.organization.journal.addEntry(this.type, this.personal, it.id, archive ? 'unarchive' : 'archive');
+          this.getFirebaseRef(archive ? 'archive' : 'resources', it.id).remove().then(() => {
             if (!item) {
-              this.$router.replace(this.getUrlPath(it.id, this.personal, !trash));
+              this.$router.replace(this.getUrlPath(it.id, this.personal, !archive));
             }
           });
         });
@@ -103,7 +103,7 @@ export default {
             item.stats = {};
           }
           item.stats.likes = Math.max(0, (item.stats.likes || 0) + (like ? 1 : -1));
-          this.getFirebaseRef(this.trash ? 'trash' : 'resources', item.id).child('stats').update({
+          this.getFirebaseRef(this.archive ? 'archive' : 'resources', item.id).child('stats').update({
             likes: item.stats.likes
           });
 
@@ -136,7 +136,7 @@ export default {
       if (!viewed[auth.user.uid]) {
         viewed[auth.user.uid] = {};
       }
-      const statsRef = this.getFirebaseRef(this.trash ? 'trash' : 'resources', item.id).child('stats');
+      const statsRef = this.getFirebaseRef(this.archive ? 'archive' : 'resources', item.id).child('stats');
       if (!viewed[auth.user.uid][item.id]) {
         viewed[auth.user.uid][item.id] = true;
         Firebase.database().ref(
@@ -197,7 +197,7 @@ export default {
       ]).then((factors) => {
         let sum = 0;
         factors.forEach((factor) => { sum += factor; });
-        this.getFirebaseRef(this.trash ? 'trash' : 'resources', item.id).update({
+        this.getFirebaseRef(this.archive ? 'archive' : 'resources', item.id).update({
           rank: sum / factors.length
         });
       });

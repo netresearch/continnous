@@ -11,8 +11,8 @@
     </md-card-media>
     <router-link class="resource-list-item-link" :to="to"></router-link>
     <md-card-actions>
-      <md-button v-if="trash" @click.native.stop="toggleTrash(item)" :title="$t('actions.restore')" class="md-icon-button">
-        <md-icon>delete_sweep</md-icon>
+      <md-button v-if="archive" @click.native.stop="toggleArchive(item)" :title="$t('actions.restore')" class="md-icon-button">
+        <md-icon>unarchive</md-icon>
       </md-button>
       <resource-links
           v-else
@@ -24,8 +24,8 @@
       <md-button @click.native="setLike(item, !like)" :class="['md-icon-button', {'md-accent': like}]">
         <md-icon>favorite</md-icon>
       </md-button>
-      <share v-if="!trash && !personal" :type="type" :id="item.id"></share>
-      <md-menu v-if="!trash && permissions[type].write" md-size="4">
+      <share v-if="!archive && !personal" :type="type" :id="item.id"></share>
+      <md-menu v-if="!archive && permissions[type].write" md-size="4">
         <md-button class="md-icon-button" md-menu-trigger>
           <md-icon>more_vert</md-icon>
         </md-button>
@@ -34,12 +34,12 @@
             <md-icon>edit</md-icon>
             <span>{{$t('actions.edit')}}</span>
           </md-menu-item>
-          <md-menu-item @selected="toggleTrash(redirect ? undefined : item)" v-if="!trash && permissions[type].write">
-            <md-icon>delete</md-icon>
-            <span>{{$t('actions.delete')}}</span>
+          <md-menu-item @selected="toggleArchive(item)" v-if="!archive && permissions[type].write">
+            <md-icon>archive</md-icon>
+            <span>{{$t('actions.archive')}}</span>
           </md-menu-item>
           <resource-links
-              :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions" v-if="!trash"
+              :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions" v-if="!archive"
               menu
           ></resource-links>
         </md-menu-content>
@@ -62,7 +62,7 @@
       personal: Boolean,
       item: Object,
       type: String,
-      trash: Boolean,
+      archive: Boolean,
       permissions: Object,
       organization: Object
     },

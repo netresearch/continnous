@@ -16,15 +16,15 @@
       <slot name="buttons"></slot>
       <div style="flex: 1"></div>
       <template v-if="period">
-        <md-button
+        <md-link-button
             class="md-icon-button resources-list-period-button"
-            :href="getHref({period: period.getPrevious().getId()})"
-        ><md-icon>chevron_left</md-icon></md-button>
+            :to="getUrlPath({period: period.getPrevious().getId()})"
+        ><md-icon>chevron_left</md-icon></md-link-button>
         <span class="resources-list-period">{{period.format()}}</span>
-        <md-button
+        <md-link-button
             class="md-icon-button resources-list-period-button"
-            :href="getHref({period: period.getNext().getId()})"
-        ><md-icon>chevron_right</md-icon></md-button>
+            :to="getUrlPath({period: period.getNext().getId()})"
+        ><md-icon>chevron_right</md-icon></md-link-button>
         <div style="flex: 1"></div>
       </template>
       <md-menu v-else md-direction="bottom left" md-size="4">
@@ -56,16 +56,16 @@
       <md-button class="md-icon-button" @click.native="masonry = !masonry">
         <md-icon>{{'view_' + (masonry ? 'stream' : 'quilt')}}</md-icon>
       </md-button>
-      <md-button v-if="trashEnabled" :href="getHref({trash: !trash})" :class="{'md-contrast': trash}">
-        <md-icon>delete</md-icon>
-        <span>{{$t('trash')}}</span>
-      </md-button>
+      <md-link-button v-if="archiveEnabled" :to="getUrlPath({archive: !archive})" :class="{'md-contrast': archive}">
+        <md-icon>archive</md-icon>
+        <span>{{$t('archive')}}</span>
+      </md-link-button>
     </md-toolbar>
 
     <div class="scroll-content">
       <div v-if="status === 1 && !items.length">
-        <template v-if="trash">
-          {{$t('trashEmpty')}}
+        <template v-if="archive">
+          {{$t('archiveEmpty')}}
         </template>
         <template v-else>
           {{
@@ -85,7 +85,7 @@
         <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
           <resource-item
               :item="item"
-              :trash="trash"
+              :archive="archive"
               :personal="item.hasOwnProperty('personal') ? item.personal : personal"
               :permissions="permissions"
               :type="item.resource || type"
@@ -111,8 +111,8 @@
       organization: Object,
       type: String,
       permissions: Object,
-      trash: Boolean,
-      trashEnabled: Boolean,
+      archive: Boolean,
+      archiveEnabled: Boolean,
       personal: Boolean,
       sort: String,
       order: String,

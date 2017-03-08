@@ -140,12 +140,12 @@ path /users/organizations/{oid}/{uid} {
 }
 
 path /{branch}/organizations/{oid}/{scope}/{type} {
-    read() { (branch === 'resources' || branch === 'trash') && isAuthenticated() && isAllowedScope(scope, type, 'read', oid) }
+    read() { (branch === 'resources' || branch === 'archive') && isAuthenticated() && isAllowedScope(scope, type, 'read', oid) }
 }
 
 path /{branch}/organizations/{oid}/{scope}/{type}/{rid} {
     write() {
-        (branch === 'resources' || branch === 'trash')
+        (branch === 'resources' || branch === 'archive')
         && isAuthenticated()
         && isAllowedScope(scope, type, 'write', oid)
         && (
@@ -158,7 +158,7 @@ path /{branch}/organizations/{oid}/{scope}/{type}/{rid} {
 
 path /{branch}/organizations/{oid}/{scope}/{type}/{rid}/{key} {
     write() {
-        (branch === 'resources' || branch === 'trash')
+        (branch === 'resources' || branch === 'archive')
         && (key === 'stats' || key === 'rank')
         && isAuthenticated()
         && isAllowedScope(scope, type, 'read', oid)

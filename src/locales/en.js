@@ -69,7 +69,8 @@ module.exports = {
     writeComment: 'Write comment',
     editAll: 'Edit all fields',
     cancelEdit: 'Cancel edit',
-    share: 'Share'
+    share: 'Share',
+    archive: 'Archive'
   },
   results: {
     title: 'Key results',
@@ -157,7 +158,7 @@ module.exports = {
   },
   thereAreNo: 'There are no {accusative} yet',
   youDontHave: 'You don\'t have {accusative} yet',
-  trashEmpty: 'There are no items in the trash.',
+  archiveEmpty: 'There are no items in the archive.',
   howAbout: 'how about',
   addingOne: 'adding {accusative_one}',
   fields: {
@@ -194,7 +195,7 @@ module.exports = {
   },
   search: 'Search',
   and: 'and',
-  trash: 'Trash',
+  archive: 'Archive',
   noMatches: 'No matching items found',
   sort: {
     sort: 'Sort by',
@@ -203,6 +204,8 @@ module.exports = {
     desc: 'Descending'
   },
   journal: {
+    archive: 'archived',
+    unarchive: 'unarchived',
     update: 'updated {fields}',
     on: 'on',
     create: 'added',

@@ -4,23 +4,24 @@
       :organization="organization"
       :permissions="permissions"
       :type="type"
-      :trash="trash"
+      :archive="archive"
       :items="items"
       :personal="personal"
-      :period="trash ? undefined : period"
+      :period="archive ? undefined : period"
       :status="status"
       :sort="sort"
       :order="order"
-      trash-enabled
+      archive-enabled
   >
-    <md-button
+    <md-link-button
         slot="buttons"
         v-for="(name, p) in [organization.name + ' ' + $tc(type + '.title', 2), $tc(type + '.personal', 2)]"
-        :href="getHref({personal: !!p})"
+        :to="getUrlPath({personal: !!p})"
         v-if="permissions[(p ? 'personal_' : '') + type].read || permissions[(p ? 'personal_' : '') + type].write"
+        exact
         :class="{'router-link-active': !p && !personal || p && personal}">
       {{name}}
-    </md-button>
+    </md-link-button>
 
     <router-view v-if="type" :organization="organization" :type="type" :permissions="permissions"></router-view>
   </resource-list>
@@ -47,7 +48,7 @@
         items: undefined,
         sort: 'updated',
         order: 'desc',
-        trash: false,
+        archive: false,
         period: undefined,
         status: 0
       };
@@ -61,7 +62,7 @@
           }
           const p = {
             type: route.params.type || this.type,
-            trash: !!route.params.trash,
+            archive: !!route.params.archive,
             personal: !!route.params.personal,
             sort: route.query.sort || this.sort,
             order: route.query.order || this.order,
@@ -74,13 +75,13 @@
             p.personal = true;
           }
           let load = this.items === undefined;
-          ['type', 'trash', 'personal', 'order', 'sort'].forEach((key) => {
+          ['type', 'archive', 'personal', 'order', 'sort'].forEach((key) => {
             if (p[key] !== this[key]) {
               this[key] = p[key];
               load = true;
             }
           });
-          if (this.type && Config.resources[this.type].periodical && !p.trash) {
+          if (this.type && Config.resources[this.type].periodical && !p.archive) {
             const period = Period.getById(route.params.period);
             if (!this.period || this.period.getId() !== period.getId()) {
               this.period = period;
@@ -104,7 +105,7 @@
           this.itemsRef.off('child_moved');
           this.itemsRef.off('child_removed');
         }
-        const ref = this.getFirebaseRef(this.trash ? 'trash' : 'resources');
+        const ref = this.getFirebaseRef(this.archive ? 'archive' : 'resources');
         if (this.period) {
           this.itemsRef = ref.orderByChild('dueTime')
             .startAt(this.period.start)

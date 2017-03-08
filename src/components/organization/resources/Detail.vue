@@ -1,7 +1,7 @@
 <template>
   <base-form
       :class="['resource-detail', 'resource-' + (this.id ? (edit ? 'edit' : 'view') : 'create')]"
-      :firebase-path="getFirebasePath(trash ? 'trash' : 'resources', id || '{new}')"
+      :firebase-path="getFirebasePath(archive ? 'archive' : 'resources', id || '{new}')"
       firebase-bind
       :firebase-receive="firebaseReceive"
       :defaults="{creator: auth.user.uid}"
@@ -64,16 +64,16 @@
           </form-button>
         </template>
         <template v-else>
-          <md-button v-if="trash" class="md-icon-button" @click.native="toggleTrash()">
-            <md-icon>delete_sweep</md-icon>
+          <md-button v-if="archive" class="md-icon-button" @click.native="toggleArchive()">
+            <md-icon>unarchive</md-icon>
             <md-tooltip>{{$t('actions.restore')}}</md-tooltip>
           </md-button>
-          <share v-if="!trash && !personal"  :type="type" :id="id"></share>
+          <share v-if="!archive && !personal"  :type="type" :id="id"></share>
           <md-button class="md-icon-button" @click.native="$router.push({path: $route.path + '/edit', query: $route.query})">
             <md-icon>mode_edit</md-icon>
             <md-tooltip>{{$t('actions.editAll')}}</md-tooltip>
           </md-button>
-          <md-menu v-if="(!trash || !personal) && mayEdit" md-size="5">
+          <md-menu v-if="(!archive || !personal) && mayEdit" md-size="5">
             <md-button class="md-icon-button" md-menu-trigger>
               <md-icon>more_vert</md-icon>
             </md-button>
@@ -82,9 +82,9 @@
                 <md-icon>lock_outline</md-icon>
                 <span>{{$t('detail.makePersonal')[0].toUpperCase() + $t('detail.makePersonal').substr(1)}}</span>
               </md-menu-item>
-              <md-menu-item @selected="toggleTrash()" v-if="!trash">
-                <md-icon>delete</md-icon>
-                <span>{{$t('actions.delete')}}</span>
+              <md-menu-item @selected="toggleArchive()" v-if="!archive">
+                <md-icon>archive</md-icon>
+                <span>{{$t('actions.archive')}}</span>
               </md-menu-item>
               <resource-links menu :organization="organization" :type="type" :item="item" :permissions="permissions">
               </resource-links>
@@ -237,7 +237,7 @@
         personal: false,
         id: undefined,
         item: undefined,
-        trash: false,
+        archive: false,
         edit: false,
         scrollTop: 0,
         comments: 0,
@@ -254,7 +254,7 @@
           this.type = route.params.type || route.query.type;
           this.id = route.params.id || null;
           this.edit = !this.id || !!route.params.edit;
-          this.trash = !!route.params.trash;
+          this.archive = !!route.params.archive;
           if (this.$refs.form && (this.id !== id || this.type !== type)) {
             this.$refs.form.reset(true, true);
           }
@@ -286,8 +286,8 @@
         if (this.id) {
           if (snapshot.val()) {
             this.trackView(item);
-          } else if (!this.trash) {
-            this.$router.replace(this.getUrlPath({ id: this.id, trash: true }));
+          } else if (!this.archive) {
+            this.$router.replace(this.getUrlPath({ id: this.id, archive: true }));
           }
         }
         return item;

@@ -102,7 +102,7 @@
       item: Object,
       type: String,
       personal: Boolean,
-      trash: Boolean,
+      archive: Boolean,
       organization: Object,
       permissions: Object,
       list: Boolean,

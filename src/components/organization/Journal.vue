@@ -137,17 +137,22 @@
         if (this.noResource) {
           addEntry();
         } else {
-          const path = '/' + (entry.action === 'remove' ? 'trash' : 'resources')
+          const load = (archive, tryArchiveOpposite) => {
+            const path = '/' + (archive ? 'archive' : 'resources')
               + '/organizations/' + this.organization.key
               + '/' + (entry.personal ? this.item.creator : 'organization')
               + '/' + entry.resource
               + '/' + entry.id + '/title';
-          Firebase.database().ref(path).once('value', (s) => {
-            entry.title = s.val();
-            if (entry.title) {
-              addEntry();
-            }
-          }, () => {});
+            Firebase.database().ref(path).once('value', (s) => {
+              entry.title = s.val();
+              if (entry.title) {
+                addEntry();
+              } else if (tryArchiveOpposite && (entry.action === 'archive' || entry.action === 'unarchive')) {
+                load(!archive);
+              }
+            }, () => { });
+          };
+          load(entry.action === 'archive', true);
         }
       },
       onEntryRemoved(snapshot) {
@@ -173,8 +178,8 @@
           return this.$t('fields.' + field);
         };
         return fields.slice(0, fields.length - 1).map(translate).join(', ')
-            + (fields.length > 1 ? ' ' + this.$t('and') + ' ' : '')
-            + translate(fields[fields.length - 1]);
+          + (fields.length > 1 ? ' ' + this.$t('and') + ' ' : '')
+          + translate(fields[fields.length - 1]);
       }
     }
   };

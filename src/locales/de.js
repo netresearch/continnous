@@ -68,7 +68,8 @@ module.exports = {
     writeComment: 'Schreibe einen Kommentar',
     editAll: 'Alle Felder bearbeiten',
     cancelEdit: 'Bearbeitung abbrechen',
-    share: 'Teilen'
+    share: 'Teilen',
+    archive: 'In\'s Archiv'
   },
   results: {
     title: 'Zielvorgaben',
@@ -159,7 +160,7 @@ module.exports = {
   },
   thereAreNo: 'Es gibt noch keine {accusative}',
   youDontHave: 'Du hast noch keine {accusative}',
-  trashEmpty: 'Es ist nichts im Papierkorb.',
+  archiveEmpty: 'Es ist nichts im Archiv.',
   howAbout: 'möchtest Du',
   addingOne: '{accusative_one} hinzufügen',
   fields: {
@@ -196,7 +197,7 @@ module.exports = {
   },
   search: 'Suche',
   and: 'und',
-  trash: 'Papierkorb',
+  archive: 'Archiv',
   noMatches: 'Keine passenden Ergebnisse gefunden',
   sort: {
     sort: 'Sortieren nach',
@@ -205,6 +206,8 @@ module.exports = {
     desc: 'Absteigend'
   },
   journal: {
+    archive: 'hat {resource} archiviert',
+    unarchive: 'hat {resource} wiederhergestellt',
     update: 'hat {fields} {resource} aktualisiert',
     on: 'für',
     create: 'hat {resource} hinzugefügt',

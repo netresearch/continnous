@@ -16,9 +16,9 @@ const config = require('../.firebaserc').config;
 
 Vue.mixin({
   methods: {
-    getUrlPath(id, personal, trash, type) {
-      const params = typeof id === 'object' ? id : { id, personal, trash, type };
-      ['type', 'personal', 'trash'].forEach((key) => {
+    getUrlPath(id, personal, archive, type) {
+      const params = typeof id === 'object' ? id : { id, personal, archive, type };
+      ['type', 'personal', 'archive'].forEach((key) => {
         if (params[key] === undefined) {
           params[key] = this[key];
         }
@@ -39,8 +39,8 @@ Vue.mixin({
         if (params.personal) {
           path += '/personal';
         }
-        if (params.trash) {
-          path += '/trash';
+        if (params.archive) {
+          path += '/archive';
         }
         if (params.period) {
           path += '/' + params.period;
@@ -53,9 +53,6 @@ Vue.mixin({
         }
       }
       return path;
-    },
-    getHref(...args) {
-      return (this.$router.mode === 'hash' ? '/#' : '') + this.getUrlPath(...args);
     }
   }
 });
@@ -81,7 +78,7 @@ Object.keys(Config.resources).forEach((resource) => {
   organizationRoute.children.push({
     path: ':type(' + resource + ')'
       + '/:personal(personal)?'
-      + '/:trash(trash)?'
+      + '/:archive(archive)?'
       + '/:period(q[1-4]-[0-9]{4})?',
     component: OrganizationResourcesPage,
     children: [

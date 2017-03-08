@@ -1,6 +1,7 @@
 import MutationObserver from 'mutation-observer';
 import mdExtensionTheme from './extension.theme';
 import MdAvatarButton from './AvatarButton';
+import MdLinkButton from './LinkButton';
 import MdMessage from './Message';
 import MdApp from './App';
 
@@ -8,6 +9,7 @@ import './extension.scss';
 
 const components = {
   MdAvatarButton,
+  MdLinkButton,
   MdMessage,
   MdApp
 };
