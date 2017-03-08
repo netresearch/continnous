@@ -284,7 +284,11 @@
         const item = this.createItem(snapshot.key, snapshot.val());
         this.item = item;
         if (this.id) {
-          this.trackView(item);
+          if (snapshot.val()) {
+            this.trackView(item);
+          } else if (!this.trash) {
+            this.$router.replace(this.getUrlPath({ id: this.id, trash: true }));
+          }
         }
         return item;
       },
