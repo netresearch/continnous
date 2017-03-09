@@ -4,7 +4,7 @@
 
 <template>
   <div class="resource-actions">
-    <md-button v-if="archive && permissions[type].write" @click.native.stop="toggleArchive(item)" :title="$t('actions.restore')" class="md-icon-button">
+    <md-button v-if="archive && permissions[type].write" @click.native.stop="toggleArchive()" :title="$t('actions.restore')" class="md-icon-button">
       <md-icon>unarchive</md-icon>
     </md-button>
 
@@ -53,9 +53,15 @@
           <md-icon>lock_outline</md-icon>
           <span>{{$t('actions.makePersonal')}}</span>
         </md-menu-item>
-        <md-menu-item @selected="toggleArchive(item)" v-if="!archive && permissions[type].write">
+        <md-menu-item @selected="toggleArchive()" v-if="!archive && permissions[type].write">
           <md-icon>archive</md-icon>
           <span>{{$t('actions.archive')}}</span>
+        </md-menu-item>
+        <md-menu-item
+            @selected="confirm = {action: 'delete', handler: deleteItem}"
+            v-if="showDelete && permissions.role === 'admin'">
+          <md-icon>delete</md-icon>
+          <span>{{$t('actions.delete')}}</span>
         </md-menu-item>
         <resource-links
             :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions" v-if="!archive"
@@ -63,6 +69,16 @@
         ></resource-links>
       </md-menu-content>
     </md-menu>
+
+    <md-dialog-confirm
+        v-if="confirm !== undefined"
+        ref="confirmDialog"
+        :md-title="$t('confirm.' + confirm.action + '.title')"
+        :md-content="$t('confirm.' + confirm.action + '.content')"
+        :md-ok-text="$t('actions.' + confirm.action)"
+        :md-cancel-text="$t('actions.cancel')"
+        @close="$event === 'ok' ? confirm.handler() : null"
+    ></md-dialog-confirm>
   </div>
 </template>
 
@@ -88,12 +104,14 @@
       showLike: Boolean,
       distribute: Boolean,
       showPersonal: Boolean,
+      showDelete: Boolean,
       redirectOnToggle: Boolean
     },
     data() {
       return {
         auth,
-        hasLiked: false
+        hasLiked: false,
+        confirm: undefined
       };
     },
     computed: {
@@ -120,10 +138,18 @@
             });
           }
         }
+      },
+      confirm(confirm) {
+        if (confirm) {
+          this.$nextTick(() => {
+            this.$nextTick(() => {
+              this.$refs.confirmDialog.open();
+            });
+          });
+        }
       }
     },
     methods: {
-
       togglePersonal() {
         const it = this.item;
         const personal = this.personal;
@@ -161,15 +187,20 @@
             linkValue.archive = true;
           }
         }
-        Object.keys(item.links).forEach((resource) => {
-          Object.keys(item.links[resource]).forEach((target) => {
-            let value = item.links[resource][target];
-            if (value === true) {
-              value = {};
+        this.forEachLink((link) => {
+          this.getFirebaseRef(link.archive, link.id, link.personal, link.resource)
+            .child('links/' + this.type + '/' + item.id)
+            .set(linkValue);
+        });
+      },
+      forEachLink(callback) {
+        Object.keys(this.item.links).forEach((resource) => {
+          Object.keys(this.item.links[resource]).forEach((id) => {
+            let item = this.item.links[resource][id];
+            if (item === true) {
+              item = {};
             }
-            this.getFirebaseRef(!!value.archive, target, !!value.personal, resource)
-              .child('links/' + this.type + '/' + item.id)
-              .set(linkValue);
+            callback(Object.assign({ id, resource }, item));
           });
         });
       },
@@ -183,13 +214,40 @@
                 this.type, this.personal, item.id, archive ? 'unarchive' : 'archive'
             );
             this.updateLinks(!archive, this.personal);
-            this.getFirebaseRef(archive ? 'archive' : 'resources', item.id).remove().then(() => {
+            this.getFirebaseRef(archive, item.id).remove().then(() => {
               if (this.redirectOnToggle) {
                 this.$router.replace(this.getUrlPath(item.id, this.personal, !archive));
               }
             });
           });
       },
+      deleteItem() {
+        const item = this.item;
+        const promises = [];
+        promises.push(new Promise((resolve) => {
+          this.organization.journal.getRef()
+            .orderByChild('id')
+            .equalTo(item.id)
+            .once('value', (sn) => {
+              sn.forEach((csn) => {
+                promises.push(csn.ref.remove());
+              });
+              resolve();
+            });
+        }));
+        this.forEachLink((link) => {
+          promises.push(
+            this.getFirebaseRef(link.archive, link.id, link.personal, link.resource)
+              .child('links/' + this.type + '/' + item.id)
+              .remove()
+          );
+        });
+        Promise.all(promises).then(() => {
+          this.getFirebaseRef(this.archive, item.id).remove().then(() => {
+            this.$emit('deleted');
+          });
+        });
+      }
     }
   };
 </script>

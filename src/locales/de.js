@@ -51,7 +51,7 @@ module.exports = {
   elevated: 'Erhöht',
   actions: {
     edit: 'Bearbeiten',
-    delete: 'Entfernen',
+    delete: 'Löschen',
     reset: 'Zurücksetzen',
     resetToDefaults: 'Auf Standard zurücksetzen',
     cancel: 'Abbrechen',
@@ -72,6 +72,12 @@ module.exports = {
     archive: 'In\'s Archiv',
     makePersonal: 'Persönlich machen',
     makePublic: 'Öffentlich machen'
+  },
+  confirm: {
+    delete: {
+      title: 'Wirklich löschen?',
+      content: 'Der Löschvorgang kann nicht rückgängig gemacht werden.'
+    }
   },
   isPersonal: 'ist persönlich',
   isPublic: 'ist für alle sichtbar',

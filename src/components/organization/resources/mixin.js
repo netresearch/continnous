@@ -25,6 +25,9 @@ export default {
     getFirebasePath(branch, id, personal, type) {
       let b = branch;
       if (typeof b !== 'string') {
+        if (b === undefined) {
+          b = this.archive;
+        }
         b = b ? 'archive' : 'resources';
       }
       const p = personal === undefined ? this.personal : personal;

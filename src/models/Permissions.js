@@ -15,6 +15,7 @@ module.exports = class Permissions {
   constructor(permissions, defaultPermission) {
     this.organization = { read: false };
     this.set(permissions, defaultPermission);
+    this.role = undefined;
   }
 
   set(permissions, defaultPermission) {

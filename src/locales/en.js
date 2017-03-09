@@ -70,8 +70,19 @@ module.exports = {
     editAll: 'Edit all fields',
     cancelEdit: 'Cancel edit',
     share: 'Share',
-    archive: 'Archive'
+    archive: 'Archive',
+    makePersonal: 'make personal',
+    makePublic: 'make public',
   },
+  confirm: {
+    delete: {
+      title: 'Really delete?',
+      content: 'Deleting this can not be undone.'
+    }
+  },
+  isPersonal: 'is personal',
+  isPublic: 'is public',
+  isArchived: 'is archived',
   results: {
     title: 'Key results',
     check: 'Check',
@@ -233,10 +244,6 @@ module.exports = {
     motivation: '<strong>Thank you {firstName},</strong><br>we very much appreciate your commitment - we\'re pretty sure it will be worth it!',
     whatsAhead: 'After you saved this, <strong>you and others</strong> will be able to see, like and comment this - tick the checkbox below to keep this only for you:',
     whatsAheadPersonal: 'After you saved this, <strong>only you</strong> will be able to see this - untick the checkbox below to make this available to others:',
-    isPersonal: 'is personal',
-    isPublic: 'is public',
-    makePersonal: 'make personal',
-    makePublic: 'make public'
   },
   unload: {
     confirm: 'You have unsaved changes - do you want to leave without saving?',

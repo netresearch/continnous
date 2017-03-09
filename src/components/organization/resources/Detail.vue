@@ -9,7 +9,7 @@
       :validate="{title: validateTitle}"
       ref="form"
       @saved="onSaved"
-      @cancel="!id ? $router.back() : $router.back()"
+      @cancel="close()"
       :disabled="!mayEdit"
   >
     <div class="resource-detail-backdrop" @click="close()"></div>
@@ -42,7 +42,9 @@
             :archive="archive"
             show-personal
             redirect-on-toggle
+            show-delete
             @togglePersonal="personal = !personal"
+            @deleted="close()"
         >
           <!-- @togglePersonal happens only when !item.creator (is new) -->
         </resource-actions>
@@ -284,7 +286,16 @@
         }
       },
       close() {
-        this.$router.back();
+        if (this.$root.historyLength) {
+          this.$router.back();
+        } else {
+          this.$router.replace({
+            path: this.getUrlPath(Object.assign(
+                {}, this.$route.params, { id: undefined, edit: undefined }
+            )),
+            query: this.$route.query
+          });
+        }
       }
     }
   };
