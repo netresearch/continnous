@@ -1,26 +1,81 @@
 <template>
   <div class="scroll-container">
     <md-toolbar class="md-dense">
-      <h2 class="md-title">{{$t('overview')}}</h2>
+      <h2 class="md-title">{{$t('overview.title')}}</h2>
     </md-toolbar>
     <div class="scroll-content">
-      <p class="md-caption">What's hot</p>
-      <md-card>
-        <md-card-content>
-          <journal :organization="organization"></journal>
-        </md-card-content>
-      </md-card>
+      <md-layout class="overview-section">
+        <div class="overview-latest">
+        </div>
+        <div class="overview-journal">
+          <p class="md-caption">What's hot</p>
+          <md-card>
+            <md-card-content>
+              <journal :organization="organization"></journal>
+            </md-card-content>
+          </md-card>
+        </div>
+        <div class="overview-latest" v-for="resources in [['objectives', 'ideas'], ['insights', 'roadmaps']]">
+          <template v-for="resource in resources" v-if="latestItems[resource]">
+            <p class="md-caption">{{$t(resource + '.latest')}} {{$tc(resource + '.title', 1)}}</p>
+            <resource-item
+                :type="resource"
+                :item="latestItems[resource]"
+                :permissions="permissions"
+                :organization="organization"
+            ></resource-item>
+          </template>
+        </div>
+      </md-layout>
     </div>
   </div>
 </template>
 
 <script>
-  import Journal from './Journal';
-  
-  export default {
-    components: { Journal },
-    props: {
-      organization: Object
-    }
-  };
+import Journal from './Journal';
+import mixin from './resources/mixin';
+import ResourceItem from './resources/ListItem';
+import Config from '../../models/Config';
+
+export default {
+  components: { Journal, ResourceItem },
+  mixins: [mixin],
+  props: {
+    organization: Object,
+    permissions: Object
+  },
+  data() {
+    const latestItems = {};
+    Object.keys(Config.resources).forEach((resource) => {
+      latestItems[resource] = undefined;
+    });
+    return { latestItems };
+  },
+  created() {
+    Object.keys(Config.resources).forEach((resource) => {
+      this.getFirebaseRef(false, undefined, false, resource)
+        .limitToFirst(1)
+        .on('value', (sn) => {
+          sn.forEach((snc) => {
+            this.latestItems[resource] = this.createItem(snc.key, snc.val());
+          });
+        }, () => {
+          this.latestItems[resource] = undefined;
+        });
+    });
+  },
+};
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .overview-latest {
+    margin: 0 16px;
+    p:not(:first-child) {
+      margin-top: 24px;
+    }
+  }
+  .overview-journal {
+    margin-left: -16px;
+    margin-right: 16px;
+  }
+</style>

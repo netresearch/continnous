@@ -30,7 +30,7 @@
         <md-list-item class="menu-entry">
           <router-link :to="getUrlPath()" exact>
             <md-icon>home</md-icon>
-            <span>{{$t('overview')}}</span>
+            <span>{{$t('overview.title')}}</span>
             <router-link v-if="role === 'admin'" :to="getUrlPath({settings: true})" class="md-button md-icon-button md-list-action">
               <md-icon>settings</md-icon>
               <md-tooltip>{{$t('settings')}}</md-tooltip>

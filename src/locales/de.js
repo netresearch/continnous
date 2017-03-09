@@ -19,7 +19,9 @@ module.exports = {
     en: 'Englisch'
   },
   settings: 'Einstellungen',
-  overview: 'Übersicht',
+  overview: {
+    title: 'Übersicht'
+  },
   organization: {
     info: 'Organisationsinfos',
     domains: 'Organisations-Domains'
@@ -112,7 +114,8 @@ module.exports = {
     accusative: 'Ziele',
     personal_accusative: 'persönliche Ziele',
     accusative_one: 'eins',
-    new: 'Neues Ziel'
+    new: 'Neues Ziel',
+    latest: 'Neuestes'
   },
   ideas: {
     title: 'Idee | Ideen',
@@ -123,6 +126,7 @@ module.exports = {
     personal_accusative: 'persönliche Ideen',
     accusative_one: 'eine',
     new: 'Neue Idee',
+    latest: 'Neueste'
   },
   insights: {
     title: 'Erkenntnis | Erkenntnisse',
@@ -132,7 +136,8 @@ module.exports = {
     accusative: 'Erkenntnisse',
     personal_accusative: 'persönliche Erkenntnisse',
     accusative_one: 'eine',
-    new: 'Neue Erkenntnis'
+    new: 'Neue Erkenntnis',
+    latest: 'Neueste'
   },
   roadmaps: {
     title: 'Roadmap | Roadmaps',
@@ -143,9 +148,7 @@ module.exports = {
     personal_accusative: 'persönliche roadmaps',
     accusative_one: 'eine',
     new: 'Neue Roadmap',
-    link: {
-      ideas: 'Idee hinzufügen'
-    }
+    latest: 'Neueste'
   },
   scoring: {
     title: 'Dein Scoring',

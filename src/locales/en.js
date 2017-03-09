@@ -19,7 +19,9 @@ module.exports = {
     en: 'English'
   },
   settings: 'Settings',
-  overview: 'Overview',
+  overview: {
+    title: 'Overview'
+  },
   organization: {
     title: 'Organization',
     info: 'Organization information',
