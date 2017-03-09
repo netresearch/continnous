@@ -79,12 +79,12 @@ export default {
     },
     prepareItemForFirebase(item) {
       const fbItem = extend(true, {}, item);
-      delete item.resource;
-      delete item.personal;
+      delete fbItem.resource;
+      delete fbItem.personal;
       /* eslint-disable no-underscore-dangle */
-      if (item.hasOwnProperty('_origLinks')) {
-        item.links = item._origLinks;
-        delete item._origLinks;
+      if (fbItem.hasOwnProperty('_origLinks')) {
+        fbItem.links = fbItem._origLinks;
+        delete fbItem._origLinks;
       }
       return fbItem;
     },
