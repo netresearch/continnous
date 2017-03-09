@@ -13,9 +13,22 @@ export default {
     getFirebaseRef(...pathArgs) {
       return Firebase.database().ref(this.getFirebasePath(...pathArgs));
     },
+    /**
+     * @todo Refactor method (branch to (bool) archive and as second arg)
+     *
+     * @param branch
+     * @param id
+     * @param personal
+     * @param type
+     * @returns {string}
+     */
     getFirebasePath(branch, id, personal, type) {
+      let b = branch;
+      if (typeof b !== 'string') {
+        b = b ? 'archive' : 'resources';
+      }
       const p = personal === undefined ? this.personal : personal;
-      return '/' + branch
+      return '/' + b
         + '/organizations/' + this.organization.key
         + '/' + (p ? auth.user.uid : 'organization')
         + '/' + (type || this.type)
@@ -31,12 +44,35 @@ export default {
       }
 
       // The links objects need to be given for proper binding
+      // and we need to check if all links are allowed to be seen
+      /* eslint-disable no-underscore-dangle */
       if (!item.links) {
         item.links = {};
+        item._origLinks = null;
+      } else {
+        item._origLinks = extend(true, {}, item.links);
       }
       Object.keys(Config.resources).forEach((key) => {
-        if (!item.links[key]) {
-          item.links[key] = {};
+        const ar = this.permissions[key].read;
+        const arp = this.permissions['personal_' + key].read;
+        if (ar || arp) {
+          if (!item.links[key]) {
+            item.links[key] = {};
+          }
+          Object.keys(item.links[key]).forEach((target) => {
+            const value = item.links[key][target];
+            if (typeof value === 'object' && value.personal) {
+              if (value.personal !== auth.user.uid || !arp) {
+                delete item.links[key][target];
+              } else {
+                value.personal = true;
+              }
+            } else if (!ar) {
+              delete item.links[key][target];
+            }
+          });
+        } else {
+          delete item.links[key];
         }
       });
       return item;
@@ -45,42 +81,15 @@ export default {
       const fbItem = extend(true, {}, item);
       delete item.resource;
       delete item.personal;
+      /* eslint-disable no-underscore-dangle */
+      if (item.hasOwnProperty('_origLinks')) {
+        item.links = item._origLinks;
+        delete item._origLinks;
+      }
       return fbItem;
     },
     moment(time) {
       return moment(time);
-    },
-    togglePersonal(item) {
-      const it = item || this.item;
-      this.organization.journal.getRef()
-        .orderByChild('id')
-        .equalTo(it.id)
-        .once('value', (sn) => {
-          sn.forEach((csn) => {
-            csn.ref.update({ personal: !this.personal });
-          });
-        });
-      this.getFirebaseRef('resources', it.id, !this.personal).set(it).then(() => {
-        this.getFirebaseRef('resources', it.id).remove().then(() => {
-          if (!item) {
-            this.$router.replace(this.getUrlPath(it.id, !this.personal));
-          }
-        });
-      });
-    },
-    toggleArchive(item) {
-      const archive = this.archive;
-      const it = item || this.item;
-      this.getFirebaseRef(!archive ? 'archive' : 'resources', it.id)
-        .set(this.prepareItemForFirebase(it))
-        .then(() => {
-          this.organization.journal.addEntry(this.type, this.personal, it.id, archive ? 'unarchive' : 'archive');
-          this.getFirebaseRef(archive ? 'archive' : 'resources', it.id).remove().then(() => {
-            if (!item) {
-              this.$router.replace(this.getUrlPath(it.id, this.personal, !archive));
-            }
-          });
-        });
     },
     getLikesRef(id, all, byUser) {
       const path = '/likes/organizations/' + this.organization.key + '/by' + (byUser ? 'User' : 'Resource');

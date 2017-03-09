@@ -33,8 +33,8 @@ Vue.mixin({
         if (params.search) {
           path += '/search';
         }
-        if (params.type) {
-          path += '/' + params.type;
+        if (params.type || params.resource) {
+          path += '/' + (params.type || params.resource);
         }
         if (params.personal) {
           path += '/personal';

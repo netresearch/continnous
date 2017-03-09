@@ -69,8 +69,13 @@ module.exports = {
     editAll: 'Alle Felder bearbeiten',
     cancelEdit: 'Bearbeitung abbrechen',
     share: 'Teilen',
-    archive: 'In\'s Archiv'
+    archive: 'In\'s Archiv',
+    makePersonal: 'Persönlich machen',
+    makePublic: 'Öffentlich machen'
   },
+  isPersonal: 'ist persönlich',
+  isPublic: 'ist für alle sichtbar',
+  isArchived: 'ist archiviert',
   results: {
     title: 'Zielvorgaben',
     check: 'Check',
@@ -235,10 +240,6 @@ module.exports = {
     motivation: '<strong>Danke Dir {firstName},</strong><br>wir freuen uns sehr auf Deinen Beitrag - wir sind uns sicher, es wird Deine Mühe wert sein!',
     whatsAhead: 'Nachdem Du das gespeichert hast, werden es <strong>Du und die anderen</strong> sehen, liken und kommentieren können - wähle die Option unten aus, um das nur für Dich zu erstellen:',
     whatsAheadPersonal: 'Nachdem Du das gespeichert hast, wirst es <strong>nur Du</strong> sehen, liken und kommentieren können - wähle die Option unten ab, um das auch für die anderen sichtbar zu machen:',
-    isPersonal: 'ist persönlich',
-    isPublic: 'ist für alle sichtbar',
-    makePersonal: 'persönlich machen',
-    makePublic: 'öffentlich machen'
   },
   unload: {
     confirm: 'Du hast Deine Änderungen noch nicht gespeichert - willst Du fortfahren, ohne zu speichern?',

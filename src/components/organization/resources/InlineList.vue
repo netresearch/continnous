@@ -12,8 +12,22 @@
           class="resource-inline-list-item"
       >
         <md-icon>{{resources[item.resource].icon}}</md-icon>
-        <router-link v-if="link" :to="getUrlPath({id: item.id, type: item.resource})">{{item.title}}</router-link>
-        <div v-else>{{item.title}}</div>
+        <div>
+          <router-link v-if="link" :to="getUrlPath(item)">{{item.title}}</router-link>
+          <span v-else>{{item.title}}</span>
+          <md-icon class="md-warn md-small" v-if="item.personal">
+            lock_outline
+            <md-tooltip>
+              {{$t(item.resource + '.this')}} {{$t('isPersonal')}}
+            </md-tooltip>
+          </md-icon>
+          <md-icon class="md-warn md-small" v-if="item.archive">
+            archive
+            <md-tooltip>
+              {{$t(item.resource + '.this')}} {{$t('isArchived')}}
+            </md-tooltip>
+          </md-icon>
+        </div>
         <md-button v-if="clearable" class="md-icon-button" @click.native="$emit('clear', item)">
           <md-icon>clear</md-icon>
         </md-button>
@@ -33,12 +47,13 @@
   export default {
     mixins: [mixin],
     props: {
-      entries: [Array, Object],
+      entries: Array,
       type: [Array, String],
       selectable: Boolean,
       clearable: Boolean,
       all: Boolean,
       personal: Boolean,
+      archive: Boolean,
       organization: Object,
       search: Boolean,
       permissions: Object,
@@ -66,10 +81,8 @@
         return Object.keys(this.resources);
       },
       ids() {
-        if (this.$isArray(this.entries)) {
+        if (this.entries) {
           return this.entries.map(entry => (typeof entry === 'string' ? entry : entry.id));
-        } else if (this.entries) {
-          return Object.keys(this.entries);
         }
         return [];
       }
@@ -87,7 +100,7 @@
           this.flashlight = new Flashlight(this.organization, this.permissions);
         }
         this.loading = true;
-        this.flashlight.suggest(sword, ...this.types).then((results) => {
+        this.flashlight.suggest(sword, true, ...this.types).then((results) => {
           this.items = [];
           this.loading = false;
           results.forEach((result) => {
@@ -109,83 +122,88 @@
           this.items = [];
 
           const handleMissingIds = (ids) => {
-            let value;
-            if (this.$isArray(this.value)) {
-              value = this.value.filter(
-                  entry => (typeof entry === 'string' && ids.indexOf(entry) < 0) || ids.indexOf(entry.id) < 0
-              );
-            } else {
-              value = Object.assign({}, this.value);
-              ids.forEach((id) => {
-                delete value[id];
-              });
-            }
-            this.$emit('change', value);
+            this.$emit('change',
+              this.ids.filter(id => ids.indexOf(typeof id === 'string' ? id : id.id) < 0)
+            );
           };
 
           if (this.all && this.load) {
             this.loading = true;
-            this.types.forEach((type) => {
-              const ref = this.getFirebaseRef('resources', undefined, this.personal, type);
-              this.refs.push(ref);
-              ref.on('value', (sn) => {
-                this.loading = false;
-                this.items = this.items.filter(item => item.resource !== type);
-                const ids = [];
-                const missingIds = [];
-                sn.forEach((csn) => {
-                  ids.push(csn.key);
-                  if (this.ids.indexOf(csn.key) < 0) {
-                    this.items.push({ id: csn.key, resource: type, title: csn.val().title });
+            this.types.forEach((resource) => {
+              [this.personal, !this.personal].forEach((personal) => {
+                const ref = this.getFirebaseRef('resources', undefined, personal, resource)
+                    .orderByChild('updated').limitToLast(10);
+                this.refs.push(ref);
+                ref.on('value', (sn) => {
+                  this.loading = false;
+                  this.items = this.items.filter(
+                      item => item.resource !== resource ||
+                        (item.resource === resource && item.personal !== personal)
+                  );
+                  const ids = [];
+                  const missingIds = [];
+                  sn.forEach((csn) => {
+                    ids.push(csn.key);
+                    if (this.ids.indexOf(csn.key) < 0) {
+                      this.items.push({ id: csn.key, resource, personal, title: csn.val().title });
+                    }
+                  });
+                  this.ids.forEach((id) => {
+                    if (ids.indexOf(id) < 0) {
+                      missingIds.push(id);
+                    }
+                  });
+                  if (missingIds.length) {
+                    handleMissingIds(ids);
                   }
                 });
-                this.ids.forEach((id) => {
-                  if (ids.indexOf(id) < 0) {
-                    missingIds.push(id);
-                  }
-                });
-                if (missingIds.length) {
-                  handleMissingIds(ids);
-                }
               });
             });
           } else if (this.entries && !this.search) {
-            const createRef = (type, id, title) => {
+            const singleType = this.types.length === 1 ? this.types[0] : null;
+            this.entries.forEach((entry) => {
+              const item = Object.assign({
+                resource: singleType,
+                title: '...'
+              }, typeof entry === 'string' ? { id: entry } : entry);
+              if (!item.resource) {
+                throw new Error('Missing resource for item ' + item.id);
+              }
               if (!this.load) {
-                this.items.push({ id, resource: type, title: title || '...' });
+                this.items.push(item);
                 return;
               }
-              if (!type) {
-                throw new Error('Missing type for item ' + id);
-              }
-              const ref = this.getFirebaseRef('resources', id, this.personal, type).child('title');
-              this.refs.push(ref);
-              ref.on('value', (sn) => {
-                if (sn.val()) {
-                  this.items.push({ id, resource: type, title: sn.val() });
-                } else {
-                  handleMissingIds([id]);
+              const p = item.hasOwnProperty('personal') ? item.personal : this.personal;
+              const a = item.hasOwnProperty('archive') ? item.archive : this.archive;
+              const args = [[a, p], [!a, p], [a, !p], [!a, !p]];
+              const load = (archive, personal) => {
+                const next = args.shift();
+                if (!this.permissions[(personal ? 'personal_' : '') + item.resource].read) {
+                  if (next) {
+                    load(...next);
+                  }
+                  return;
                 }
-              });
-            };
-            const singleType = this.types.length === 1 ? this.types[0] : null;
-            if (this.$isArray(this.entries)) {
-              this.entries.forEach((entry) => {
-                if (typeof entry === 'string') {
-                  createRef(singleType, entry);
-                } else {
-                  createRef(entry.resource || singleType, entry.id, entry.title);
-                }
-              });
-            } else {
-              Object.keys(this.entries).forEach((id) => {
-                createRef(
-                    this.entries[id].resource || singleType,
-                    this.entries[id].id || id,
-                    this.entries[id].title
-                );
-              });
-            }
+                const ref = this.getFirebaseRef(archive, item.id, personal, item.resource).child('title');
+                ref.on('value', (sn) => {
+                  if (sn.val()) {
+                    this.refs.push(ref);
+                    item.title = sn.val();
+                    item.personal = personal;
+                    item.archive = archive;
+                    this.items.push(item);
+                  } else {
+                    ref.off('value');
+                    if (next) {
+                      load(...next);
+                    } else {
+                      handleMissingIds([item.id]);
+                    }
+                  }
+                });
+              };
+              load(...args.shift());
+            });
           }
         });
       }

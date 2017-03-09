@@ -70,7 +70,7 @@
             :all="!dialogLink.reverse"
             :type="dialogLink.resource"
             :search="dialogLink.reverse"
-            :entries="Array.prototype.concat.apply([{id: item.id, resource: type}], dialogLink.items.map(function(item) { return {id: item, resource: dialogLink.resource}; }))"
+            :entries="Array.prototype.concat.apply([{id: item.id, resource: type}], dialogLink.items)"
             selectable
             @selected="addLink($event)"
         ></inline-list>
@@ -80,7 +80,7 @@
             :permissions="permissions"
             :personal="personal"
             :type="links.normal.filter(function(link) { return link.mayEdit; }).map(function (link) { return link.resource; })"
-            :entries="Array.prototype.concat.apply([{id: item.id, resource: type}], links.normal.map(function(link) { return link.items.map(function(item) { return {id: item, resource: link.resource}; }); }))"
+            :entries="Array.prototype.concat.apply([{id: item.id, resource: type}], links.normal.map(function(link) { return link.items; }))"
             search
             selectable
             @selected="addLink($event)"
@@ -94,6 +94,7 @@
   import mixin from './mixin';
   import InlineList from './InlineList';
   import Config from '../../../models/Config';
+  import auth from '../../../auth';
 
   export default {
     mixins: [mixin],
@@ -163,7 +164,19 @@
             links.mayLink = true;
           }
           if (this.item.links && this.item.links[link.resource]) {
-            link.items = Object.keys(this.item.links[link.resource]);
+            link.items = Object.keys(this.item.links[link.resource]).map((id) => {
+              const linkItem = {
+                id,
+                resource: link.resource,
+                archive: false,
+                personal: false
+              };
+              const value = this.item.links[link.resource];
+              if (typeof value === 'object') {
+                Object.assign(linkItem, value);
+              }
+              return linkItem;
+            });
             links.numItems += link.items.length;
           } else {
             link.items = [];
@@ -203,13 +216,36 @@
       addLink(item) {
         const promises = [];
         Promise.all(promises).then(() => {
-          const ourRef = this.getFirebaseRef('resources', this.item.id)
-            .child('links/' + item.resource + '/' + item.id);
-          const theirRef = this.getFirebaseRef(
-            'resources', item.id, this.personal, item.resource
-          ).child('links/' + this.type + '/' + this.item.id);
-          ourRef.set(true);
-          theirRef.set(true);
+          const setLink = (ref, archive, personal) => {
+            if (!archive && !personal) {
+              ref.set(true);
+            } else {
+              const data = {};
+              if (personal) {
+                data.personal = auth.user.uid;
+              }
+              if (archive) {
+                data.archive = true;
+              }
+              ref.set(data);
+            }
+          };
+          // ours:
+          setLink(
+            this.getFirebaseRef(
+                this.archive, this.item.id, this.personal
+            ).child('links/' + item.resource + '/' + item.id),
+            item.archive,
+            item.personal
+          );
+          // theirs:
+          setLink(
+            this.getFirebaseRef(
+                item.archive, item.id, item.personal, item.resource
+            ).child('links/' + this.type + '/' + this.item.id),
+            this.archive,
+            this.personal
+          );
         });
         if (this.$refs.dialog) {
           this.$refs.dialog.close();

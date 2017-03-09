@@ -31,18 +31,21 @@
                 </span>
           </template>
         </avatar>
-        <template v-else>
-          <h3 v-if="type" style="flex: 1">{{$t(type + '.new')}}</h3>
-        </template>
-        <md-button v-if="!id || personal" :class="['md-icon-button', {'md-warn': personal}]" @click.native="id ? togglePersonal() : personal = !personal">
-          <md-icon>
-            lock_outline
-            <md-tooltip>
-              {{$t(type + '.this')}} {{$t('detail.is' + (personal ? 'Personal' : 'Public'))}} -
-              {{$t('detail.make' + (!personal ? 'Personal' : 'Public'))}}
-            </md-tooltip>
-          </md-icon>
-        </md-button>
+        <h3 v-else-if="type" style="flex: 1">{{$t(type + '.new')}}</h3>
+        <resource-actions
+            class="md-card-actions"
+            :organization="organization"
+            :permissions="permissions"
+            :type="type"
+            :item="item"
+            :personal="personal"
+            :archive="archive"
+            show-personal
+            redirect-on-toggle
+            @togglePersonal="personal = !personal"
+        >
+          <!-- @togglePersonal happens only when !item.creator (is new) -->
+        </resource-actions>
         <template v-if="edit">
           <form-button v-if="id" action="reset" class="md-icon-button" recursive>
             <md-icon>
@@ -63,37 +66,9 @@
             </md-icon>
           </form-button>
         </template>
-        <template v-else>
-          <md-button v-if="archive" class="md-icon-button" @click.native="toggleArchive()">
-            <md-icon>unarchive</md-icon>
-            <md-tooltip>{{$t('actions.restore')}}</md-tooltip>
-          </md-button>
-          <share v-if="!archive && !personal"  :type="type" :id="id"></share>
-          <md-button class="md-icon-button" @click.native="$router.push({path: $route.path + '/edit', query: $route.query})">
-            <md-icon>mode_edit</md-icon>
-            <md-tooltip>{{$t('actions.editAll')}}</md-tooltip>
-          </md-button>
-          <md-menu v-if="(!archive || !personal) && mayEdit" md-size="5">
-            <md-button class="md-icon-button" md-menu-trigger>
-              <md-icon>more_vert</md-icon>
-            </md-button>
-            <md-menu-content>
-              <md-menu-item @selected="togglePersonal()" v-if="!personal && item.creator === auth.user.uid">
-                <md-icon>lock_outline</md-icon>
-                <span>{{$t('detail.makePersonal')[0].toUpperCase() + $t('detail.makePersonal').substr(1)}}</span>
-              </md-menu-item>
-              <md-menu-item @selected="toggleArchive()" v-if="!archive">
-                <md-icon>archive</md-icon>
-                <span>{{$t('actions.archive')}}</span>
-              </md-menu-item>
-              <resource-links menu :organization="organization" :type="type" :item="item" :permissions="permissions">
-              </resource-links>
-            </md-menu-content>
-          </md-menu>
-          <md-button class="md-icon-button resource-detail-close" @click.native="close()">
-            <md-icon>close</md-icon>
-          </md-button>
-        </template>
+        <md-button v-else class="md-icon-button resource-detail-close" @click.native="close()">
+          <md-icon>close</md-icon>
+        </md-button>
       </div>
       <div class="resource-detail-body" @scroll="scrollTop = $event.target.scrollTop">
         <div class="resource-detail-main">
@@ -189,34 +164,30 @@
   import mixin from './mixin';
   import ResourceContent from './detail/Content';
   import ResourceForm from './detail/Form';
-  import ResourcePublishControl from './detail/PublishControl';
   import ResourceComment from './detail/Comment';
   import ResourceResults from './detail/Results';
   import ResourceScoring from './detail/Scoring';
   import ResourceTags from './detail/Tags';
   import ResourceLikes from './detail/Likes';
   import ResourceLinks from './Links';
+  import ResourceActions from './Actions';
   import Journal from '../Journal';
-  import ElasticList from '../../ElasticList';
   import Avatar from '../../Avatar';
-  import Share from '../../Share';
   import Period from '../../../models/Period';
 
   const components = {
     BaseForm,
     ResourceContent,
     ResourceForm,
-    ResourcePublishControl,
     ResourceComment,
     ResourceResults,
     ResourceScoring,
     ResourceTags,
     ResourceLikes,
     ResourceLinks,
+    ResourceActions,
     Journal,
-    ElasticList,
-    Avatar,
-    Share
+    Avatar
   };
 
   ['Form', 'Content'].forEach((component) => {
@@ -280,15 +251,21 @@
         return title && title.length > 2;
       },
       firebaseReceive(snapshot) {
-        this.hasLinks = snapshot.val() ? !!(snapshot.val().links) : false;
+        this.hasLinks = false;
         const item = this.createItem(snapshot.key, snapshot.val());
-        this.item = item;
         if (this.id) {
           if (snapshot.val()) {
+            this.item = item;
+            this.hasLinks = 0;
+            Object.keys(item.links).forEach((resource) => {
+              this.hasLinks += Object.keys(item.links[resource]).length;
+            });
             this.trackView(item);
-          } else if (!this.archive) {
+          } else if (!this.archive && (!this.item || this.item.id !== this.id)) {
             this.$router.replace(this.getUrlPath({ id: this.id, archive: true }));
           }
+        } else {
+          this.item = item;
         }
         return item;
       },
