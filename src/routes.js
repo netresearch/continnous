@@ -52,7 +52,7 @@ Vue.mixin({
           path += '/' + params.id;
         }
       }
-      return path;
+      return path || '/';
     }
   }
 });
