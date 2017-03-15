@@ -12,7 +12,7 @@ import OrganizationResourcesResource from './components/organization/resources/D
 
 import Config from './models/Config';
 
-const config = require('../.firebaserc').config;
+const config = require('../.firebaserc');
 
 Vue.mixin({
   methods: {

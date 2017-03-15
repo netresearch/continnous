@@ -30,7 +30,10 @@ module.exports = {
     }
   },
   resolveLoader: {
-    fallback: [path.join(__dirname, '../node_modules')]
+    fallback: [
+      path.join(__dirname, '../node_modules'),
+      path.resolve(__dirname, 'loaders')
+    ],
   },
   module: {
     preLoaders: [
@@ -63,8 +66,12 @@ module.exports = {
         loaders: ['raw', 'sass-loader']
       },
       {
-        test: /(\.firebaserc|\.json)$/,
+        test: /\.json$/,
         loader: 'json'
+      },
+      {
+        test: /\.firebaserc$/,
+        loader: 'firebase-config'
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
