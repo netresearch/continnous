@@ -147,7 +147,9 @@
                   const ul = sn.val() ? sn.val().lang : null;
                   (ul ? locales.set(ul) : locales.setFromNavigator()).then(() => {
                     this.organization = organization;
-                    this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
+                    if (this.organization.theme) {
+                      this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
+                    }
                     this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
                     titleElement.innerText = this.title;
                   });
@@ -186,6 +188,10 @@
                 displayName: user.displayName,
                 photoURL: user.photoURL
               });
+              if (this.role) {
+                Firebase.database().ref('users/' + user.uid + '/organizations/' + orgKey)
+                  .set(this.role !== '?' && this.role !== '!');
+              }
             }
             if (this.organization && user) {
               // Update flashlight index paths

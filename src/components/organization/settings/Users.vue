@@ -128,7 +128,10 @@
           } else if (finalRole === 'denied') {
             finalRole = '!';
           }
-          ref.set(finalRole);
+          ref.set(finalRole).then(() => {
+            Firebase.database().ref('users/' + uid + '/organizations/' + this.organization.key)
+              .set(finalRole !== '?' && finalRole !== '!');
+          });
         }
         const li = this.$el.querySelector('.user-' + uid);
         li.className = li.className.replace(/ md-active/, '');

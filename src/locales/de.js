@@ -1,7 +1,7 @@
 module.exports = {
   errors: {
     general: 'Es ist ein Fehler aufgetreten',
-    401: 'Bitte melde Dich an, um das zu sehen',
+    401: 'Bitte melde Dich an, um fortzufahren',
     403: 'Du hast hierauf keinen Zugriff mit Deiner aktuellen Anmeldung',
     404: 'Hier ist nichts :('
   },
@@ -22,7 +22,17 @@ module.exports = {
   overview: {
     title: 'Übersicht'
   },
+  index: {
+    where: 'wohin dürfen wir Dich bringen?',
+    welcome: 'und herzlich willkommen!',
+    noOrgs: 'Du bist hier bisher noch keinen Organisationen beigetreten.',
+    withdraw: 'Anfrage zurückziehen'
+  },
   organization: {
+    add: 'Organisation anlegen',
+    key: 'Name',
+    keyInfo: 'Der Name kann später nicht mehr geändert werden',
+    exists: 'Der Name ist bereits vergeben',
     info: 'Organisationsinfos',
     domains: 'Organisations-Domains'
   },

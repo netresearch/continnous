@@ -5,7 +5,7 @@
   "author": "Christian Opitz",
   "private": true,
   "scripts": {
-    "dev": "node build/dev-server.js",
+    "dev": "node build/dev-server.js --firebase-config=staging",
     "deploy:staging": "node build/build.js --firebase-config=staging && firebase deploy -P staging",
     "deploy:production": "node build/build.js --firebase-config=production && firebase deploy -P production",
     "bolt:staging": "firebase-bolt database.rules.bolt && firebase deploy -P staging --only database",

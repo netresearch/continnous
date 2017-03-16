@@ -1,7 +1,7 @@
 module.exports = {
   errors: {
     general: 'An error occured',
-    401: 'Please sign in to see this',
+    401: 'Please sign in to proceed',
     403: 'You\'re not allowed to see this with the current account',
     404: 'Here\'s nothing :('
   },

@@ -36,7 +36,7 @@ isAllowedScope(scope, resource, privilege, oid) {
 
 path /security/organizations/{oid} {
     read() { isAuthenticated() && isAdmin(oid) }
-    write() { isAuthenticated() && isAdmin(oid) }
+    write() { isAuthenticated() && (prior(this) == null || isAdmin(oid)) }
 }
 
 path /security/organizations/{oid}/permissions/{role} {
@@ -47,7 +47,7 @@ path /security/organizations/{oid}/users/{uid} {
     read() { isAuthenticated() && (uid === auth.uid || isAllowed('organization', 'read', oid) || isAdmin(oid)) }
     create() { isAuthenticated() && (uid === auth.uid && this === '?' || isAdmin(oid)) }
     update() { isAuthenticated() && isAdmin(oid) }
-    delete() { isAuthenticated() && isAdmin(oid) }
+    delete() { isAuthenticated() && (uid === auth.uid || isAdmin(oid)) }
 }
 
 path /journals/organizations/{oid} {
@@ -126,17 +126,25 @@ path /flashlight/results/{qid} {
 }
 
 path /organizations/{oid} is Any {
-    read() { isAuthenticated() && (isAllowed('organization', 'read', oid) || isAdmin(oid)) }
-    write() { isAuthenticated() && isAdmin(oid) }
+    read() { isAuthenticated() && (this == null || isAllowed('organization', 'read', oid) || isAdmin(oid)) }
+    write() { isAuthenticated() && (isAdmin(oid) || prior(this) == null) }
+}
+path /organizations/{oid}/name {
+    read() { isAuthenticated() }
+}
+
+path /users/{uid} {
+    read() { auth.uid === uid }
+}
+path /users/{uid}/organizations/{oid} {
+    write() { auth.uid === uid && (this === true && isAllowed('organization', 'read', oid) || this === false || this === null) || isAdmin(oid) }
 }
 
 path /users/organizations/{oid} {
     read() { isAuthenticated() && (isAllowed('organization', 'read', oid) || isAdmin(oid)) }
 }
 path /users/organizations/{oid}/{uid} {
-    create() { isAuthenticated() && (uid === auth.uid) }
-    update() { isAuthenticated() && (uid === auth.uid || isAdmin(oid)) }
-    delete() { isAuthenticated() && isAdmin(oid) }
+    write() { isAuthenticated() && (uid === auth.uid || isAdmin(oid)) }
 }
 
 path /{branch}/organizations/{oid}/{scope}/{type} {
