@@ -10,7 +10,7 @@
         <md-layout md-column class="overview-journal">
           <p class="md-caption">What's hot</p>
           <md-card>
-            <md-card-content>
+            <md-card-content style="padding-bottom: 16px;">
               <journal :organization="organization"></journal>
             </md-card-content>
           </md-card>

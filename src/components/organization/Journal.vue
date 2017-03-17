@@ -36,6 +36,7 @@
         </template>
       </avatar>
     </div>
+    <p class="md-caption" style="justify-content: center" v-if="!entries.length">{{$t('journal.empty')}}</p>
     <md-dialog-confirm
         v-if="noResource"
         ref="dialog"

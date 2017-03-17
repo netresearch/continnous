@@ -22,7 +22,17 @@ module.exports = {
   overview: {
     title: 'Overview'
   },
+  index: {
+    where: 'where may we take you?',
+    welcome: 'and welcome!',
+    noOrgs: 'You didn\'t join any organizations here yet..',
+    withdraw: 'Withdraw request'
+  },
   organization: {
+    add: 'Add organization',
+    key: 'Name',
+    keyInfo: 'The name can not be changed later',
+    exists: 'The name is already taken',
     title: 'Organization',
     info: 'Organization information',
     domains: 'Organization domains'
@@ -227,7 +237,8 @@ module.exports = {
     like: 'likes',
     comment: 'commented',
     confirmCommentDelete: 'Really delete comment?',
-    this: 'this'
+    this: 'this',
+    empty: 'Nothing happened yet'
   },
   you: 'You',
   quarter: 'Quarter',

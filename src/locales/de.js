@@ -33,6 +33,7 @@ module.exports = {
     key: 'Name',
     keyInfo: 'Der Name kann später nicht mehr geändert werden',
     exists: 'Der Name ist bereits vergeben',
+    title: 'Organisation',
     info: 'Organisationsinfos',
     domains: 'Organisations-Domains'
   },
@@ -240,7 +241,8 @@ module.exports = {
     like: 'gefällt',
     comment: 'kommentierte',
     confirmCommentDelete: 'Kommentar wirklich löschen?',
-    this: 'das'
+    this: 'das',
+    empty: 'Es ist noch nichts passiert'
   },
   you: 'Du',
   quarter: 'Quartal',
