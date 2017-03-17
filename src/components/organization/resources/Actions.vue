@@ -4,9 +4,22 @@
 
 <template>
   <div class="resource-actions">
-    <md-button v-if="archive && permissions[type].write" @click.native.stop="toggleArchive()" :title="$t('actions.restore')" class="md-icon-button">
-      <md-icon>unarchive</md-icon>
-    </md-button>
+    <md-menu>
+      <md-button
+          v-if="archive && permissions[type].write"
+          class="md-icon-button md-warn resource-actions-archive-info"
+          @mouseover.native="loadArchiveInfo()"
+          md-menu-trigger
+      >
+        <md-icon>archive</md-icon>
+      </md-button>
+      <md-menu-content>
+        <md-spinner v-if="archiveInfo === undefined" :md-size="20" md-indeterminate class="md-accent"></md-spinner>
+        <div v-if="archiveInfo">
+          <div v-html="archiveInfo.comment"></div>
+        </div>
+      </md-menu-content>
+    </md-menu>
 
     <md-button
         @click.native="!item.creator ? $emit('togglePersonal') : togglePersonal()"
@@ -118,10 +131,11 @@
   import mixin from './mixin';
   import Share from '../../Share';
   import ResourceLinks from './Links';
+  import Avatar from '../../Avatar';
 
   export default {
     mixins: [mixin],
-    components: { Share, ResourceLinks },
+    components: { Share, ResourceLinks, Avatar },
     props: {
       organization: Object,
       type: String,
@@ -143,7 +157,8 @@
         auth,
         hasLiked: false,
         confirm: undefined,
-        transition: undefined
+        transition: undefined,
+        archiveInfo: false,
       };
     },
     computed: {
@@ -187,6 +202,19 @@
             });
           });
         }
+      },
+      loadArchiveInfo() {
+        if (this.archiveInfo && this.archiveInfo.id === this.item.id) {
+          return;
+        }
+        this.archiveInfo = undefined;
+        const ref = this.organization.journal.getRef().orderByChild('id').equalTo(this.item.id);
+        ref.on('child_added', (sn) => {
+          if (sn.val().action === 'archive') {
+            this.archiveInfo = sn.val();
+            this.ref.off('child_added');
+          }
+        });
       },
       togglePersonal() {
         const it = this.item;
@@ -301,3 +329,8 @@
     }
   };
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .resource-actions-archive-info {
+  }
+</style>
