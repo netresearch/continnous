@@ -167,7 +167,7 @@ module.exports = {
       strategy: 'Strategie',
       need: 'Bedarf',
       impact: 'Einfluss',
-      feasability: 'Umsetzbarkeit',
+      feasability: 'Machbarkeit',
       feel: 'Gefühlt',
     },
     info: 'Bitte hilf uns beim Priorisieren, indem Du Deine persönliche Bewertung angibst - das werden nur Du und die Admins sehen können',

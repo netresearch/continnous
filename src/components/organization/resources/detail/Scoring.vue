@@ -117,7 +117,7 @@
       flex-flow: row wrap;
       align-items: center;
       dt {
-        min-width: 70px;
+        min-width: 80px;
         margin: 0;
         margin-right: 16px;
         span {
