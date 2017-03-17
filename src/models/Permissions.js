@@ -115,4 +115,30 @@ module.exports = class Permissions {
 
     return permissions;
   }
+
+  static merge(...permissions) {
+    const trueWins = typeof permissions[0] === 'boolean' ? permissions[0] : false;
+    const result = {};
+    permissions.forEach((perms) => {
+      if (typeof perms === 'object') {
+        Object.keys(perms).forEach((perm) => {
+          if (!result[perm]) {
+            result[perm] = {};
+          }
+          Object.keys(perms[perm]).forEach((privilege) => {
+            if (result[perm].hasOwnProperty(privilege)) {
+              if (trueWins) {
+                result[perm][privilege] = result[perm][privilege] || perms[perm][privilege];
+              } else {
+                result[perm][privilege] = result[perm][privilege] && perms[perm][privilege];
+              }
+            } else {
+              result[perm][privilege] = perms[perm][privilege];
+            }
+          });
+        });
+      }
+    });
+    return result;
+  }
 };

@@ -32,6 +32,16 @@ Vue.mixin({
     },
     $isArray(value) {
       return Object.prototype.toString.call(value) === '[object Array]';
+    },
+    $objectValues(object) {
+      if (typeof object !== 'object') {
+        return [];
+      }
+      const values = [];
+      Object.keys(object).forEach((key) => {
+        values.push(object[key]);
+      });
+      return values;
     }
   },
   filters: {

@@ -54,7 +54,7 @@
         <md-dialog-content>
           <md-input-container class="index-key" :class="{'md-input-invalid': newOrganization.exists}">
             <label>{{$t('organization.key')}}</label>
-            <md-input @input="setKey" maxlength="25"></md-input>
+            <md-input v-model="newOrganization.key" @input="setKey" maxlength="25"></md-input>
             <md-icon class="md-warn" v-if="newOrganization.exists">
               warning
               <md-tooltip>{{$t('organization.exists')}}</md-tooltip>
@@ -81,6 +81,7 @@
   import locales from '../locales';
   import Firebase from '../firebase';
   import Permissions from '../models/Permissions';
+  import Flashlight from '../models/Flashlight';
 
   export default {
     data() {
@@ -151,7 +152,11 @@
         security.users[auth.user.uid] = 'admin';
         Promise.all([
           Firebase.database().ref(key).set({ name: organization.title }),
-          Firebase.database().ref('security/' + key).set(security)
+          Firebase.database().ref('security/' + key).set(security),
+          Flashlight.updatePaths(
+            organization.key, 'organization',
+            Permissions.merge(true, ...this.$objectValues(security.permissions))
+          )
         ]).then(() => {
           /* global window */
           window.location.href = '/' + organization.key;

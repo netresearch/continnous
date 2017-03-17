@@ -32,7 +32,7 @@
               <tr class="md-table-row permissions-resource">
                 <td class="md-table-cell" :colspan="roles.length + 1">
                   <div class="md-table-cell-container">
-                    {{resource.substr(0, 9) === 'personal_' ? $t(resource.substr(9) + '.personal') : $t(resource + '.title')}}
+                    {{resource.substr(0, 9) === 'personal_' ? $t(resource.substr(9) + '.personal') : $tc(resource + '.title', 2)}}
                   </div>
                 </td>
               </tr>
@@ -101,19 +101,11 @@
         });
       },
       onSaved() {
-        const flashlightPermissions = {};
-        const permissions = this.$refs.form.values;
-        Object.keys(permissions).forEach((group) => {
-          Object.keys(permissions[group]).forEach((resource) => {
-            if (!flashlightPermissions.hasOwnProperty(resource)) {
-              flashlightPermissions[resource] = { read: false };
-            }
-            if (permissions[group][resource].read) {
-              flashlightPermissions[resource].read = true;
-            }
-          });
-        });
-        Flashlight.updatePaths(this.organization.key, 'organization', flashlightPermissions);
+        Flashlight.updatePaths(
+          this.organization.key,
+          'organization',
+          Permissions.merge(true, ...this.$objectValues(this.$refs.form.values))
+        );
       }
     }
   };

@@ -10,6 +10,8 @@
     "deploy:production": "node build/build.js --firebase-config=production && firebase deploy -P production",
     "bolt:staging": "firebase-bolt database.rules.bolt && firebase deploy -P staging --only database",
     "bolt:production": "firebase-bolt database.rules.bolt && firebase deploy -P production --only database",
+    "flashlight:staging": "docker-compose run -e FB_ENV=staging flashlight",
+    "flashlight:production": "docker-compose run -e FB_ENV=production flashlight",
     "unit": "karma start test/unit/karma.conf.js --single-run",
     "e2e": "node test/e2e/runner.js",
     "test": "npm run unit && npm run e2e",

@@ -12,4 +12,3 @@ services:
       - ./flashlight.js:/opt/app/config.js
       - ./src/models/Config.js:/opt/app/src/models/Config.js
       - ./.firebaserc:/opt/app/.firebaserc
-      - ./service-account.json:/opt/app/service-account.json
