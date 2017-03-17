@@ -9,6 +9,38 @@
   import Quill from 'quill';
   import Vue from 'vue';
 
+  const presets = {
+    normal: [
+      'header',
+      'bold',
+      'italic',
+      'underline',
+      'strike',
+      'link',
+      { list: 'ordered' },
+      { list: 'bullet' },
+      'clean'
+    ],
+    small: [
+      'bold',
+      'italic',
+      'underline',
+      'strike',
+      'link',
+      { list: 'ordered' },
+      { list: 'bullet' },
+      'clean'
+    ],
+    mini: [
+      'bold',
+      'italic',
+      'underline',
+      'strike',
+      'link',
+      'clean'
+    ]
+  };
+
   /* global document */
 
   export default {
@@ -16,6 +48,10 @@
       value: String,
       placeholder: String,
       disabled: Boolean,
+      toolbar: {
+        type: [String, Array],
+        default: 'normal'
+      },
       allowClipboardAttributes: Boolean
     },
     extends: Vue.component('md-input').options,
@@ -86,6 +122,9 @@
           this.editor = new Quill(this.$refs.editor, {
             theme: 'snow',
             placeholder: this.placeholder,
+            modules: {
+              toolbar: typeof this.toolbar === 'string' ? presets[this.toolbar] : this.toolbar
+            }
           });
           this.editor.on('text-change', () => {
             const value = this.getFilteredHTML();
@@ -104,7 +143,7 @@
             });
           }
 
-          this.toolbar = this.$el.querySelector('.ql-toolbar');
+          this.toolbarElement = this.$el.querySelector('.ql-toolbar');
           document.body.addEventListener('click', this.detectFocus);
         }
       },
@@ -113,7 +152,7 @@
           this.focused = false;
           delete this.editor;
           this.$refs.editor.innerHTML = this.value || '';
-          this.toolbar.parentNode.removeChild(this.toolbar);
+          this.toolbarElement.parentNode.removeChild(this.toolbarElement);
           document.body.removeEventListener('click', this.detectFocus);
         }
       },
@@ -129,6 +168,12 @@
       },
       isEmpty() {
         return this.getFilteredContent().length === 0;
+      },
+      focus() {
+        this.focused = true;
+      },
+      blur() {
+        this.focused = false;
       }
     }
   };
@@ -191,6 +236,14 @@
     }
     .ql-fill {
       fill: currentColor !important;
+    }
+  }
+  .md-input-container:not(.md-input-focused) .md-editor {
+    .ql-container {
+      background: transparent;
+    }
+    .ql-toolbar {
+      display: none;
     }
   }
 </style>

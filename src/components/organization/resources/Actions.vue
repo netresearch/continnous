@@ -79,6 +79,37 @@
         :md-cancel-text="$t('actions.cancel')"
         @close="$event === 'ok' ? confirm.handler() : null"
     ></md-dialog-confirm>
+
+    <md-dialog
+        v-if="transition !== undefined"
+        ref="transitionDialog"
+        :md-click-outside-to-close="false"
+        :md-esc-to-close="false"
+        @close="transition = false"
+    >
+      <md-dialog-title>{{$t('actions.' + (archive ? 'restore' : 'archive'))}}</md-dialog-title>
+      <md-dialog-content>
+        <div v-if="!archive">
+          <div class="md-caption">{{$t('transition.occasion')}}</div>
+          <md-radio
+              @change="$refs.transitionReason.focus();"
+              v-model="transition.occasion"
+              name="transition-occasion"
+              :md-value="occasion"
+              v-for="occasion in ['discarded', 'completed']"
+          >{{$t('transition.' + occasion)}}</md-radio>
+        </div>
+        <md-input-container>
+          <label>{{$t('transition.reason')}}</label>
+          <md-editor ref="transitionReason" v-model="transition.reason" toolbar="small"></md-editor>
+        </md-input-container>
+      </md-dialog-content>
+      <md-dialog-actions>
+        <md-button @click.native="$refs.transitionDialog.close()">{{$t('actions.cancel')}}</md-button>
+        <div style="flex: 1; min-width: 24px;"></div>
+        <md-button class="md-primary md-raised" :disabled="!archive && !transition.occasion" @click.native="toggleArchive()">{{$t('actions.' + (archive ? 'restore' : 'archive'))}}</md-button>
+      </md-dialog-actions>
+    </md-dialog>
   </div>
 </template>
 
@@ -111,7 +142,8 @@
       return {
         auth,
         hasLiked: false,
-        confirm: undefined
+        confirm: undefined,
+        transition: undefined
       };
     },
     computed: {
@@ -140,16 +172,22 @@
         }
       },
       confirm(confirm) {
-        if (confirm) {
-          this.$nextTick(() => {
-            this.$nextTick(() => {
-              this.$refs.confirmDialog.open();
-            });
-          });
-        }
+        this.handleDialog('confirm', confirm);
+      },
+      transition(transition) {
+        this.handleDialog('transition', transition);
       }
     },
     methods: {
+      handleDialog(type, open) {
+        if (open) {
+          this.$nextTick(() => {
+            this.$nextTick(() => {
+              this.$refs[type + 'Dialog'].open();
+            });
+          });
+        }
+      },
       togglePersonal() {
         const it = this.item;
         const personal = this.personal;
@@ -207,11 +245,23 @@
       toggleArchive() {
         const item = this.item;
         const archive = this.archive;
+        if (!this.transition) {
+          this.transition = { occasion: undefined, reason: undefined };
+          return;
+        }
+        const transition = Object.assign({}, this.transition);
+        this.$refs.transitionDialog.close();
+
         this.getFirebaseRef(!archive ? 'archive' : 'resources', item.id)
           .set(this.prepareItemForFirebase(item))
           .then(() => {
+            const props = {};
+            if (transition.occasion) {
+              props[transition.occasion] = true;
+            }
             this.organization.journal.addEntry(
-                this.type, this.personal, item.id, archive ? 'unarchive' : 'archive'
+              this.type, this.personal, item.id, archive ? 'unarchive' : 'archive',
+              undefined, transition.reason, props
             );
             this.updateLinks(!archive, this.personal);
             this.getFirebaseRef(archive, item.id).remove().then(() => {

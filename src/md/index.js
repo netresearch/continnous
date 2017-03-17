@@ -44,8 +44,6 @@ export default function install(Vue) {
   Vue.use(MdSlider);
   const MdEditor = require('./mdEditor/index').default;
   Vue.use(MdEditor);
-  const MdDialog = require('./dialog').default;
-  Vue.use(MdDialog);
 
   Object.keys(components).forEach((component) => {
     Vue.component(

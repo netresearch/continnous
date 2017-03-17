@@ -247,6 +247,12 @@ module.exports = {
   you: 'Du',
   quarter: 'Quartal',
   for: 'für',
+  transition: {
+    occasion: 'Grund',
+    reason: 'Begründung',
+    discarded: 'Verworfen',
+    completed: 'Abgeschlossen'
+  },
   detail: {
     this: 'Das',
     created: 'Erstellt {ago}',

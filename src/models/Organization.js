@@ -8,9 +8,9 @@ export default class Organization {
 
     const journalRef = Firebase.database().ref('/journals/organizations/' + key);
     this.journal = {
-      addEntry(resource, personal, id, action, fields, comment) {
+      addEntry(resource, personal, id, action, fields, comment, props) {
         const push = () => {
-          journalRef.push({
+          journalRef.push(Object.assign({
             resource,
             personal,
             id,
@@ -19,7 +19,7 @@ export default class Organization {
             fields: fields || null,
             time: +new Date(),
             uid: auth.user.uid
-          });
+          }, props || {}));
         };
         if (action !== 'comment') {
           journalRef.orderByChild('id').equalTo(id).limitToLast(1).once('value', (sn) => {
