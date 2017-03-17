@@ -95,7 +95,7 @@
           <template v-if="!edit">
             <div class="resource-detail-section" v-if="config.scoring && config.scoring.length">
               <md-icon>thumbs_up_down</md-icon>
-              <resource-scoring :criteria="config.scoring" :is-new="!id" :organization="organization" :type="type" :item="item"></resource-scoring>
+              <resource-scoring :criteria="config.scoring" :is-new="!id" :organization="organization" :type="type" :personal="personal" :archive="archive" :item="item"></resource-scoring>
             </div>
             <resource-links
                 class="resource-detail-links resource-detail-section"
@@ -124,7 +124,7 @@
               <md-icon>local_offer</md-icon>
               <resource-tags :is-new="!id" :organization="organization" :type="type" :item="item"></resource-tags>
             </div>
-            <resource-likes v-if="!edit" class="resource-detail-section" :organization="organization" :item="item">
+            <resource-likes v-if="!edit" class="resource-detail-section" :organization="organization" :type="type" :personal="personal" :archive="archive" :item="item">
             </resource-likes>
             <base-form sub :direct="!edit" class="resource-detail-section" v-if="mayEdit || item.attachments">
               <form-element
@@ -411,6 +411,9 @@
     .journal-comment {
       margin-top: 4px;
       //margin-left: 16px;
+    }
+    .journal-empty {
+      display: none;
     }
   }
 

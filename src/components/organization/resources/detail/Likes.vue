@@ -33,6 +33,9 @@
         type: Number,
         default: 2
       },
+      type: String,
+      personal: Boolean,
+      archive: Boolean
     },
     data() {
       return {

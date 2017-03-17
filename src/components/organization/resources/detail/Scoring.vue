@@ -32,7 +32,7 @@
   
   export default {
     extends: Child,
-    props: ['organization', 'type', 'item', 'isNew', 'criteria'],
+    props: ['organization', 'type', 'item', 'isNew', 'criteria', 'personal', 'archive'],
     mixins: [mixin],
     data() {
       return {
