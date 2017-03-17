@@ -131,50 +131,55 @@
       },
       key: {
         immediate: true,
-        handler(key) {
-          if (!key || (this.organization && this.organization.key === key)) {
-            return;
-          }
-          if (this.orgsRef) {
-            this.orgsRef.off('value');
-          }
-          this.orgsRef = Firebase.database().ref('organizations/' + key);
-          this.orgsRef.on('value',
-            (snapshot) => {
-              if (snapshot.val()) {
-                const organization = new Organization(snapshot.key, snapshot.val());
-                auth.user.bind(organization).once('value', (sn) => {
-                  const ul = sn.val() ? sn.val().lang : null;
-                  (ul ? locales.set(ul) : locales.setFromNavigator()).then(() => {
-                    this.organization = organization;
-                    if (this.organization.theme) {
-                      this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
-                    }
-                    this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
-                    titleElement.innerText = this.title;
-                  });
-                });
-              } else {
-                locales.setFromNavigator().then(() => {
-                  this.organization = null;
-                  this.title = null;
-                  titleElement.innerHTML = defaultTitle;
-                });
-              }
-            },
-            () => {
-              locales.setFromNavigator().then(() => {
-                this.organization = false;
-                this.fetchOrganization();
-              });
-            }
-          );
-        }
+        handler: 'fetchOrganization'
       },
       'auth.user': 'fetchRoleAndPermissions',
       organization: 'fetchRoleAndPermissions'
     },
     methods: {
+      fetchOrganization(organizationKey) {
+        const key = organizationKey || this.organization && this.organization.key;
+        if (!key || (this.organization && this.organization.key === key)) {
+          return;
+        }
+        if (this.orgsRef) {
+          this.orgsRef.off('value');
+        }
+        this.orgsRef = Firebase.database().ref('organizations/' + key);
+        this.orgsRef.on('value',
+          (snapshot) => {
+            if (snapshot.val()) {
+              const organization = new Organization(snapshot.key, snapshot.val());
+              auth.user.bind(organization).once('value', (sn) => {
+                const ul = sn.val() ? sn.val().lang : null;
+                (ul ? locales.set(ul) : locales.setFromNavigator()).then(() => {
+                  this.organization = organization;
+                  if (this.organization.theme) {
+                    this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
+                  }
+                  this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
+                  titleElement.innerText = this.title;
+                });
+              });
+            } else {
+              locales.setFromNavigator().then(() => {
+                this.organization = null;
+                this.title = null;
+                titleElement.innerHTML = defaultTitle;
+              });
+            }
+          },
+          () => {
+            locales.setFromNavigator().then(() => {
+              this.organization = false;
+              /* global window */
+              window.setTimeout(() => {
+                this.fetchOrganization(organizationKey);
+              }, 1000);
+            });
+          }
+        );
+      },
       fetchRoleAndPermissions() {
         this.$nextTick(() => {
           const user = this.auth.user;

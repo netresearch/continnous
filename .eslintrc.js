@@ -31,6 +31,7 @@ module.exports = {
     'no-plusplus': 0,
     'no-prototype-builtins': 0,
     'no-continue': 0,
-    'no-param-reassign': 0
+    'no-param-reassign': 0,
+    'no-mixed-operators': 0
   }
 }
