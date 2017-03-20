@@ -4,20 +4,37 @@
 
 <template>
   <div class="resource-actions">
-    <md-menu>
+    <md-menu md-size="5" ref="archiveInfo" v-if="archive">
       <md-button
-          v-if="archive && permissions[type].write"
-          class="md-icon-button md-warn resource-actions-archive-info"
-          @mouseover.native="loadArchiveInfo()"
+          v-if="archive"
+          class="md-icon-button md-warn resource-actions-archive-info-btn"
+          @click.native="loadArchiveInfo()"
           md-menu-trigger
       >
         <md-icon>archive</md-icon>
       </md-button>
-      <md-menu-content>
+      <md-menu-content class="resource-actions-archive-info">
         <md-spinner v-if="archiveInfo === undefined" :md-size="20" md-indeterminate class="md-accent"></md-spinner>
-        <div v-if="archiveInfo">
-          <div v-html="archiveInfo.comment"></div>
-        </div>
+        <avatar :organization="organization" :uid="archiveInfo.uid" v-if="archiveInfo">
+          <template scope="avatar">
+            <div class="resource-actions-archive-info-label">
+              {{avatar.user.displayName}} {{$t('journal.archive', {resource: $t('journal.this')})}}
+              <div class="resource-actions-archive-info-time">
+                {{moment(archiveInfo.time).calendar()}}
+              </div>
+            </div>
+            <div class="resource-actions-archive-info-occasion">
+              <md-icon class="md-small" :class="archiveInfo.completed ? 'md-primary' : 'md-warn'">
+                {{archiveInfo.completed ? 'done' : 'block'}}
+              </md-icon>
+              <span>{{$t('transition.' + (archiveInfo.completed ? 'completed' : 'discarded'))}}</span>
+            </div>
+            <md-text v-if="archiveInfo.comment" :text="archiveInfo.comment"></md-text>
+            <div class="resource-actions-archive-info-actions" v-if="permissions[type].write">
+              <md-button @click.native="$refs.archiveInfo.close(); toggleArchive()">{{$t('actions.restore')}}</md-button>
+            </div>
+          </template>
+        </avatar>
       </md-menu-content>
     </md-menu>
 
@@ -212,7 +229,7 @@
         ref.on('child_added', (sn) => {
           if (sn.val().action === 'archive') {
             this.archiveInfo = sn.val();
-            this.ref.off('child_added');
+            ref.off('child_added');
           }
         });
       },
@@ -331,6 +348,39 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
+  .resource-actions-archive-info-btn {
+    &:after {
+      content: "";
+      display: block;
+      position: absolute;
+      left: 15px;
+      bottom: 5px;
+      width: 10px;
+      height: 1px;
+      border-bottom: 2px dotted rgba(#000, 0.56);
+    }
+  }
   .resource-actions-archive-info {
+    .md-list {
+      padding-top: 16px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+    .resource-actions-archive-info-time {
+      color: rgba(#000, 0.56);
+      font-size: 12px;
+    }
+    .resource-actions-archive-info-occasion {
+      margin-top: 10px;
+      span {
+        font-weight: 500;
+      }
+    }
+    .md-editor-text {
+      margin-top: 4px;
+    }
+    .md-button {
+      margin-left: -16px;
+    }
   }
 </style>

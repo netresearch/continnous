@@ -1,8 +1,9 @@
 <template>
   <div :class="['avatar', {'avatar-normal': !big}]">
     <template v-if="user">
-      <md-avatar>
-        <img :src="user.photoURL">
+      <md-avatar :class="imgNotFound ? 'md-avatar-icon' : ''">
+        <img v-if="!imgNotFound" :src="user.photoURL" @error.native="imgNotFound = true">
+        <md-icon v-else>person</md-icon>
       </md-avatar>
       <div class="avatar-details" v-if="!noName">
         <slot :user="user">
@@ -27,7 +28,8 @@
     data() {
       return {
         auth,
-        user: undefined
+        user: undefined,
+        imgNotFound: false
       };
     },
     watch: {

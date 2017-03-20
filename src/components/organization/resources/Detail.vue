@@ -1,6 +1,6 @@
 <template>
   <base-form
-      :class="['resource-detail', 'resource-' + (this.id ? (edit ? 'edit' : 'view') : 'create')]"
+      :class="['resource-detail', 'resource-' + (this.id ? (edit ? 'edit' : 'view') : 'create'), {'resource-detail-archive': archive}]"
       :firebase-path="getFirebasePath(archive ? 'archive' : 'resources', id || '{new}')"
       firebase-bind
       :firebase-receive="firebaseReceive"
@@ -352,6 +352,23 @@
     }
     .md-button {
       margin: 0;
+    }
+  }
+  .resource-detail-archive {
+    .resource-detail-head {
+      background:
+        linear-gradient(
+          to right,
+          rgba(#fff, 0),
+          rgba(#fff, 1)
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 5px,
+          rgba(#000, 0.09) 5px,
+          rgba(#000, 0.09) 10px
+        );
     }
   }
   .resource-detail-body {
