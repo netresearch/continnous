@@ -2,13 +2,22 @@ version: '2'
 services:
   elastic:
     image: elasticsearch
+    restart: always
   flashlight:
     image: netresearch/flashlight
+    restart: always
     links:
       - elastic
     environment:
       ES_HOST: "elastic"
     volumes:
       - ./flashlight.js:/opt/app/config.js
+      - ./src/models/Config.js:/opt/app/src/models/Config.js
+      - ./.firebaserc:/opt/app/.firebaserc
+  firemailer:
+    image: copitz/firemailer
+    restart: always
+    volumes:
+      - ./firemailer.js:/opt/app/config.js
       - ./src/models/Config.js:/opt/app/src/models/Config.js
       - ./.firebaserc:/opt/app/.firebaserc

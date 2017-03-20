@@ -23,7 +23,7 @@
             <md-list>
               <template v-if="entry.uid !== auth.user.uid">
                 <md-subheader class="md-inset">{{$t('changeStatus')}}</md-subheader>
-                <md-list-item v-for="newRole in roles.concat('applicant', 'denied')" v-if="newRole !== role" class="md-inset" @click="changeRole(entry.uid, newRole, entry.domainRole)">
+                <md-list-item v-for="newRole in roles.concat('applicant', 'denied')" v-if="newRole !== role" class="md-inset" @click.native="changeRole(entry.uid, newRole, entry.domainRole)">
                   &nbsp;&nbsp;&nbsp;{{$t('roles.' + newRole)}}
                 </md-list-item>
               </template>
@@ -34,7 +34,7 @@
                   <md-tooltip>{{$t('elevationInfo')}}</md-tooltip>
                 </md-icon>
               </md-subheader>
-              <md-list-item v-for="elevate in [null, 1, 2]" v-if="!(elevate === users[entry.uid].elevate || !elevate && !users[entry.uid].elevate)" class="md-inset" @click="setElevation(entry.uid, elevate)">
+              <md-list-item v-for="elevate in [null, 1, 2]" v-if="!(elevate === users[entry.uid].elevate || !elevate && !users[entry.uid].elevate)" class="md-inset" @click.native="setElevation(entry.uid, elevate)">
                 &nbsp;&nbsp;&nbsp;{{elevate ? '+' + elevate : $t('unelevated')}}
               </md-list-item>
             </md-list>
