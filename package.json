@@ -12,15 +12,12 @@
     "bolt:production": "firebase-bolt database.rules.bolt && firebase deploy -P production --only database",
     "flashlight:staging": "docker-compose run --rm -e FB_ENV=staging flashlight",
     "flashlight:production": "docker-compose run -e FB_ENV=production flashlight",
-    "firemailer:staging": "docker-compose run --rm -e FB_ENV=staging firemailer",
-    "firemailer:production": "docker-compose run -e FB_ENV=production firemailer",
     "unit": "karma start test/unit/karma.conf.js --single-run",
     "e2e": "node test/e2e/runner.js",
     "test": "npm run unit && npm run e2e",
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs"
   },
   "dependencies": {
-    "commander": "^2.9.0",
     "extend": "^3.0.0",
     "firebase": "^3.6.4",
     "masonry-layout": "^4.1.1",
