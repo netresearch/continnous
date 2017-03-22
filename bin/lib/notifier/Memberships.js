@@ -1,6 +1,15 @@
-const AbstractBackend = require('./Abstract');
+const AbstractNotifier = require('./Abstract');
 
-module.exports = class NotifyAdminsOnMembershipRequest extends AbstractBackend {
+/**
+ * - Notify admins on new membership requests
+ * - Notify users on membership changes (role changed)
+ *
+ * @type {MembershipsNotifier}
+ */
+module.exports = class MembershipsNotifier extends AbstractNotifier {
+  /**
+   * Initialize - listen for changes
+   */
   init() {
     const secRef = this.db.ref('security/organizations/' + this.organization.key + '/users');
     let firstLoaded = false;
@@ -17,6 +26,12 @@ module.exports = class NotifyAdminsOnMembershipRequest extends AbstractBackend {
       }
     });
   }
+
+  /**
+   * Send email to all admins and inform them about the new request
+   *
+   * @param {String} uid
+   */
   handleMembershipRequest(uid) {
     this.getUser(uid).then((user) => {
       this.db.ref('/security/organizations/' + this.organization.key + '/users')
@@ -38,6 +53,13 @@ module.exports = class NotifyAdminsOnMembershipRequest extends AbstractBackend {
         });
     });
   }
+
+  /**
+   * Send an email to the user and inform him about the new role
+   *
+   * @param {String} uid
+   * @param {String} role
+   */
   handleMembershipChanged(uid, role) {
     this.getUser(uid).then((user) => {
       const organization = this.organization;

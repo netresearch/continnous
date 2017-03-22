@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+const program = require('commander');
+
+program
+  .option('-e, --env <env>', 'The firebase environment to use', process.env.FB_ENV)
+  .parse(process.argv);
+
+process.env.FB_ENV = program.env;
+
+const Setup = require('./lib/Setup');
+const Notifiers = [
+  require('./lib/notifier/Memberships'),
+  require('./lib/notifier/Journals')
+];
+const notifiers = {};
+
+Setup.fb.database().ref('organizations').on('child_added', (osn) => {
+  const organization = osn.val();
+  organization.key = osn.key;
+  notifiers[organization.key] = [];
+  Notifiers.forEach((Notifier) => {
+    notifiers[organization.key].push(new Notifier(organization, Setup.fb, Setup.rc));
+  });
+});
+Setup.fb.database().ref('organizations').on('child_changed', (osn) => {
+  const organization = osn.val();
+  organization.key = osn.key;
+  notifiers[organization.key].forEach((notifier) => {
+    notifier.updateOrganization(organization);
+  });
+});

@@ -6,6 +6,9 @@ require('colors');
 
 const fbrc = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../.firebaserc')));
 const FB_ENV = process.env.FB_ENV || 'production';
+
+console.log('\nUsing environment %s\n'.blue, FB_ENV);
+
 ['config', 'credentials', 'transports'].forEach((key) => {
   if (!fbrc[key]) {
     throw new Error('Missing ' + key + ' entry in .firebaserc');

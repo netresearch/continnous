@@ -14,3 +14,17 @@ services:
       - ./flashlight.js:/opt/app/config.js
       - ./src/models/Config.js:/opt/app/src/models/Config.js
       - ./.firebaserc:/opt/app/.firebaserc
+  notifier:
+    image: node:7-alpine
+    restart: always
+    command: /bin/sh -c 'cd /opt/app/bin; npm install; node notifier'
+    links:
+      - mailhog
+    volumes:
+      - ./bin:/opt/app/bin
+      - ./src/models/Config.js:/opt/app/src/models/Config.js
+      - ./.firebaserc:/opt/app/.firebaserc
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 8025:8025
