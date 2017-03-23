@@ -36,6 +36,13 @@
           md-inline
       >
       </form-element>
+
+      <md-autocomplete :handler="autocompleteUsers">
+        <md-chips>
+          <template scope="chip">{{ chip.value }}</template>
+        </md-chips>
+      </md-autocomplete>
+
       <slot></slot>
     </div>
 </template>
@@ -45,6 +52,25 @@
     props: {
       type: String
     },
+    methods: {
+      autocompleteUsers(search) {
+        return new Promise((resolve) => {
+          /* global window */
+          window.setTimeout(() => {
+            if (search === 'do') {
+              resolve([
+                'donut',
+                'donots',
+                'do ya thing',
+                'doodle'
+              ]);
+            } else {
+              resolve(false);
+            }
+          }, 1000);
+        });
+      }
+    }
   };
 </script>
 

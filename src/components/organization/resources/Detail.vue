@@ -325,6 +325,7 @@
     color: rgba(#000, 0.56);
   }
   .resource-detail > .md-whiteframe {
+    overflow: hidden;
     background: #fff;
     border-radius: 4px;
     margin: 0 auto;

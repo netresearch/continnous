@@ -44,6 +44,8 @@ export default function install(Vue) {
   Vue.use(MdSlider);
   const MdEditor = require('./mdEditor/index').default;
   Vue.use(MdEditor);
+  const MdAutocomplete = require('./mdAutocomplete/index').default;
+  Vue.use(MdAutocomplete);
 
   Object.keys(components).forEach((component) => {
     Vue.component(
