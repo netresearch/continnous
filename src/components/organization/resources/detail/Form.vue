@@ -37,20 +37,28 @@
       >
       </form-element>
 
-      <md-autocomplete :handler="autocompleteUsers">
-        <md-chips>
-          <template scope="chip">{{ chip.value }}</template>
-        </md-chips>
-      </md-autocomplete>
-
+      <form-element
+        type="user-input"
+        :organization="organization"
+        :permissions="permissions"
+        name="parties"
+        :label="$t('fields.parties')">
+      </form-element>
       <slot></slot>
     </div>
 </template>
 
 <script>
+  import UserInput from '../../common/UserInput';
+  import FormElement from '../../../form/Element';
+
+  FormElement.components.UserInput = UserInput;
+
   export default {
     props: {
-      type: String
+      type: String,
+      organization: Object,
+      permissions: Object
     },
     methods: {
       autocompleteUsers(search) {

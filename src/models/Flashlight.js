@@ -31,10 +31,19 @@ module.exports = class Flashlight {
     this.resultsRef = Firebase.database().ref(Config.flashlight.paths.results);
   }
 
+  /**
+   * Resolve search promises even when subsequent searches have been started
+   *
+   * @param {Boolean} [ignore]
+   */
+  ignoreSubsequents(ignore) {
+    this.doIgnoreSubsequents = ignore !== false;
+  }
+
   search(query, ...resources) {
     const promises = [];
 
-    this.lastQuery = query;
+    this.lastQuery = this.doIgnoreSubsequents ? undefined : query;
 
     const all = resources.indexOf('*') > -1;
     const personalArgIndex = resources.indexOf(true);
@@ -46,7 +55,7 @@ module.exports = class Flashlight {
       (personalArgIndex > -1 ? [r, 'personal_' + r] : [r]).forEach((resource) => {
         if (resources.indexOf(resource) > -1 || this.permissions[resource].read) {
           promises.push(new Promise((resolve, reject) => {
-            if (!this.permissions[resource].read) {
+            if (resource !== 'users' && !this.permissions[resource].read) {
               reject('No permission on resource ' + resource);
               return;
             }
@@ -86,7 +95,7 @@ module.exports = class Flashlight {
     return new Promise((resolve, reject) => {
       Promise.all(promises).then(
         (results) => {
-          if (query !== this.lastQuery) {
+          if (!this.doIgnoreSubsequents && query !== this.lastQuery) {
             return;
           }
           const filteredResults = [];
@@ -132,6 +141,13 @@ module.exports = class Flashlight {
         paths[pathKey] = null;
       }
     });
+    if (key === 'organization') {
+      paths['organization-' + orgKey + '-users'] = {
+        path: '/users/organizations/' + orgKey,
+        index: orgKey,
+        type: 'users',
+      };
+    }
     return paths;
   }
 

@@ -112,7 +112,14 @@ path /flashlight/paths/{pid} {
 
 path /flashlight/queries/{qid} {
     write() {
-        isAuthenticated() && (prior(this) == null && isAllowed(this.type, 'read', this.index) || this == null)
+        isAuthenticated()
+        && (
+            prior(this) == null
+            &&
+            isAllowed(this.type === 'users' ? 'organization' : this.type, 'read', this.index)
+            ||
+            this == null
+        )
     }
 }
 

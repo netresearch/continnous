@@ -85,6 +85,7 @@ module.exports = {
     archive: 'Archive',
     makePersonal: 'make personal',
     makePublic: 'make public',
+    inviteUser: 'Invite user',
   },
   confirm: {
     delete: {
@@ -193,6 +194,7 @@ module.exports = {
       label: 'description',
       placeholder: 'Describe what this is about in detail'
     },
+    parties: 'Involved users',
     title: 'title',
     initial: 'initial value',
     target: 'target value',

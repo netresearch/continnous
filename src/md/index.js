@@ -46,6 +46,8 @@ export default function install(Vue) {
   Vue.use(MdEditor);
   const MdAutocomplete = require('./mdAutocomplete/index').default;
   Vue.use(MdAutocomplete);
+  const MdChipsInput = require('./MdChipsInput');
+  Vue.component('md-chips-input', MdChipsInput);
 
   Object.keys(components).forEach((component) => {
     Vue.component(

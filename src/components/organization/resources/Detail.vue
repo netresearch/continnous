@@ -76,7 +76,7 @@
         <div class="resource-detail-main">
           <div class="resource-detail-section">
             <md-icon class="md-primary">{{config.icon}}</md-icon>
-            <resource-form v-if="edit || !id" :type="type" organization="organization" :personal="personal" :item="item">
+            <resource-form v-if="edit || !id" :type="type" :organization="organization" :permissions="permissions" :personal="personal" :item="item">
               <component :is="type + '-form'"></component>
               <form-element
                   type="form-file"

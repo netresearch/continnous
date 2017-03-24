@@ -1,22 +1,20 @@
 <template>
   <div class="md-autocomplete">
     <div ref="content" class="md-autocomplete-content">
-      <slot></slot>
+      <slot name="input"></slot>
     </div>
     <md-progress md-indeterminate v-if="loading"></md-progress>
     <div class="md-autocomplete-flyout" :class="above ? 'md-autocomplete-above' : ''" ref="flyout">
-      <div class="md-autocomplete-flyout-inner md-whiteframe md-whiteframe-1dp" v-show="q && results !== undefined">
-        <md-list class="md-autocomplete-results" v-if="results">
-          <md-list-item @click.native="selectItem(key, value)" v-for="(value, key) in results">
-            <slot name="item" :value="value" :i="key" :q="q">
-              {{key === currentKey ? 'current' : value}}
-            </slot>
+      <div class="md-autocomplete-flyout-inner md-whiteframe md-whiteframe-1dp" v-show="q && currentResults">
+        <md-list class="md-autocomplete-results" v-if="currentResults && currentResults.length">
+          <md-list-item
+              v-for="(value, i) in currentResults"
+              :class="currentKey === i ? 'md-autocomplete-selected' : ''"
+              @click.native="selectResult(value)">
+            <slot :value="value" :q="q">{{value}}</slot>
           </md-list-item>
         </md-list>
-        <div>
-          {{results ? results.length : 0}}
-        </div>
-        <slot name="append" v-if="q" :results="results" :q="q"></slot>
+        <slot name="flyout" v-if="q" :currentResults="currentResults" :results="results" :q="q"></slot>
       </div>
     </div>
   </div>
@@ -49,13 +47,16 @@ export default {
   data() {
     return {
       loading: 0,
-      results: undefined,
+      // Current input value
       q: undefined,
+      // Current results (for q)
+      currentResults: undefined,
+      // Results by input value (keys = q, values = currentResults)
+      results: {},
       previousValue: undefined,
-      previousResults: {},
       above: false,
       focused: false,
-      currentKey: undefined
+      currentKey: undefined,
     };
   },
   mounted() {
@@ -84,7 +85,7 @@ export default {
           this.input.removeEventListener('keydown', this.onKeyDown);
           this.input = undefined;
           this.q = undefined;
-          this.results = undefined;
+          this.currentResults = undefined;
         }
       };
     };
@@ -154,6 +155,7 @@ export default {
     onFocus() {
       this.focused = true;
       document.body.appendChild(this.flyout);
+      this.onInput();
       this.positionFlyout();
     },
     onBlur(e) {
@@ -185,13 +187,15 @@ export default {
       this.q = q;
       if (q.length < this.minLength) {
         this.previousValue = undefined;
+        this.currentKey = undefined;
+        this.currentResults = undefined;
         return;
       }
       if (q === this.previousValue) {
         return;
       }
-      if (this.previousResults[q] !== undefined) {
-        this.setResults(this.previousResults[q]);
+      if (this.results[q]) {
+        this.setCurrentResults(this.results[q]);
         return;
       }
       this.previousValue = q;
@@ -200,48 +204,59 @@ export default {
         this.loading++;
         results.then((r) => {
           this.loading--;
-          this.previousResults[q] = r;
-          this.setResults(this.previousResults[this.q]);
+          this.results[q] = r;
+          if (q === this.q) {
+            this.setCurrentResults(r);
+          }
         });
       } else {
-        this.setResults(results);
+        this.setCurrentResults(results);
       }
     },
     onKeyDown(e) {
-      if (!this.results) {
+      if (!this.currentResults || !this.currentResults.length) {
         return;
       }
       if (e.keyCode === 40 || e.keyCode === 38) {
         // 40 == ArrowDown, 38 == ArrowUp
         e.preventDefault();
-        let keys = [];
-        if (Object.prototype.toString.call(this.results) === '[object Array]') {
-          keys = this.results.map((v, i) => i);
-        } else {
-          keys = Object.keys(this.results);
-        }
         const direction = (e.keyCode === 40 ? 1 : -1) * (this.above ? -1 : 1);
-        const current = this.currentKey === undefined ? -1 : keys.indexOf(this.currentKey);
+        const current = this.currentKey === undefined ? -1 : this.currentKey;
         let next = current + direction;
-        if (next >= keys.length) {
+        if (next >= this.currentResults.length) {
           next = 0;
         } else if (next < 0) {
-          next = keys.length - 1;
+          next = this.currentResults.length - 1;
         }
         this.currentKey = next;
       } else if (this.currentKey !== undefined && e.keyCode === 13) {
         e.preventDefault();
-        this.selectItem(this.currentKey, this.results[this.currentKey]);
+        this.selectResult(this.currentResults[this.currentKey]);
       }
     },
-    setResults(results) {
+    setCurrentResults(results) {
+      if (typeof results !== 'object' || Object.prototype.toString.call(results) !== '[object Array]') {
+        /* eslint-disable no-console */
+        console.warn('MD-AUTOCOMPLETE WARNING: results must be array - refused taking over');
+        /* eslint-enable no-console */
+      }
       this.currentKey = undefined;
-      this.results = results;
+      this.currentResults = results;
     },
-    selectItem(key, value) {
+    selectResult(value) {
       this.currentKey = undefined;
       this.blur();
-      this.$emit('selected', value, key);
+      const event = {
+        q: this.q,
+        currentResults: this.currentResults,
+        results: this.results,
+        input: this.input,
+        propagate: true
+      };
+      this.$emit('selected', value, event);
+      if (event.propagate && this.input) {
+        this.input.value = value;
+      }
     },
     positionFlyout() {
       if (!this.input || !this.flyout) {
@@ -289,42 +304,3 @@ export default {
   }
 };
 </script>
-
-<style lang="scss" rel="stylesheet/scss">
-  .md-autocomplete {
-    position: relative;
-    .md-progress {
-      position: absolute;
-      bottom: 0;
-      background: rgba(#fff, 0.62) !important;
-      height: 2px !important;
-    }
-    .md-autocomplete-flyout {
-      display: none;
-    }
-  }
-  .md-autocomplete-flyout {
-    position: absolute;
-    z-index: 1000;
-    overflow: hidden;
-    top: -1px;
-    left: -1px;
-    width: 1px;
-    padding: 4px;
-    .md-autocomplete-flyout-inner {
-      position: relative;
-      background: #fff;
-      display: flex;
-      flex-flow: column nowrap;
-      width: 100%;
-      align-content: stretch;
-      border-radius: 0 0 3px 3px;
-    }
-    &.md-autocomplete-above .md-autocomplete-flyout-inner {
-      border-radius: 3px 3px 0 0;
-      &, > .md-list {
-        flex-flow: column-reverse nowrap;
-      }
-    }
-  }
-</style>

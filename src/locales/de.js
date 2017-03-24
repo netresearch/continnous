@@ -11,7 +11,7 @@ module.exports = {
     switchAccount: 'Konto wechseln',
     requestMembership: 'Mitgliedschaft anfragen',
     membershipProcessed: 'Deine Mitgliedschaft wird bearbeitet',
-    membershipDenied: 'Deine Mitgliedschaft wurde abgelehnt'
+    membershipDenied: 'Deine Mitgliedschaft wurde abgelehnt',
   },
   language: {
     language: 'Sprache',
@@ -84,7 +84,8 @@ module.exports = {
     share: 'Teilen',
     archive: 'In\'s Archiv',
     makePersonal: 'Persönlich machen',
-    makePublic: 'Öffentlich machen'
+    makePublic: 'Öffentlich machen',
+    inviteUser: 'Benutzer einladen',
   },
   confirm: {
     delete: {
@@ -197,6 +198,7 @@ module.exports = {
       label: 'Beschreibung',
       placeholder: 'Beschreibe detailliert, worum es hier geht'
     },
+    parties: 'Beteiligte Benutzer',
     title: 'Titel',
     initial: 'Anfangswert',
     target: 'Zielwert',
