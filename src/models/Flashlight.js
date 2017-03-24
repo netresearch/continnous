@@ -146,6 +146,7 @@ module.exports = class Flashlight {
         path: '/users/organizations/' + orgKey,
         index: orgKey,
         type: 'users',
+        filter: "['?', '!'].indexOf(ref('security/organizations/" + orgKey + "/users/' + $id)) < 0"
       };
     }
     return paths;
