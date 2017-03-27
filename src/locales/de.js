@@ -49,6 +49,7 @@ module.exports = {
   domain: 'Domain | Domains',
   addDomain: 'Domain hinzufügen',
   user: 'Benutzer | Benutzer',
+  userExists: 'Der Benutzer existiert bereits (ist aber ggf. gesperrt).',
   roles: {
     admin: 'Administrator',
     member: 'Mitglied',
@@ -198,7 +199,9 @@ module.exports = {
       label: 'Beschreibung',
       placeholder: 'Beschreibe detailliert, worum es hier geht'
     },
-    parties: 'Beteiligte Benutzer',
+    displayName: 'Name',
+    email: 'Email',
+    parties: 'Beteiligte',
     title: 'Titel',
     initial: 'Anfangswert',
     target: 'Zielwert',

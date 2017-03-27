@@ -9,7 +9,7 @@
       :validate="{title: validateTitle}"
       ref="form"
       @saved="onSaved"
-      @cancel="close()"
+      @cancel="$router.back()"
       :disabled="!mayEdit"
   >
     <div class="resource-detail-backdrop" @click="close()"></div>
@@ -84,7 +84,7 @@
                   name="attachments"
                   multiple></form-element>
             </resource-form>
-            <resource-content v-else :type="type" organization="organization" :personal="personal" :item="item">
+            <resource-content v-else :type="type" :organization="organization" :personal="personal" :item="item">
               <component :is="type + '-content'" :item="item"></component>
             </resource-content>
           </div>
@@ -120,12 +120,21 @@
                 {{period.format()}}
               </div>
             </div>
+            <resource-likes v-if="!edit" class="resource-detail-section" :organization="organization" :item="item">
+            </resource-likes>
+            <div class="resource-detail-section" v-if="!edit && item.parties && item.parties.length">
+              <md-icon>
+                group
+                <md-tooltip>{{$t('fields.parties')}}</md-tooltip>
+              </md-icon>
+              <div v-for="uid in item.parties">
+                <avatar :uid="uid" :organization="organization" mini></avatar>
+              </div>
+            </div>
             <div class="resource-detail-section">
               <md-icon>local_offer</md-icon>
               <resource-tags :is-new="!id" :organization="organization" :type="type" :item="item"></resource-tags>
             </div>
-            <resource-likes v-if="!edit" class="resource-detail-section" :organization="organization" :item="item">
-            </resource-likes>
             <base-form sub :direct="!edit" class="resource-detail-section" v-if="mayEdit || item.attachments">
               <form-element
                   type="form-file"

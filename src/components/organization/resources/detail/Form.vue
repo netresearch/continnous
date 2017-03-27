@@ -42,6 +42,7 @@
         :organization="organization"
         :permissions="permissions"
         name="parties"
+        multiple
         :label="$t('fields.parties')">
       </form-element>
       <slot></slot>

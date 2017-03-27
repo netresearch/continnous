@@ -144,7 +144,13 @@ path /users/{uid} {
     read() { auth.uid === uid }
 }
 path /users/{uid}/organizations/{oid} {
-    write() { auth.uid === uid && (this === true && isAllowed('organization', 'read', oid) || this === false || this === null) || isAdmin(oid) }
+    write() {
+        auth.uid === uid && (this === true && isAllowed('organization', 'read', oid) || this === false || this === null)
+        ||
+        isAllowed('organization', 'read', oid) && this != null && prior(this) == null && this.invitedBy === auth.uid
+        ||
+        isAdmin(oid)
+    }
 }
 
 path /users/organizations/{oid} {

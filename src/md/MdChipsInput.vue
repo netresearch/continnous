@@ -6,18 +6,19 @@
         v-for="chip in this.value"
         :md-deletable="!mdStatic"
         :disabled="disabled"
-        @delete="deleteChip(chip)">
+        @delete="deleteChip(chip)"
+        @keydown.native.delete="deleteChip(chip)">
       <slot :value="chip"></slot>
     </md-chip>
     <md-input
-        v-show="!mdStatic"
+        v-show="!mdStatic && (!selectedChips || selectedChips.length < mdMax)"
         v-model="currentChip"
         :type="mdInputType"
         :placeholder="mdInputPlaceholder"
         :id="inputId"
         :name="mdInputName"
         :disabled="disabled"
-        @keydown.native.delete="deleteLastChip"
+        @keydown.native.backspace="deleteLastChip"
         @keydown.native.prevent.188="addChip"
         tabindex="0"
         ref="input">

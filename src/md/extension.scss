@@ -103,6 +103,33 @@ p.md-caption {
   border: 1px solid rgba(#000, 0.12);
   background: rgba(#000, 0.06) !important;
   margin: 2px 0;
+  cursor: default;
+  &.md-deletable {
+    padding-right: 24px;
+    &:hover, &:focus {
+      color: inherit !important;
+      .md-delete {
+        color: inherit !important;
+      }
+    }
+  }
+  .md-button.md-delete {
+    $width: 18px;
+    width: $width;
+    min-width: $width;
+    height: $width;
+    min-height: $width;
+    border-radius: 0;
+    top: -1px;
+    right: 2px;
+    .md-icon {
+      width: $width;
+      min-width: $width;
+      height: $width;
+      min-height: $width;
+      font-size: $width;
+    }
+  }
 }
 .md-nav-bar > .md-button {
   margin: 6px 0;

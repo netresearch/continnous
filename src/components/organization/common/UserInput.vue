@@ -1,15 +1,31 @@
 <template>
-  <md-autocomplete @selected="onUserSelected" :handler="search">
-    <md-chips-input :md-static="disabled" :md-max="multiple ? Infinity : 1" ref="chipsInput" @change="onChipsChange" v-model="users" slot="input">
-      <template scope="chip">
-        {{chip.value.displayName}}
-      </template>
-    </md-chips-input>
+  <md-autocomplete ref="autocomplete" @selected="onUserSelected" :provider="search" :filter="filter">
     <template scope="item">
-      {{item.value.displayName}}
+      <avatar :user="item.value"></avatar>
+    </template>
+    <template slot="input" scope="autocomplete">
+      <md-chips-input
+          class="user-input-chips"
+          :md-static="disabled"
+          :md-max="multiple ? Infinity : 1"
+          ref="chipsInput"
+          @change="onChipsChange"
+          v-model="users">
+        <template scope="chip">
+          <avatar :user="chip.value" mini></avatar>
+        </template>
+      </md-chips-input>
+      <user-invite
+          ref="invite"
+          v-if="invite !== undefined"
+          @invited="onUserSelected($event); $refs.autocomplete.clearCache()"
+          :organization="organization"
+          :defaults="{ displayName: autocomplete.q }"
+          @close="invite = false"
+      ></user-invite>
     </template>
     <template slot="flyout" scope="autocomplete">
-      <div class="user-input-no-results md-primary" @click.native="invite = true" v-if="autocomplete.currentResults && !autocomplete.currentResults.length">
+      <div @click="invite = true" class="user-input-no-results md-primary" v-if="autocomplete.currentResults && !autocomplete.currentResults.length">
         <md-icon>person_add</md-icon>
         <span>{{$t('actions.inviteUser')}}</span>
       </div>
@@ -20,8 +36,12 @@
 <script>
   import Flashlight from '../../../models/Flashlight';
   import User from '../../../models/User';
+  import Avatar from '../../Avatar';
+  import UserInvite from './UserInvite';
+  import auth from '../../../auth';
 
   export default {
+    components: { Avatar, UserInvite },
     props: {
       value: [String, Array],
       multiple: Boolean,
@@ -34,15 +54,30 @@
         invite: undefined
       };
     },
+    watch: {
+      invite(invite) {
+        if (invite) {
+          this.$nextTick(() => {
+            this.$nextTick(() => {
+              this.$refs.invite.open();
+            });
+          });
+        }
+      }
+    },
     computed: {
       users() {
-        if (!this.value || !this.organization) {
-          return [];
-        }
-        const uids = typeof this.value === 'string' ? [this.value] : this.value;
         const users = [];
-        uids.forEach((uid) => {
-          users.push(new User(uid, this.organization));
+        if (this.value && this.organization) {
+          const uids = typeof this.value === 'string' ? [this.value] : this.value;
+          uids.forEach((uid) => {
+            users.push(new User(uid, this.organization));
+          });
+        }
+        this.$nextTick(() => {
+          if (this.$refs.autocomplete) {
+            this.$refs.autocomplete.updateCurrentResults();
+          }
         });
         return users;
       }
@@ -69,8 +104,16 @@
           });
         });
       },
+      filter(user) {
+        if (user.uid === auth.user.uid) {
+          return false;
+        }
+        return !this.users.find(u => u.uid === user.uid);
+      },
       onUserSelected(user, event) {
-        event.propagate = false;
+        if (event) {
+          event.propagate = false;
+        }
         const uids = (typeof this.value === 'string' ? [this.value] : this.value || []).slice(0);
         uids.push(user.uid);
         this.$emit('change', uids);
@@ -79,7 +122,7 @@
       },
       onChipsChange(users) {
         if (typeof users === 'object') {
-          const uids = users.map(user => user.uid);
+          const uids = users.length ? users.map(user => user.uid) : null;
           this.$emit('change', uids);
           this.$emit('input', uids);
         }
@@ -108,6 +151,25 @@
     }
     .md-icon {
       color: rgba(#000, 0.56);
+    }
+  }
+  .user-input-chips {
+    .md-chip {
+      padding-top: 0;
+      padding-left: 0;
+      padding-bottom: 0;
+      position: relative;
+      top: 4px;
+    }
+    .avatar {
+      display: inline-flex;
+      .md-avatar {
+        margin: 0;
+      }
+      .avatar-details {
+        margin-top: 1px;
+        margin-bottom: 1px;
+      }
     }
   }
 </style>

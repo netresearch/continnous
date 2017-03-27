@@ -97,7 +97,7 @@ const Config = {
   flashlight: {
     timeout: 3000,
     paths: {
-      paths: '/flashlight-test',
+      paths: '/flashlight/paths',
       queries: '/flashlight/queries',
       results: '/flashlight/results'
     }

@@ -1,7 +1,7 @@
 <template>
   <div class="md-autocomplete">
     <div ref="content" class="md-autocomplete-content">
-      <slot name="input"></slot>
+      <slot name="input" :q="q" :currentResults="currentResults" :results="results"></slot>
     </div>
     <md-progress md-indeterminate v-if="loading"></md-progress>
     <div class="md-autocomplete-flyout" :class="above ? 'md-autocomplete-above' : ''" ref="flyout">
@@ -29,10 +29,11 @@ import MutationObserver from 'mutation-observer';
 
 export default {
   props: {
-    handler: {
+    provider: {
       type: Function,
       required: true
     },
+    filter: Function,
     minLength: {
       type: Number,
       default: 1
@@ -165,11 +166,13 @@ export default {
         e.stopImmediatePropagation();
         if (['input', 'textarea', 'select'].indexOf(e.relatedTarget.tagName.toLowerCase()) < 0) {
           e.target.focus();
+        } else {
+          this.input.focus();
         }
         return;
       }
       this.focused = false;
-      this.blur();
+      window.setTimeout(this.blur, 100);
     },
     blur() {
       if (this.focused && this.input) {
@@ -199,7 +202,7 @@ export default {
         return;
       }
       this.previousValue = q;
-      const results = this.handler(q);
+      const results = this.provider(q);
       if (typeof results === 'object' && typeof results.then === 'function') {
         this.loading++;
         results.then((r) => {
@@ -241,7 +244,18 @@ export default {
         /* eslint-enable no-console */
       }
       this.currentKey = undefined;
-      this.currentResults = results;
+      this.currentResults = this.filter ? results.filter(this.filter) : results;
+    },
+    updateCurrentResults() {
+      if (this.q && this.results[this.q]) {
+        this.setCurrentResults(this.results[this.q]);
+      }
+    },
+    clearCache() {
+      this.results = {};
+      if (this.focused) {
+        this.onInput();
+      }
     },
     selectResult(value) {
       this.currentKey = undefined;
