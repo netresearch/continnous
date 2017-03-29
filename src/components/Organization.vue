@@ -187,15 +187,23 @@
           this.permissions.bind(orgKey, user, () => {
             this.role = this.permissions.role;
             if ((this.role || this.organization) && user) {
-              // Update user
-              user.bind(orgKey).update({
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL
-              });
+              const hasRole = this.role && this.role !== '?' && this.role !== '!';
+              const userRef = user.bind(orgKey);
+              if (hasRole) {
+                const userData = { lastVisit: +new Date() };
+                userRef.once('value', (sn) => {
+                  if (sn.val().inviteState === -1) {
+                    // State -1 means invitation was sent
+                    // State 1 means notify the host about accepted invite
+                    // @see InvitationStates
+                    userData.inviteState = 1;
+                  }
+                  userRef.update(userData);
+                });
+              }
               if (this.role) {
                 Firebase.database().ref('users/' + user.uid + '/organizations/' + orgKey)
-                  .set(this.role !== '?' && this.role !== '!');
+                  .set(hasRole);
               }
             }
             if (this.organization && user) {

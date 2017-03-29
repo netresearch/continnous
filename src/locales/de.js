@@ -49,7 +49,9 @@ module.exports = {
   domain: 'Domain | Domains',
   addDomain: 'Domain hinzufügen',
   user: 'Benutzer | Benutzer',
-  userExists: 'Der Benutzer existiert bereits (ist aber ggf. gesperrt).',
+  invite: {
+    userExists: 'Der Benutzer existiert bereits (ist aber ggf. gesperrt).',
+  },
   roles: {
     admin: 'Administrator',
     member: 'Mitglied',

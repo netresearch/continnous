@@ -21,6 +21,7 @@ module.exports = class AbstractNotifier {
       this.organization.title = this.organization.name + ' Innovation Platform';
     }
     this.db = firebase.database();
+    this.fb = firebase;
     this.rc = rc;
     if (!organization.domain) {
       let initialized = false;
@@ -187,6 +188,46 @@ module.exports = class AbstractNotifier {
         console.error(error);
       }
     );
+  }
+
+  /**
+   * Get all admins for the current organization
+   *
+   * @returns {Promise}
+   */
+  getAdmins() {
+    return new Promise((resolve, reject) => {
+      this.db.ref('/security/organizations/' + this.organization.key + '/users')
+        .orderByValue().equalTo('admin')
+        .once('value', (asn) => {
+          const admins = [];
+          let load = 0;
+          asn.forEach((acsn) => {
+            load++;
+            this.db.ref('users/organizations/' + this.organization.key + '/' + acsn.key).once('value', (ausn) => {
+              admins.push(Object.assign({ uid: acsn.key }, ausn.val()));
+              load--;
+              if (!load) {
+                resolve(admins);
+              }
+            }, reject);
+          });
+          if (!load) {
+            console.error('No admins found for organization %s'.red, this.organization.key);
+            resolve(admins);
+          }
+        }, reject);
+    });
+  }
+
+  sendAdminMails(mail) {
+    this.getAdmins().then((admins) => {
+      admins.forEach((admin) => {
+        this.sendMail(Object.assign({
+          to: this.emailAddress(admin.displayName, admin.email)
+        }, mail));
+      });
+    });
   }
 
   /**

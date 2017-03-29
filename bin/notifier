@@ -10,7 +10,8 @@ process.env.FB_ENV = program.env;
 const Setup = require('./lib/Setup');
 const Notifiers = [
   require('./lib/notifier/Memberships'),
-  require('./lib/notifier/Journals')
+  require('./lib/notifier/Journals'),
+  require('./lib/notifier/Invites')
 ];
 const notifiers = {};
 

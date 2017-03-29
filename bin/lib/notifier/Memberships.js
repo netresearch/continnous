@@ -18,7 +18,9 @@ module.exports = class MembershipsNotifier extends AbstractNotifier {
         firstLoaded = sn.key;
         return;
       }
-      this.handleMembershipRequest(sn.key);
+      if (sn.val() === '?') {
+        this.handleMembershipRequest(sn.key);
+      }
     });
     secRef.on('child_changed', (sn) => {
       if (sn.val() !== '!' && sn.val() !== '?') {
@@ -34,23 +36,14 @@ module.exports = class MembershipsNotifier extends AbstractNotifier {
    */
   handleMembershipRequest(uid) {
     this.getUser(uid).then((user) => {
-      this.db.ref('/security/organizations/' + this.organization.key + '/users')
-        .orderByValue().equalTo('admin')
-        .once('value', (asn) => {
-          asn.forEach((acsn) => {
-            this.db.ref('users/organizations/' + this.organization.key + '/' + acsn.key).once('value', (ausn) => {
-              this.sendMail({
-                to: this.emailAddress(ausn.val().displayName, ausn.val().email),
-                from: this.emailAddress(user.displayName, user.email),
-                subject: 'Membership request',
-                text: user.displayName
-                + ' wants to become member of ' + this.organization.title
-                + ' - click here to manage your users: '
-                + this.href('settings/users')
-              });
-            });
-          });
-        });
+      this.sendAdminMails({
+        from: this.emailAddress(user.displayName, user.email),
+        subject: 'Membership request',
+        text: user.displayName
+        + ' wants to become member of ' + this.organization.title
+        + ' - click here to manage your users: '
+        + this.href('settings/users')
+      });
     });
   }
 
@@ -62,15 +55,17 @@ module.exports = class MembershipsNotifier extends AbstractNotifier {
    */
   handleMembershipChanged(uid, role) {
     this.getUser(uid).then((user) => {
-      const organization = this.organization;
-      this.sendMail({
-        to: this.emailAddress(user.displayName, user.email),
-        from: this.emailAddress(),
-        subject: 'Your membership',
-        text: 'Hi ' + user.displayName + ',\n\n'
-        + ' you are now ' + role + ' on ' + organization.title
-        + ' [' + this.href() + ']'
-      });
+      if (user.lastVisit) {
+        const organization = this.organization;
+        this.sendMail({
+          to: this.emailAddress(user.displayName, user.email),
+          from: this.emailAddress(),
+          subject: 'Your membership',
+          text: 'Hi ' + user.displayName + ',\n\n'
+          + ' you are now ' + role + ' on ' + organization.title
+          + ' [' + this.href() + ']'
+        });
+      }
     });
   }
 }

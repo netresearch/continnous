@@ -23,7 +23,11 @@
             <md-list>
               <template v-if="entry.uid !== auth.user.uid">
                 <md-subheader class="md-inset">{{$t('changeStatus')}}</md-subheader>
-                <md-list-item v-for="newRole in roles.concat('applicant', 'denied')" v-if="newRole !== role" class="md-inset" @click.native="changeRole(entry.uid, newRole, entry.domainRole)">
+                <md-list-item
+                    v-for="newRole in roles.concat('applicant', 'denied')"
+                    v-if="newRole !== role && (newRole !== 'applicant' || !users[entry.uid].inviteState)"
+                    class="md-inset"
+                    @click.native="changeRole(entry.uid, newRole, entry.domainRole)">
                   &nbsp;&nbsp;&nbsp;{{$t('roles.' + newRole)}}
                 </md-list-item>
               </template>
@@ -119,19 +123,27 @@
     methods: {
       changeRole(uid, newRole, domainRole) {
         const ref = Firebase.database().ref('security/organizations/' + this.organization.key + '/users/' + uid);
+        let finalRole = newRole;
+        if (finalRole === 'applicant') {
+          finalRole = '?';
+        } else if (finalRole === 'denied') {
+          finalRole = '!';
+        }
         if (newRole === domainRole) {
           ref.remove();
         } else {
-          let finalRole = newRole;
-          if (finalRole === 'applicant') {
-            finalRole = '?';
-          } else if (finalRole === 'denied') {
-            finalRole = '!';
-          }
           ref.set(finalRole).then(() => {
             Firebase.database().ref('users/' + uid + '/organizations/' + this.organization.key)
               .set(finalRole !== '?' && finalRole !== '!');
           });
+        }
+        if (this.users[uid].inviteState === -2) {
+          // State -2 means admin was notified of invitation
+          // State 2 means notify the user with the invite
+          // @see InvitationStates
+          Firebase.database().ref(
+            '/users/organizations/' + this.organization.key + '/' + uid + '/inviteState'
+          ).set(2);
         }
         const li = this.$el.querySelector('.user-' + uid);
         li.className = li.className.replace(/ md-active/, '');

@@ -1,7 +1,9 @@
 import Firebase from '../firebase';
 
+const props = ['email', 'displayName', 'uid', 'photoURL', 'elevate', 'inviteState', 'inviteBy'];
+
 const setData = (user, d) => {
-  ['email', 'displayName', 'uid', 'photoURL', 'elevate'].forEach((key) => {
+  props.forEach((key) => {
     if (d.hasOwnProperty(key)) {
       user[key] = d[key];
     }
@@ -11,7 +13,7 @@ const setData = (user, d) => {
 export default class User {
   constructor(data, organization) {
     this.elevate = 0;
-    ['email', 'displayName', 'uid', 'photoURL'].forEach((key) => {
+    props.forEach((key) => {
       this[key] = undefined;
     });
     if (typeof data === 'object') {
@@ -35,6 +37,13 @@ export default class User {
       this.ref().off('value');
     }
     const ref = Firebase.database().ref('/users/organizations/' + orgKey + '/' + this.uid);
+    if (this.email) {
+      ref.update({
+        email: this.email,
+        displayName: this.displayName || null,
+        photoURL: this.photoURL || null
+      });
+    }
     this.ref = () => ref;
     this.ref.orgKey = orgKey;
     ref.on('value', (s) => {
@@ -46,6 +55,12 @@ export default class User {
     return this.displayName || '?';
   }
   static createFromAuth(authUser) {
-    return new User(authUser);
+    const provider = authUser.providerData[0] || authUser;
+    return new User({
+      uid: authUser.uid,
+      displayName: provider.displayName,
+      photoURL: provider.photoURL || authUser.photoURL,
+      email: authUser.email
+    });
   }
 }
