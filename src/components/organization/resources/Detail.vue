@@ -41,6 +41,7 @@
             :personal="personal"
             :archive="archive"
             show-personal
+            show-notifications
             redirect-on-toggle
             show-delete
             @togglePersonal="personal = !personal"

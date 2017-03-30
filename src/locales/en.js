@@ -86,6 +86,8 @@ module.exports = {
     makePersonal: 'make personal',
     makePublic: 'make public',
     inviteUser: 'Invite user',
+    stopWatching: 'Stop watching this',
+    watch: 'Watch this',
   },
   confirm: {
     delete: {

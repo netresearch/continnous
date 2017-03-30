@@ -51,6 +51,16 @@
       </md-icon>
     </md-button>
 
+    <md-button
+        @click.native="toggleWatching"
+        :class="['md-icon-button', {'md-warn': personal}]"
+        v-if="watching">
+      <md-icon>
+        notifications
+        <md-tooltip>{{$t('actions.stopWatching')}}</md-tooltip>
+      </md-icon>
+    </md-button>
+
     <resource-links
         v-if="!archive && showLinkBadges"
         badges
@@ -78,6 +88,10 @@
         <md-menu-item v-if="showEditInMenu" @selected="$router.push({ path: to.path + '/edit', query: to.query })">
           <md-icon>edit</md-icon>
           <span>{{$t('actions.edit')}}</span>
+        </md-menu-item>
+        <md-menu-item v-if="watching === false" @selected="toggleWatching">
+          <md-icon>notifications</md-icon>
+          <span>{{$t('actions.watch')}}</span>
         </md-menu-item>
         <md-menu-item @selected="togglePersonal()" v-if="showPersonal && !personal && item.creator === auth.user.uid">
           <md-icon>lock_outline</md-icon>
@@ -149,6 +163,7 @@
   import Share from '../../Share';
   import ResourceLinks from './Links';
   import Avatar from '../../Avatar';
+  import Firebase from '../../../firebase';
 
   export default {
     mixins: [mixin],
@@ -167,6 +182,7 @@
       distribute: Boolean,
       showPersonal: Boolean,
       showDelete: Boolean,
+      showNotifications: Boolean,
       redirectOnToggle: Boolean
     },
     data() {
@@ -176,6 +192,7 @@
         confirm: undefined,
         transition: undefined,
         archiveInfo: false,
+        watching: undefined
       };
     },
     computed: {
@@ -196,9 +213,26 @@
         immediate: true,
         handler(item) {
           this.hasLiked = false;
+          this.watching = undefined;
+          if (this.refs) {
+            this.refs.forEach(ref => ref.off('value'));
+          }
+          this.refs = [];
           if (item && this.showLike) {
-            this.getLikesRef(item.id).on('value', (snapshot) => {
+            const likesRef = this.getLikesRef(item.id);
+            this.refs.push(likesRef);
+            likesRef.on('value', (snapshot) => {
               this.hasLiked = !!snapshot.val();
+            });
+          }
+          if (item && item.creator && this.showNotifications) {
+            const watchingRef = Firebase.database().ref(
+              'watchers/organizations/' + this.organization.key + '/' + item.id + '/' + auth.user.uid
+            );
+            this.watchingRef = watchingRef;
+            this.refs.push(watchingRef);
+            watchingRef.on('value', (sn) => {
+              this.watching = sn.exists() ? sn.val() : item.creator === auth.user.uid;
             });
           }
         }
@@ -208,6 +242,12 @@
       },
       transition(transition) {
         this.handleDialog('transition', transition);
+      }
+    },
+    beforeDestroy() {
+      if (this.refs) {
+        this.refs.forEach(ref => ref.off('value'));
+        delete this.refs;
       }
     },
     methods: {
@@ -232,6 +272,14 @@
             ref.off('child_added');
           }
         });
+      },
+      toggleWatching() {
+        const watching = !this.watching;
+        if (!watching || watching && this.item.creator === auth.user.uid) {
+          this.watchingRef.remove();
+        } else {
+          this.watchingRef.set(watching);
+        }
       },
       togglePersonal() {
         const it = this.item;
