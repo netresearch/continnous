@@ -5,7 +5,9 @@ program
   .option('-e, --env <env>', 'The firebase environment to use', process.env.FB_ENV)
   .parse(process.argv);
 
-process.env.FB_ENV = program.env;
+if (program.env) {
+  process.env.FB_ENV = program.env;
+}
 
 const Setup = require('./lib/Setup');
 const Notifiers = [
