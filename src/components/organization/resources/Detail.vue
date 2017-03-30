@@ -160,7 +160,15 @@
           </div>
         </div>
         <div class="resource-detail-comments" v-if="!edit">
-          <journal actions="comment" @update="comments = $event.entries.length" :organization="organization" :item="item" no-resource reverse></journal>
+          <journal
+              actions="comment"
+              @update="comments = $event.entries.length"
+              :organization="organization"
+              :item="item"
+              no-resource
+              reverse
+              no-empty-message
+          ></journal>
           <resource-comment :organization="organization" :type="type" :item="item" :personal="personal"></resource-comment>
         </div>
       </div>

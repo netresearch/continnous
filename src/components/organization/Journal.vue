@@ -36,7 +36,7 @@
         </template>
       </avatar>
     </div>
-    <p class="md-caption journal-empty" style="justify-content: center" v-if="!entries.length">{{$t('journal.empty')}}</p>
+    <p class="md-caption journal-empty" style="justify-content: center" v-if="!noEmptyMessage && !entries.length">{{$t('journal.empty')}}</p>
     <md-dialog-confirm
         v-if="noResource"
         ref="dialog"
@@ -64,7 +64,8 @@
       item: Object,
       noResource: Boolean,
       reverse: Boolean,
-      actions: [String, Array]
+      actions: [String, Array],
+      noEmptyMessage: Boolean
     },
     data() {
       return {
