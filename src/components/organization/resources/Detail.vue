@@ -300,6 +300,8 @@
         }
         if (!this.id) {
           this.$router.replace(this.getUrlPath(this.$refs.form.firebaseRef.key));
+        } else {
+          this.$router.back();
         }
       },
       close() {

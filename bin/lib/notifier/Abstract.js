@@ -107,7 +107,7 @@ module.exports = class AbstractNotifier {
       const uids = [item.creator];
       const org = this.organization.key;
       const watchers = [];
-      this.db.ref('watchers/' + org + '/' + item.id).once('value', (wsn) => {
+      this.db.ref('watchers/organizations/' + org + '/' + item.id).once('value', (wsn) => {
         wsn.forEach((wcsn) => {
           const i = uids.indexOf(wcsn.key);
           if (i === -1 && wsn.val()) {

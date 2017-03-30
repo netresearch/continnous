@@ -38,12 +38,15 @@
       </form-element>
 
       <form-element
+        ref="userInput"
         type="user-input"
         :organization="organization"
         :permissions="permissions"
         name="parties"
         multiple
-        :label="$t('fields.parties')">
+        :label="$t('fields.parties')"
+        @change="onPartiesChanged"
+      >
       </form-element>
       <slot></slot>
     </div>
@@ -52,6 +55,7 @@
 <script>
   import UserInput from '../../common/UserInput';
   import FormElement from '../../../form/Element';
+  import Firebase from '../../../../firebase';
 
   FormElement.components.UserInput = UserInput;
 
@@ -61,23 +65,33 @@
       organization: Object,
       permissions: Object
     },
+    mounted() {
+      this.form = this.$refs.userInput.form;
+      this.form.$on('saved', this.onSaved);
+    },
+    beforeDestroy() {
+      this.form.$off('saved', this.onSaved);
+    },
     methods: {
-      autocompleteUsers(search) {
-        return new Promise((resolve) => {
-          /* global window */
-          window.setTimeout(() => {
-            if (search === 'do') {
-              resolve([
-                'donut',
-                'donots',
-                'do ya thing',
-                'doodle'
-              ]);
-            } else {
-              resolve(false);
-            }
-          }, 1000);
-        });
+      onPartiesChanged() {
+        if (!this.hasOwnProperty('oldParties')) {
+          this.oldParties = this.form.object.parties;
+        }
+      },
+      onSaved(updates, ref) {
+        if (updates.parties) {
+          const prior = this.oldParties || [];
+          const watchers = {};
+          updates.parties.filter(uid => prior.indexOf(uid) < 0).forEach((uid) => {
+            watchers[uid] = true;
+          });
+          if (Object.keys(watchers).length) {
+            Firebase.database().ref(
+              'watchers/organizations/' + this.organization.key + '/' + ref.key
+            ).update(watchers);
+          }
+        }
+        delete this.oldParties;
       }
     }
   };
