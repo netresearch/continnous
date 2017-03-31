@@ -337,16 +337,18 @@
           const reader = new FileReader();
           reader.onload = (e) => {
             const img = document.createElement('img');
+            img.addEventListener('load', () => {
+              const canvas = document.createElement('canvas');
+              const context = canvas.getContext('2d');
+
+              const scaled = this.scale(img, maxWidth, maxHeight);
+              canvas.width = scaled.width;
+              canvas.height = scaled.height;
+              context.drawImage(img, 0, 0, scaled.width, scaled.height);
+
+              resolve({ url: canvas.toDataURL('image/png'), width: img.width, height: img.height });
+            });
             img.src = e.target.result;
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-
-            const scaled = this.scale(img, maxWidth, maxHeight);
-            canvas.width = scaled.width;
-            canvas.height = scaled.height;
-            context.drawImage(img, 0, 0, scaled.width, scaled.height);
-
-            resolve({ url: canvas.toDataURL('image/png'), width: img.width, height: img.height });
           };
 
           reader.readAsDataURL(file);
