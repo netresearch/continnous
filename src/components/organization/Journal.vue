@@ -13,10 +13,28 @@
               <md-icon v-if="i > 0" class="md-mini">arrow_{{reverse ? 'down' : 'up'}}ward</md-icon>{{formatTime(entry.time)}}
             </div>
             <div class="journal-comment" v-if="noResource && entry.action === 'comment'">
-              {{entry.comment}}
-              <md-icon @click.native="deleteComment = entry; $refs.dialog.open()"
-                       v-if="noResource && entry.action === 'comment' && entry.uid === auth.user.uid"
-                       class="md-mini md-warn journal-delete">clear</md-icon>
+              <span v-if="!editComment || editComment.journalId !== entry.journalId">{{entry.comment}}</span>
+              <md-input-container v-else>
+                <md-textarea
+                    ref="commentInputs"
+                    v-model="editComment.comment"
+                    :placeholder="$t('actions.writeComment') + '...'"></md-textarea>
+                <md-icon
+                    @click.native="saveComment(entry)"
+                    :class="['md-primary', 'resource-comment-save', {'resource-comment-save-disabled': editComment.comment.trim() === entry.comment || !editComment.comment.trim().length}]"
+                >done</md-icon>
+                <md-icon @click.native="editComment = undefined" class="md-warn md-icon-delete">block</md-icon>
+              </md-input-container>
+              <div class="journal-comment-actions" v-if="noResource">
+                <template v-if="entry.uid === auth.user.uid">
+                  <span v-if="!editComment || editComment.journalId !== entry.journalId">
+                    <span @click="editComment = Object.assign({}, entry); $nextTick(function() { $nextTick(function() { $refs.commentInputs[0].$el.focus(); }); })">{{$t('actions.edit')}}</span>
+                  </span>
+                  <span>
+                    <span @click="deleteComment = entry; $refs.dialog.open()">{{$t('actions.delete')}}</span>
+                  </span>
+                </template>
+              </div>
             </div>
             <span class="journal-predicate" v-else>
               {{$t('journal.' + entry.action, { fields: joinFields(entry.fields), resource: '###' }).split('###').shift()}}
@@ -73,7 +91,8 @@
         auth,
         groups: [],
         entries: [],
-        deleteComment: {}
+        deleteComment: {},
+        editComment: undefined
       };
     },
     watch: {
@@ -84,6 +103,20 @@
       item: 'loadEntries'
     },
     methods: {
+      saveComment(originalComment) {
+        if (this.editComment) {
+          const comment = this.editComment.comment.trim();
+          if (comment && comment !== originalComment.comment) {
+            this.organization.journal.getRef()
+              .child(this.editComment.journalId)
+              .child('comment')
+              .set(comment);
+            this.editComment = undefined;
+          } else {
+            this.commentInputs[0].$el.focus();
+          }
+        }
+      },
       doDeleteComment() {
         this.organization.journal.getRef().child(this.deleteComment.journalId).remove();
       },
@@ -95,6 +128,7 @@
             this.$emit('update', this);
             this.ref.off('child_added');
             this.ref.off('child_removed');
+            this.ref.off('child_changed');
           }
           if (this.organization) {
             const journalRef = this.organization.journal.getRef();
@@ -105,6 +139,7 @@
             }
             this.ref.on('child_added', this.onEntryAdded);
             this.ref.on('child_removed', this.onEntryRemoved);
+            this.ref.on('child_changed', this.onEntryChanged);
           }
         });
       },
@@ -166,6 +201,14 @@
           }
         });
       },
+      onEntryChanged(snapshot) {
+        this.entries.forEach((entry) => {
+          if (entry.journalId === snapshot.key) {
+            Object.assign(entry, snapshot.val());
+            this.$emit('update', this);
+          }
+        });
+      },
       formatTime(time) {
         return moment(time).calendar();
       },
@@ -201,6 +244,51 @@
     .avatar {
       width: 100%;
     }
+    .journal-comment {
+      > span {
+        white-space: pre;
+        flex: 0 0 0;
+      }
+      .md-input-container {
+        margin: -18px 0 6px;
+        .md-icon {
+          margin-left: 12px;
+          cursor: pointer;
+          &.resource-comment-save-disabled {
+            color: rgba(#000, 0.56) !important;
+            cursor: default;
+            pointer-events: none;
+          }
+        }
+      }
+      .journal-comment-actions {
+        overflow: hidden;
+        position: relative;
+        top: 4px;
+        > span {
+          float: left;
+          color: rgba(0, 0, 0, .57);
+          font-size: 12px;
+          &, * {
+            line-height: 12px;
+          }
+          span {
+            cursor: pointer;
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+          &:before {
+            content: '•';
+            padding: 0 5px;
+            text-decoration: none !important;
+          }
+          &:first-child:before {
+            display: none;
+          }
+        }
+      }
+    }
     .journal-predicate {
       color: rgba(0, 0, 0, .57);
     }
@@ -219,18 +307,6 @@
       margin-bottom: 10px;
       &:last-child {
         margin-bottom: 0;
-      }
-      @media screen {
-        .journal-delete {
-          cursor: pointer;
-          display: none;
-          &:not(:hover) {
-            color: inherit;
-          }
-        }
-        &:hover .journal-delete {
-          display: inline-flex;
-        }
       }
     }
     > :last-child .journal-resource {

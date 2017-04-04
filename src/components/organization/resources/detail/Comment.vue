@@ -3,16 +3,15 @@
     <avatar :organization="organization" uid="current" no-name></avatar>
     <md-input-container>
       <md-textarea
-          :value="focused ? text : ''"
+          v-model="text"
           ref="textarea"
-          @input="text = $event"
           @focus.native="focused = true; updateTextarea()"
           @blur.native="focused = false; updateTextarea()"
           :placeholder="$t('actions.writeComment') + '...'"></md-textarea>
       <md-icon
           ref="button"
           @click.native="save()"
-          :class="['resource-comment-send', {'resource-comment-send-disabled': !text.replace(/^\s*(.+)\s*$/, '$1').length}]"
+          :class="['resource-comment-send', {'resource-comment-send-disabled': !text.trim().length}]"
       >add_box</md-icon>
     </md-input-container>
   </div>
@@ -40,7 +39,8 @@
         });
       },
       save() {
-        if (this.$refs.button.$el.classList.contains('resource-comment-send-disabled')) {
+        const text = this.text.trim();
+        if (!text.length) {
           this.$refs.textarea.focus();
         } else {
           this.organization.journal.addEntry(
@@ -49,7 +49,7 @@
             this.item.id,
             'comment',
             undefined,
-            this.text
+            text
           );
           this.$emit('comment', this.text);
           this.text = '';

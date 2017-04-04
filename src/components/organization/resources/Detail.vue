@@ -441,13 +441,12 @@
       background: rgba(0, 0, 0, 0.12);
     }
     .journal-entry {
-      margin-top: 2px;
     }
     .journal-time {
       display: inline;
     }
     .journal-comment {
-      margin-top: 4px;
+      margin-top: 2px;
       //margin-left: 16px;
     }
   }
