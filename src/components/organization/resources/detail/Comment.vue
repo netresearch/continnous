@@ -39,7 +39,7 @@
         });
       },
       save() {
-        const text = this.text.trim();
+        const text = this.text.trim().replace(/\r/g, '');
         if (!text.length) {
           this.$refs.textarea.focus();
         } else {

@@ -20,6 +20,7 @@
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs"
   },
   "dependencies": {
+    "autolinker": "^1.4.2",
     "extend": "^3.0.0",
     "firebase": "^3.6.4",
     "masonry-layout": "^4.1.1",

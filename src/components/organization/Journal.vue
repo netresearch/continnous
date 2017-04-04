@@ -12,8 +12,10 @@
             <div class="journal-time">
               <md-icon v-if="i > 0" class="md-mini">arrow_{{reverse ? 'down' : 'up'}}ward</md-icon>{{formatTime(entry.time)}}
             </div>
-            <div class="journal-comment" v-if="noResource && entry.action === 'comment'">
-              <span v-if="!editComment || editComment.journalId !== entry.journalId">{{entry.comment}}</span>
+            <div class="journal-comment" v-if="noResource && entry.action === 'comment' && entry.comment">
+              <span
+                  v-if="!editComment || editComment.journalId !== entry.journalId"
+                  v-html="formatComment(entry.comment)"></span>
               <md-input-container v-else>
                 <md-textarea
                     ref="commentInputs"
@@ -69,6 +71,7 @@
 
 <script>
   import moment from 'moment';
+  import Autolinker from 'autolinker';
   import sortBy from 'sort-by';
   import Config from '../../models/Config';
   import auth from '../../auth';
@@ -212,6 +215,17 @@
       formatTime(time) {
         return moment(time).calendar();
       },
+      formatComment(comment) {
+        return Autolinker.link(
+          comment
+          .replace(/\r/g, '')
+          .replace(/\n/g, '<br>'),
+          {
+            phone: false,
+            mention: false,
+          }
+        );
+      },
       joinFields(fields) {
         if (!fields || !fields.length) {
           return '';
@@ -245,10 +259,6 @@
       width: 100%;
     }
     .journal-comment {
-      > span {
-        white-space: pre;
-        flex: 0 0 0;
-      }
       .md-input-container {
         margin: -18px 0 6px;
         .md-icon {
