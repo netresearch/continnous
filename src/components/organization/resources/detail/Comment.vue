@@ -19,10 +19,13 @@
 
 <script>
   import Avatar from '../../../Avatar';
+  import mixin from '../mixin';
+  import auth from '../../../../auth';
 
   export default {
     components: { Avatar },
     props: ['organization', 'type', 'item', 'personal'],
+    mixins: [mixin],
     data() {
       return {
         focused: false,
@@ -51,6 +54,9 @@
             undefined,
             text
           );
+          if (this.item.creator !== auth.user.uid) {
+            this.getWatcherRef(this.item.id).set(true);
+          }
           this.$emit('comment', this.text);
           this.text = '';
         }

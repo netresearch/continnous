@@ -105,6 +105,11 @@ export default {
       }
       return Firebase.database().ref(path + '/' + lastParts.join('/'));
     },
+    getWatcherRef(id) {
+      return Firebase.database().ref(
+        'watchers/organizations/' + this.organization.key + '/' + id + '/' + auth.user.uid
+      );
+    },
     setLike(item, like) {
       const byResourceRef = this.getLikesRef(item.id, false, false);
       const byUserRef = this.getLikesRef(item.id, false, true);

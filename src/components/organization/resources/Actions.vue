@@ -163,7 +163,6 @@
   import Share from '../../Share';
   import ResourceLinks from './Links';
   import Avatar from '../../Avatar';
-  import Firebase from '../../../firebase';
 
   export default {
     mixins: [mixin],
@@ -226,9 +225,7 @@
             });
           }
           if (item && item.creator && this.showNotifications) {
-            const watchingRef = Firebase.database().ref(
-              'watchers/organizations/' + this.organization.key + '/' + item.id + '/' + auth.user.uid
-            );
+            const watchingRef = this.getWatcherRef(item.id);
             this.watchingRef = watchingRef;
             this.refs.push(watchingRef);
             watchingRef.on('value', (sn) => {
