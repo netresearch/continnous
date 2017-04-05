@@ -111,8 +111,8 @@
           </template>
         </div>
         <div class="resource-detail-aside" :style="{top: scrollTop + (scrollTop ? 'px' : '')}">
-          <template v-if="id">
-            <div v-if="!edit && period" class="resource-detail-section">
+          <template v-if="id && !edit">
+            <div v-if="period" class="resource-detail-section">
               <md-icon>
                 date_range
                 <md-tooltip>{{$t('fields.dueTime') | ucfirst}}</md-tooltip>
@@ -121,9 +121,9 @@
                 {{period.format()}}
               </div>
             </div>
-            <resource-likes v-if="!edit" class="resource-detail-section" :organization="organization" :item="item">
+            <resource-likes class="resource-detail-section" :organization="organization" :item="item">
             </resource-likes>
-            <div class="resource-detail-section" v-if="!edit && item.parties && item.parties.length">
+            <div class="resource-detail-section" v-if="item.parties && item.parties.length">
               <md-icon>
                 group
                 <md-tooltip>{{$t('fields.parties')}}</md-tooltip>
@@ -132,11 +132,11 @@
                 <avatar :uid="uid" :organization="organization" mini></avatar>
               </div>
             </div>
-            <div class="resource-detail-section">
+            <div class="resource-detail-section" v-if="item.tags">
               <md-icon>local_offer</md-icon>
-              <resource-tags :is-new="!id" :organization="organization" :type="type" :item="item"></resource-tags>
+              <resource-tags :organization="organization" :type="type" :item="item"></resource-tags>
             </div>
-            <base-form sub :direct="!edit" class="resource-detail-section" v-if="mayEdit || item.attachments">
+            <base-form sub direct class="resource-detail-section" v-if="mayEdit || item.attachments">
               <form-element
                   type="form-file"
                   name="attachments"
@@ -145,7 +145,7 @@
               </form-element>
             </base-form>
           </template>
-          <div v-else>
+          <div v-else-if="!id">
             <div class="resource-detail-section">
               <md-icon>thumb_up</md-icon>
               <span v-html="$t('detail.motivation', {firstName: auth.user.displayName.split(' ').shift(), displayName: auth.user.displayName})"></span>

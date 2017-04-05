@@ -71,14 +71,14 @@ span.md-link .md-icon,
 a.md-icon-link .md-icon,
 a.md-link .md-icon,
 .md-caption .md-icon {
-  font-size: 16px;
-  min-width: 16px;
-  width: 16px;
-  min-height: 16px;
-  height: 16px;
-  line-height: 16px;
+  $width: 18px;
+  font-size: $width;
+  min-width: $width;
+  width: $width;
+  min-height: $width;
+  height: $width;
+  line-height: $width;
   position: relative;
-  top: -1px;
 }
 div.md-caption,
 p.md-caption {
@@ -95,11 +95,13 @@ p.md-caption {
   }
 }
 .md-chip {
-  height: 20px;
+  $height: 20px;
+  $padding-top: 3px;
+  height: $height;
   border-radius: 12px;
   font-size: 12px;
   line-height: 12px;
-  padding: 3px 8px;
+  padding: $padding-top 8px;
   border: 1px solid rgba(#000, 0.12);
   background: rgba(#000, 0.06) !important;
   margin: 2px 0;
@@ -120,7 +122,7 @@ p.md-caption {
     height: $width;
     min-height: $width;
     border-radius: 0;
-    top: -1px;
+    top: $height - $padding-top - $width;
     right: 2px;
     .md-icon {
       width: $width;

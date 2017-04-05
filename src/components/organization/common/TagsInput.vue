@@ -13,13 +13,13 @@
           @change="onChipsChange"
           @input-input="onChipsChange"
           @enter="$refs.chipsInput.addChip(); $refs.chipsInput.$refs.input.$el.blur()"
-          v-model="tags">
+          :value="value ? value.filter(t => t !== currentInput) : []">
         <template scope="chip">{{chip.value}}</template>
       </md-chips-input>
     </template>
     <template slot="flyout" scope="autocomplete">
       <div @click="$refs.chipsInput.addChip()" class="md-autocomplete-flyout-item resource-tags-input-flyout-item" v-if="autocomplete.currentResults && autocomplete.currentResults.indexOf(autocomplete.q) < 0">
-        <strong>{{autocomplete.q}}</strong> <span class="md-caption">(new keyword)</span>
+        <strong>{{currentInput}}</strong> <span class="md-caption">(new keyword)</span>
       </div>
     </template>
   </md-autocomplete>
@@ -36,17 +36,13 @@
       permissions: Object,
       matchCase: Boolean
     },
-    computed: {
-      tags() {
-        const tags = this.value || [];
-        if (this.$refs.chipsInput && this.$refs.chipsInput.currentChip) {
-          const index = tags.indexOf(this.$refs.chipsInput.currentChip);
-          if (index > -1) {
-            tags.splice(index, 1);
-          }
-        }
-        return tags;
-      }
+    data() {
+      return {
+        currentInput: ''
+      };
+    },
+    mounted() {
+      this.currentInput = '';
     },
     methods: {
       getTagIncludePattern(tag) {
@@ -102,8 +98,9 @@
       },
       onChipsChange(tags) {
         const allTags = tags.slice(0);
-        if (this.$refs.chipsInput.currentChip) {
-          allTags.push(this.$refs.chipsInput.currentChip);
+        this.currentInput = this.$refs.chipsInput.currentChip;
+        if (this.currentInput && allTags.indexOf(this.currentInput) < 0) {
+          allTags.push(this.currentInput);
         }
         this.$emit('change', allTags.length > 0 ? allTags : null);
         this.$emit('input', allTags.length > 0 ? allTags : null);
