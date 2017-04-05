@@ -197,6 +197,7 @@ module.exports = {
       placeholder: 'Describe what this is about in detail'
     },
     parties: 'Involved users',
+    tags: 'Tags',
     title: 'title',
     initial: 'initial value',
     target: 'target value',

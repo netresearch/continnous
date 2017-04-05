@@ -1,43 +1,43 @@
 <template>
   <div class="resource-detail-form">
-      <form-element
-          type="md-textarea"
-          md-inline name="title"
-          :label="$t('fields.title')"
-          :placeholder="$t(type + '.titlePlaceholder')"
-          md-inline
-      ></form-element>
+    <form-element
+        type="md-textarea"
+        md-inline name="title"
+        :label="$t('fields.title')"
+        :placeholder="$t(type + '.titlePlaceholder')"
+        md-inline
+    ></form-element>
 
-      <form-element
-          type="md-textarea"
-          name="subtitle"
-          :label="$t('fields.subtitle.label')"
-          :placeholder="$t('fields.subtitle.placeholder')"
-          md-inline
-      ></form-element>
+    <form-element
+        type="md-textarea"
+        name="subtitle"
+        :label="$t('fields.subtitle.label')"
+        :placeholder="$t('fields.subtitle.placeholder')"
+        md-inline
+    ></form-element>
 
-      <form-element
-          type="form-file"
-          name="image"
-          :label="$t('fields.image')"
-          style="flex: 1; min-width: 180px; max-width: 100%;"
-          ref="image"
-          gallery
-          accept="image/png,image/jpeg,image/jpg,image/gif"
-          :preview-max-width="600"
-          :preview-max-height="1200">
-      </form-element>
+    <form-element
+        type="form-file"
+        name="image"
+        :label="$t('fields.image')"
+        style="flex: 1; min-width: 180px; max-width: 100%;"
+        ref="image"
+        gallery
+        accept="image/png,image/jpeg,image/jpg,image/gif"
+        :preview-max-width="600"
+        :preview-max-height="1200">
+    </form-element>
 
-      <form-element
-          type="md-editor"
-          name="description"
-          :label="$t('fields.description.label')"
-          :placeholder="$t('fields.description.placeholder')"
-          md-inline
-      >
-      </form-element>
+    <form-element
+        type="md-editor"
+        name="description"
+        :label="$t('fields.description.label')"
+        :placeholder="$t('fields.description.placeholder')"
+        md-inline
+    >
+    </form-element>
 
-      <form-element
+    <form-element
         ref="userInput"
         type="user-input"
         :organization="organization"
@@ -46,18 +46,28 @@
         multiple
         :label="$t('fields.parties')"
         @change="onPartiesChanged"
-      >
-      </form-element>
-      <slot></slot>
-    </div>
+    >
+    </form-element>
+    <form-element
+        type="tags-input"
+        :organization="organization"
+        :permissions="permissions"
+        name="tags"
+        :label="$t('fields.tags')"
+    >
+    </form-element>
+    <slot></slot>
+  </div>
 </template>
 
 <script>
   import UserInput from '../../common/UserInput';
+  import TagsInput from '../../common/TagsInput';
   import FormElement from '../../../form/Element';
   import Firebase from '../../../../firebase';
 
   FormElement.components.UserInput = UserInput;
+  FormElement.components.TagsInput = TagsInput;
 
   export default {
     props: {

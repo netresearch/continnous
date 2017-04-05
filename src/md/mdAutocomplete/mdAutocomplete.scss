@@ -38,4 +38,26 @@
     background-color: rgba(#999, .2);
     text-decoration: none;
   }
+
+  .md-autocomplete-flyout-item {
+    cursor: pointer;
+    background: #fff;
+    min-height: 48px;
+    padding: 0 16px;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    flex: 1;
+    &:hover {
+      background-color: rgba(#999, .2);
+    }
+    span {
+      flex: 1;
+      margin-left: 16px;
+    }
+    .md-icon {
+      color: rgba(#000, 0.56);
+    }
+  }
 }

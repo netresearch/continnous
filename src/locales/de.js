@@ -206,6 +206,7 @@ module.exports = {
     displayName: 'Name',
     email: 'Email',
     parties: 'Beteiligte',
+    tags: 'Schlagworte',
     title: 'Titel',
     initial: 'Anfangswert',
     target: 'Zielwert',

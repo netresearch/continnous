@@ -20,6 +20,8 @@
         :disabled="disabled"
         @keydown.native.backspace="deleteLastChip"
         @keydown.native.prevent.188="addChip"
+        @keydown.native.prevent.enter="$emit('enter')"
+        @input.native="$emit('input-input', selectedChips)"
         tabindex="0"
         ref="input">
     </md-input>
@@ -30,7 +32,7 @@
 import Vue from 'vue';
 
 export default {
-  extends: Vue.component('md-chips').options
+  extends: Vue.component('md-chips').options,
 };
 </script>
 
@@ -40,5 +42,9 @@ export default {
     flex: 1;
     display: flex;
     flex-wrap: wrap;
+    .md-chip {
+      position: relative;
+      top: 4px;
+    }
   }
 </style>

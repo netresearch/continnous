@@ -25,7 +25,7 @@
       ></user-invite>
     </template>
     <template slot="flyout" scope="autocomplete">
-      <div @click="invite = true" class="user-input-no-results md-primary" v-if="autocomplete.currentResults && !autocomplete.currentResults.length">
+      <div @click="invite = true" class="md-autocomplete-flyout-item md-primary" v-if="autocomplete.currentResults && !autocomplete.currentResults.length">
         <md-icon>person_add</md-icon>
         <span>{{$t('actions.inviteUser')}}</span>
       </div>
@@ -132,34 +132,11 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-  .user-input-no-results {
-    cursor: pointer;
-    background: #fff;
-    min-height: 48px;
-    padding: 0 16px;
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
-    justify-content: flex-start;
-    flex: 1;
-    &:hover {
-      background-color: rgba(#999, .2);
-    }
-    span {
-      flex: 1;
-      margin-left: 16px;
-    }
-    .md-icon {
-      color: rgba(#000, 0.56);
-    }
-  }
   .user-input-chips {
     .md-chip {
       padding-top: 0;
       padding-left: 0;
       padding-bottom: 0;
-      position: relative;
-      top: 4px;
     }
     .avatar {
       display: inline-flex;

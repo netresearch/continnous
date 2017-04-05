@@ -1,15 +1,23 @@
 version: '2'
 services:
-  elastic:
+  kibana:
+    image: kibana
+    links:
+      - es
+    environment:
+      ELASTICSEARCH_URL: "http://es:9200"
+    ports:
+      - 5601:5601
+  es:
     image: elasticsearch
     restart: always
   flashlight:
     image: netresearch/flashlight
     restart: always
     links:
-      - elastic
+      - es
     environment:
-      ES_HOST: "elastic"
+      ES_HOST: "es"
     volumes:
       - ./flashlight.js:/opt/app/config.js
       - ./src/models/Config.js:/opt/app/src/models/Config.js

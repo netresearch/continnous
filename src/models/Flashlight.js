@@ -106,7 +106,8 @@ module.exports = class Flashlight {
                 resource: result.resource.replace(/^personal_/, ''),
                 personal: result.resource.indexOf('personal_') === 0,
                 total: result.hits.total,
-                hits: result.hits.hits
+                hits: result.hits.hits,
+                aggregations: result.aggregations
               });
             }
           });
