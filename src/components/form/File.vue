@@ -38,7 +38,7 @@
         :multiple="multiple"
         :accept="accept"
         ref="mdFile"
-        v-show="!box && !disabled && (!numFiles || (multiple && (!limit || numFiles < limit)))"
+        :class="{'form-file-input-hidden': box || disabled || numFiles && (!multiple || limit && numFiles >= limit)}"
         @selected="acceptFiles($event); $refs.mdFile.filename = undefined;"
         :placeholder="$t('file.placeholder')"></md-file>
     <div
@@ -386,6 +386,16 @@
 <style lang="scss" rel="stylesheet/scss">
   .md-input-container .form-file-container {
     flex: 1;
+  }
+  .form-file-input-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    margin: -1px;
+    padding: 0;
+    clip: rect(0 0 0 0);
   }
   .form-file-container {
     max-width: 100%;

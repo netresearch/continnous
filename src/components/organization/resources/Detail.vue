@@ -145,6 +145,7 @@
               </form-element>
             </base-form>
           </template>
+          <form-toc v-else-if="id && edit"></form-toc>
           <div v-else-if="!id">
             <div class="resource-detail-section">
               <md-icon>thumb_up</md-icon>
@@ -419,6 +420,17 @@
     padding-right: $padding;
     float:right;
     width: 296px;
+    .form-toc {
+      margin: 8px 0 0 16px;
+      padding: 8px 24px;
+      border-left: 1px solid rgba(#000, 0.12);
+      .form-toc-entry {
+        padding: 8px 0;
+        .form-toc-active {
+          font-weight: 500;
+        }
+      }
+    }
   }
   .resource-detail-links {
     padding-top: 1px;

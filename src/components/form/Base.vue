@@ -13,6 +13,7 @@
   import Button from './Button';
   import File from './File';
   import Theme from './Theme';
+  import Toc from './Toc';
   import UnloadProtect from './UnloadProtect';
   import { findParentForm } from './child';
 
@@ -21,6 +22,7 @@
     vm.component('form-button', Button);
     vm.component('form-file', File);
     vm.component('form-theme', Theme);
+    vm.component('form-toc', Toc);
     vm.component('form-unload-protect', UnloadProtect);
   });
 
@@ -73,6 +75,7 @@
       if (this.sub) {
         const parent = findParentForm(this.$parent);
         parent.subForms.push(this);
+        parent.$emit('sub-added', this);
         this.takeOverValues(parent.object);
         this.parentForm = parent;
         this.parentForm.subFormsChanged += Object.keys(this.changed).length;
@@ -82,6 +85,7 @@
     beforeDestroy() {
       if (this.sub && this.parentForm) {
         this.parentForm.subForms = this.parentForm.subForms.filter(form => form !== this);
+        this.parentForm.$emit('sub-removed', this);
         this.parentForm.subFormsChanged -= Object.keys(this.changed).length;
         this.parentForm.subFormsErrors -= Object.keys(this.errors).length;
       }
@@ -410,6 +414,7 @@
       },
       _registerFormElement(element) {
         this.elements.push(element);
+        this.$emit('element-added', element);
         if (element.name) {
           this.elementKeys.push(element.name);
           if (this.object && this.object.hasOwnProperty(element.name)) {
@@ -419,6 +424,7 @@
       },
       _unregisterFormElement(element) {
         this.elements = this.elements.filter(e => e !== element);
+        this.$emit('element-removed', element);
         if (element.name) {
           this.elementKeys = this.elementKeys.filter(name => name !== element.name);
           this.$delete(this.changed, element.name);
