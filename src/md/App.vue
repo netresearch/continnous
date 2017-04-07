@@ -1,23 +1,29 @@
 <template>
-  <div class="md-app">
+  <div class="md-app" :class="{'md-app-search-focus': searchFocus || q}">
     <md-whiteframe md-elevation="2">
-      <md-toolbar :class="toolbarClass">
+      <md-toolbar class="md-app-toolbar" :class="toolbarClass">
         <md-button v-if="isMobile" class="md-icon-button md-sidenav-trigger" @click.native="sidenavActive = true">
           <md-icon>menu</md-icon>
         </md-button>
         <slot name="title"></slot>
-        <div v-if="search" @click="$refs.searchInput.focus()" :class="{'md-app-search': true, 'md-app-search-focus': searchFocus || q}">
+        <div v-if="search" @click="$refs.searchInput.focus()" class="md-app-search">
           <md-icon>search</md-icon>
           <input ref="searchInput" type="text" :value="q" :placeholder="search" @focus="searchFocus = true && $emit('search', $event.target.value)" @blur="searchFocus = false" @input="$emit('search', $event.target.value)">
           <md-icon @click.native.stop="$emit('search', false)">clear</md-icon>
         </div>
         <div style="flex: 1"></div>
-        <slot name="actions"></slot>
+        <md-button v-if="search" class="md-icon-button md-app-search-btn" @click.native="searchFocus = true; $timeOut(() => { $refs.searchInput.focus(); }, 100)" md-menu-trigger>
+          <md-icon>search</md-icon>
+        </md-button>
+        <md-toolbar :class="['md-app-actions', {'md-app-actions-active': sidenavActive}]">
+          <slot name="actions"></slot>
+        </md-toolbar>
+        <md-backdrop v-if="sidenavActive" @close="sidenavActive = false"></md-backdrop>
       </md-toolbar>
     </md-whiteframe>
 
     <div :class="['md-sidenav', 'md-left', {'md-active': sidenavActive}]">
-      <div class="md-sidenav-content">
+      <div class="md-sidenav-content" @click="sidenavActive = false">
         <slot name="sidebar"></slot>
       </div>
       <md-backdrop v-if="sidenavActive" class="md-sidenav-backdrop" @close="sidenavActive = false"></md-backdrop>
@@ -100,17 +106,86 @@
           color: inherit !important;
         }
       }
-      &.md-app-search-focus {
+    }
+    @media (max-width: $minWidth) {
+      .md-app-search {
+        position: absolute;
+        left:-10px;
+        top: -44px;
+        width: 10px;
+        overflow: hidden;
+      }
+    }
+    &.md-app-search-focus {
+      .md-app-search {
         background: #fff;
         color: rgba(#000, 0.6);
         box-shadow: 0 1px 1px rgba(0,0,0,0.24);
         border: 1px solid rgba(0,0,0,0.12);
+      }
+      @media (max-width: $minWidth) {
+        .md-app-toolbar {
+          > :not(.md-app-search) {
+            display: none;
+          }
+          .md-app-search {
+            position: relative;
+            top: 0;
+            left: 0;
+            margin-left: 0;
+            width: auto;
+          }
+        }
+      }
+    }
+    @media (min-width: $minWidth) {
+      .md-app-search-btn {
+        display: none;
+      }
+    }
+    .md-app-toolbar {
+      flex-flow: row;
+      .md-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .md-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .md-app-actions {
+        display: flex;
+        flex-flow: row;
+        align-content: center;
+        align-items: center;
+        @media (max-width: $minWidth) {
+          position: absolute;
+          z-index: 100;
+          top: 0px;
+          left: 0;
+          flex-flow: row-reverse;
+          justify-content: space-between;
+          transform: translate3D(-100%, 0, 0);
+          width: 304px;
+          &.md-app-actions-active {
+            transform: translate3D(0, 0, 0);
+          }
+        }
+        @media (min-width: $minWidth) {
+          background: transparent;
+        }
       }
     }
     > .md-whiteframe {
       z-index: 2;
     }
     .md-sidenav {
+      @media (min-width: $minWidth) {
+        .md-app-mobile-toolbar {
+          display: none;
+        }
+      }
       > .md-sidenav-content {
         top: 64px - 8;
         z-index: 1;
@@ -123,12 +198,16 @@
       &.md-active {
         position: absolute;
         z-index: 3;
-        top: -64px;
+        top: 64px;
         left: 0;
         right: 0;
         bottom: 0;
         > .md-sidenav-content {
           z-index: 100;
+          top: 0;
+          > .md-list:first-child {
+            padding-top: 0;
+          }
         }
         @media (min-width: $minWidth) {
           position: static;

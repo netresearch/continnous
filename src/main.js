@@ -42,6 +42,10 @@ Vue.mixin({
         values.push(object[key]);
       });
       return values;
+    },
+    $timeOut(fn, timeout) {
+      /* global window */
+      window.setTimeout(fn, timeout);
     }
   },
   filters: {
