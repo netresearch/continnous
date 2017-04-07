@@ -81,8 +81,21 @@
   import locales from '../locales';
 
   /* global document */
-  const titleElement = document.querySelector('html > head > title');
-  const defaultTitle = titleElement.innerHTML;
+  const titleElements = document.querySelectorAll(
+    'html > head > title,' +
+    'html > head > meta[name="application-name"],' +
+    'html > head > meta[name="apple-mobile-web-app-title"]'
+  );
+  const defaultTitle = titleElements[0].innerHTML;
+  const setTitle = (title) => {
+    titleElements.forEach((el) => {
+      if (el.tagName.toLowerCase() === 'title') {
+        el.innerText = title;
+      } else {
+        el.setAttribute('content', title);
+      }
+    });
+  };
 
   export default {
     components: {
@@ -158,14 +171,14 @@
                     this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
                   }
                   this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
-                  titleElement.innerText = this.title;
+                  setTitle(this.title);
                 });
               });
             } else {
               locales.setFromNavigator().then(() => {
                 this.organization = null;
                 this.title = null;
-                titleElement.innerHTML = defaultTitle;
+                setTitle(defaultTitle);
               });
             }
           },
