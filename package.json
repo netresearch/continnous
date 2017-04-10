@@ -10,6 +10,7 @@
     "deploy:production": "node build/build.js --firebase-config=production && firebase deploy -P production",
     "bolt:staging": "firebase-bolt database.rules.bolt && firebase deploy -P staging --only database",
     "bolt:production": "firebase-bolt database.rules.bolt && firebase deploy -P production --only database",
+    "flashlight:dev": "docker-compose up -d kibana && docker-compose run --rm -e FB_ENV=staging flashlight /bin/sh -c 'node app.js'",
     "flashlight:staging": "sudo docker-compose -p continnous_staging run -d -e FB_ENV=staging flashlight",
     "flashlight:production": "sudo docker-compose up -d flashlight",
     "notifier:dev": "docker-compose run --rm -e FB_ENV=staging notifier || echo ''",

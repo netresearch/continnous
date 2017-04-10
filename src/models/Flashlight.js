@@ -46,13 +46,13 @@ module.exports = class Flashlight {
     this.lastQuery = this.doIgnoreSubsequents ? undefined : query;
 
     const all = resources.indexOf('*') > -1;
-    const personalArgIndex = resources.indexOf(true);
+    const personalAllowed = resources.indexOf(true) > -1;
 
-    (all ? Object.keys(Config.resources) : resources).forEach((r, i) => {
-      if (i === personalArgIndex && !all) {
+    (all ? Object.keys(Config.resources) : resources).forEach((r) => {
+      if (typeof r !== 'string') {
         return;
       }
-      (personalArgIndex > -1 ? [r, 'personal_' + r] : [r]).forEach((resource) => {
+      (personalAllowed ? [r, 'personal_' + r] : [r]).forEach((resource) => {
         if (resources.indexOf(resource) > -1 || this.permissions[resource].read) {
           promises.push(new Promise((resolve, reject) => {
             if (resource !== 'users' && !this.permissions[resource].read) {
@@ -64,6 +64,32 @@ module.exports = class Flashlight {
               index: this.organization.key,
               type: resource
             }, query);
+            if (finalQuery.q) {
+              finalQuery.body = {
+                query: {
+                  simple_query_string: {
+                    query: finalQuery.q
+                  }
+                }
+              };
+              delete finalQuery.q;
+            }
+            if (resource.indexOf('personal_') === 0) {
+              finalQuery.body = typeof finalQuery.body === 'string'
+                ? JSON.parse(finalQuery.body)
+                : Object.assign({}, finalQuery.body);
+              finalQuery.body.query = {
+                bool: {
+                  must: finalQuery.body.query || { match_all: {} },
+                  filter: {
+                    term: {
+                      'creator.keyword': this.auth.user.uid
+                    }
+                  }
+                }
+              };
+              finalQuery.body = JSON.stringify(finalQuery.body);
+            }
             const queryRef = this.queriesRef.push(finalQuery);
             const resultsRef = this.resultsRef.child(queryRef.key);
             const handler = (snapshot) => {

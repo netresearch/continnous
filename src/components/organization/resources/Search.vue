@@ -70,7 +70,7 @@
           });
           if (this.q) {
             if (search || reason === this.permissions) {
-              this.flashlight.search({ q: this.q, sort: this.sort + ':' + this.order }, '*').then(
+              this.flashlight.search({ q: this.q, sort: this.sort + ':' + this.order }, true, '*').then(
                 (results) => {
                   this.results = results;
                   if (this.type && !results.find(
@@ -83,7 +83,7 @@
                   this.$emit('search-results', results);
                 },
                 (e) => {
-                  if (e.error.indexOf('Failed to parse query') < 0) {
+                  if (!e.error || e.error.indexOf('Failed to parse query') < 0) {
                     throw e;
                   }
                 }
