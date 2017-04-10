@@ -1,5 +1,6 @@
 const AbstractNotifier = require('./Abstract');
 const html2text = require('html-to-text');
+const Config = require('../../../src/models/Config');
 
 /**
  * Send emails to item watchers on new journal entries
@@ -62,6 +63,12 @@ module.exports = class JournalsNotifier extends AbstractNotifier {
    */
   sendWatcherMail(entry, item, watcher, causer) {
     const href = this.href(entry.resource + '/' + entry.id);
+    let status;
+    if (entry.action === 'archive') {
+      status = Config.resources[entry.resource].transitions.occasions.reverse().find(
+        occasion => entry[occasion] === true
+      );
+    }
     return this.sendMail({
       to: this.emailAddress(watcher.displayName, watcher.email),
       from: this.emailAddress(causer.displayName),
@@ -70,8 +77,8 @@ module.exports = class JournalsNotifier extends AbstractNotifier {
         let html = '<b>' + causer.displayName + '</b> ';
         html += entry.action + 'd ' + (entry.action === 'comment' ? 'on ' : '');
         html += '<a href="' + href + '">' + item.title + '</a>';
-        if (entry.action === 'archive') {
-          html += ' (<b>' + (entry.completed ? 'completed' : 'discarded') + '</b>)';
+        if (status) {
+          html += ' (<b>' + status + '</b>)';
         }
         if (entry.comment) {
           html += ':<br><br>';
@@ -83,8 +90,8 @@ module.exports = class JournalsNotifier extends AbstractNotifier {
         let text = causer.displayName + ' ' + entry.action + 'd ';
         text += (entry.action === 'comment' ? 'on ' : '');
         text += item.title + ' [' + href + ']';
-        if (entry.action === 'archive') {
-          text += ' (' + (entry.completed ? 'completed' : 'discarded') + ')';
+        if (status) {
+          text += ' (' + status + ')';
         }
         if (entry.comment) {
           text += ':\n\n' + html2text.fromString(entry.comment);

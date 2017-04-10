@@ -1,9 +1,9 @@
 module.exports = {
   errors: {
-    general: 'Es ist ein Fehler aufgetreten',
     401: 'Bitte melde Dich an, um fortzufahren',
     403: 'Du hast hierauf keinen Zugriff mit Deiner aktuellen Anmeldung',
-    404: 'Hier ist nichts :('
+    404: 'Hier ist nichts :(',
+    general: 'Es ist ein Fehler aufgetreten',
   },
   auth: {
     signIn: 'Anmelden',
@@ -16,17 +16,17 @@ module.exports = {
   language: {
     language: 'Sprache',
     de: 'Deutsch',
-    en: 'Englisch'
+    en: 'Englisch',
   },
   settings: 'Einstellungen',
   overview: {
-    title: 'Übersicht'
+    title: 'Übersicht',
   },
   index: {
     where: 'wohin dürfen wir Dich bringen?',
     welcome: 'und herzlich willkommen!',
     noOrgs: 'Du bist hier bisher noch keinen Organisationen beigetreten.',
-    withdraw: 'Anfrage zurückziehen'
+    withdraw: 'Anfrage zurückziehen',
   },
   organization: {
     add: 'Organisation anlegen',
@@ -35,10 +35,10 @@ module.exports = {
     exists: 'Der Name ist bereits vergeben',
     title: 'Organisation',
     info: 'Organisationsinfos',
-    domains: 'Organisations-Domains'
+    domains: 'Organisations-Domains',
   },
   guest: {
-    domains: 'Gast-Domains'
+    domains: 'Gast-Domains',
   },
   theme: 'Aussehen',
   general: 'Allgemein',
@@ -58,7 +58,7 @@ module.exports = {
     guest: 'Gast',
     anyone: 'Jeder',
     applicant: 'Mitgliedschaft angefragt',
-    denied: 'Abgewiesen'
+    denied: 'Abgewiesen',
   },
   changeStatus: 'Status ändern',
   elevationInfo: 'Das steigert die Wichtung im Ranking für Scorings und Likes dieses Nutzers - wirkt sich nur auf künftige Ranking-Updates aus',
@@ -90,13 +90,13 @@ module.exports = {
     makePublic: 'Öffentlich machen',
     inviteUser: 'Benutzer einladen',
     stopWatching: 'Nicht mehr beobachten',
-    watch: 'Beobachten'
+    watch: 'Beobachten',
   },
   confirm: {
     delete: {
       title: 'Wirklich löschen?',
-      content: 'Der Löschvorgang kann nicht rückgängig gemacht werden.'
-    }
+      content: 'Der Löschvorgang kann nicht rückgängig gemacht werden.',
+    },
   },
   isPersonal: 'ist persönlich',
   isPublic: 'ist für alle sichtbar',
@@ -109,19 +109,19 @@ module.exports = {
     scorings: 'Scorings',
     ideas: 'Ideen',
     add: 'Zielvorgabe hinzufügen',
-    none: 'Keine Zielvorgaben'
+    none: 'Keine Zielvorgaben',
   },
   vision: {
     label: 'Vision Statement',
     title: 'Titel des Vision Statement',
     defaultTitle: 'Unsere Vision',
-    placeholder: 'Geben Sie eine klar verständliche Zusammenfassung Ihrer Vision an'
+    placeholder: 'Geben Sie eine klar verständliche Zusammenfassung Ihrer Vision an',
   },
   mission: {
     label: 'Mission Statement',
     title: 'Titel des Mission Statement',
     defaultTitle: 'Unsere Mission',
-    placeholder: 'Geben Sie eine klar verständliche Zusammenfassung Ihrer Mission an'
+    placeholder: 'Geben Sie eine klar verständliche Zusammenfassung Ihrer Mission an',
   },
   objectives: {
     title: 'Ziel | Ziele',
@@ -132,7 +132,7 @@ module.exports = {
     personal_accusative: 'persönliche Ziele',
     accusative_one: 'eins',
     new: 'Neues Ziel',
-    latest: 'Neuestes'
+    latest: 'Neuestes',
   },
   ideas: {
     title: 'Idee | Ideen',
@@ -143,7 +143,7 @@ module.exports = {
     personal_accusative: 'persönliche Ideen',
     accusative_one: 'eine',
     new: 'Neue Idee',
-    latest: 'Neueste'
+    latest: 'Neueste',
   },
   insights: {
     title: 'Erkenntnis | Erkenntnisse',
@@ -154,7 +154,7 @@ module.exports = {
     personal_accusative: 'persönliche Erkenntnisse',
     accusative_one: 'eine',
     new: 'Neue Erkenntnis',
-    latest: 'Neueste'
+    latest: 'Neueste',
   },
   roadmaps: {
     title: 'Roadmap | Roadmaps',
@@ -165,7 +165,7 @@ module.exports = {
     personal_accusative: 'persönliche roadmaps',
     accusative_one: 'eine',
     new: 'Neue Roadmap',
-    latest: 'Neueste'
+    latest: 'Neueste',
   },
   scoring: {
     title: 'Dein Scoring',
@@ -183,11 +183,11 @@ module.exports = {
       impact: 'Wie hoch schätzt Du die Chancen hiervon auf dem Markt ein?',
       feasability: 'Wie einfach wird das umzusetzen sein?',
       feel: 'Wie überzeugt bist Du hiervon?',
-    }
+    },
   },
   links: {
     link: 'Verknüpfen',
-    assign: '{resource} zuweisen'
+    assign: '{resource} zuweisen',
   },
   thereAreNo: 'Es gibt noch keine {accusative}',
   youDontHave: 'Du hast noch keine {accusative}',
@@ -197,11 +197,11 @@ module.exports = {
   fields: {
     subtitle: {
       label: 'Untertitel',
-      placeholder: 'Knappe Zusammenfassung, um schnell eine Ahnung davon zu bekommen'
+      placeholder: 'Knappe Zusammenfassung, um schnell eine Ahnung davon zu bekommen',
     },
     description: {
       label: 'Beschreibung',
-      placeholder: 'Beschreibe detailliert, worum es hier geht'
+      placeholder: 'Beschreibe detailliert, worum es hier geht',
     },
     displayName: 'Name',
     email: 'Email',
@@ -216,19 +216,19 @@ module.exports = {
     updated: 'Aktualisiert',
     period: {
       label: 'Umsetzungszeitraum',
-      placeholder: 'Wähle innerhalb welches Zeitraums das umgesetzt werden soll'
+      placeholder: 'Wähle innerhalb welches Zeitraums das umgesetzt werden soll',
     },
     dueTime: 'Umsetzungszeitraum',
     rank: 'Ranking',
-    _score: 'Relevanz'
+    _score: 'Relevanz',
   },
   file: {
     placeholder: 'Ziehe Dateien zum Upload hierher oder klicke hier.',
     errors: {
       notAdded: 'konnte nicht hinzugefügt werden | konnten nicht hinzugefügt werden',
       type: 'Falscher Dateityp',
-      limit: 'Anzahl der Dateien überschritten'
-    }
+      limit: 'Anzahl der Dateien überschritten',
+    },
   },
   search: 'Suche',
   and: 'und',
@@ -238,7 +238,7 @@ module.exports = {
     sort: 'Sortieren nach',
     order: 'Reihenfolge',
     asc: 'Aufsteigend',
-    desc: 'Absteigend'
+    desc: 'Absteigend',
   },
   journal: {
     archive: 'hat {resource} archiviert',
@@ -252,7 +252,7 @@ module.exports = {
     comment: 'kommentierte',
     confirmCommentDelete: 'Kommentar wirklich löschen?',
     this: 'das',
-    empty: 'Es ist noch nichts passiert'
+    empty: 'Es ist noch nichts passiert',
   },
   you: 'Du',
   quarter: 'Quartal',
@@ -261,7 +261,10 @@ module.exports = {
     occasion: 'Grund',
     reason: 'Begründung',
     discarded: 'Verworfen',
-    completed: 'Abgeschlossen'
+    accepted: 'Angenommen',
+    completed: 'Abgeschlossen',
+    heeded: 'Beherzigt',
+    outdated: 'Veraltet'
   },
   detail: {
     this: 'Das',
@@ -282,6 +285,6 @@ module.exports = {
     confirm: 'Du hast Deine Änderungen noch nicht gespeichert - willst Du fortfahren, ohne zu speichern?',
     text: 'Du hast Deine Änderungen noch nicht gespeichert - was möchtest Du tun?',
     continue: 'Fortfahren ohne zu speichern',
-    save: 'Speichern und fortfahren'
+    save: 'Speichern und fortfahren',
   },
 };

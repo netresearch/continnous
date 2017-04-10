@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+const program = require('commander');
+const fs = require('fs');
+const path = require('path');
+const extend = require('extend');
+
+program
+  .command('join')
+  .description('Join locales files (add missing entries)')
+  .action(() => {
+    const files = fs.readdirSync(path.resolve(__dirname, '../src/locales'));
+    const translations = [];
+    const merged = {};
+    files.filter(file => file.match(/^[a-z][a-z]\.js$/)).forEach((f) => {
+      const file = path.resolve(__dirname, '../src/locales', f);
+      const contents = require(file);
+      translations.push({ file, contents });
+      extend(true, merged, contents);
+    });
+    const fill = (object, value) => {
+      Object.keys(object).forEach((key) => {
+        if (typeof object[key] === 'string') {
+          object[key] = value;
+        } else {
+          fill(object[key], value);
+        }
+      });
+    };
+    fill(merged, '???');
+    const print = (object, prefix) => {
+      let str = '{';
+      const p = (prefix || '') + '  ';
+      Object.keys(object).forEach((key) => {
+        str += '\n' + p + key + ': ';
+        if (typeof object[key] === 'string') {
+          str += "'" + object[key].replace(/'/g, "\\'") + "',";
+        } else {
+          str += print(object[key], p) + ',';
+        }
+      });
+      return str + '\n' + (prefix || '') + '}';
+    };
+    translations.forEach((translation) => {
+      const contents = extend(true, {}, merged, translation.contents);
+      console.log('Writing ' + translation.file);
+      fs.writeFileSync(translation.file, 'module.exports = ' + print(contents) + ';\n');
+    });
+  });
+
+program.parse(process.argv);

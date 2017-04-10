@@ -25,6 +25,9 @@ const Config = {
           assign: true,
           priority: 1
         }
+      },
+      transitions: {
+        occasions: ['discarded', 'completed'],
       }
     },
     ideas: {
@@ -46,6 +49,9 @@ const Config = {
       results: false,
       links: {
         ideas: true
+      },
+      transitions: {
+        occasions: ['discarded', 'accepted', 'completed'],
       }
     },
     insights: {
@@ -67,6 +73,9 @@ const Config = {
       results: false,
       links: {
         ideas: true
+      },
+      transitions: {
+        occasions: ['discarded', 'heeded', 'outdated'],
       }
     },
     roadmaps: {
@@ -91,7 +100,10 @@ const Config = {
           assign: true,
           priority: 2
         }
-      }
+      },
+      transitions: {
+        occasions: ['discarded', 'completed'],
+      },
     }
   },
   flashlight: {

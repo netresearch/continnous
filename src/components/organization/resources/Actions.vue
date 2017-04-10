@@ -140,7 +140,7 @@
               v-model="transition.occasion"
               name="transition-occasion"
               :md-value="occasion"
-              v-for="occasion in ['discarded', 'completed']"
+              v-for="occasion in occasions"
           >{{$t('transition.' + occasion)}}</md-radio>
         </div>
         <md-input-container>
@@ -163,6 +163,7 @@
   import Share from '../../Share';
   import ResourceLinks from './Links';
   import Avatar from '../../Avatar';
+  import Config from '../../../models/Config';
 
   export default {
     mixins: [mixin],
@@ -205,6 +206,9 @@
           }
         }
         return { path, query };
+      },
+      occasions() {
+        return this.type ? Config.resources[this.type].transitions.occasions : [];
       }
     },
     watch: {

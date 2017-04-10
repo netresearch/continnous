@@ -1,9 +1,9 @@
 module.exports = {
   errors: {
-    general: 'An error occured',
     401: 'Please sign in to proceed',
     403: 'You\'re not allowed to see this with the current account',
-    404: 'Here\'s nothing :('
+    404: 'Here\'s nothing :(',
+    general: 'An error occured',
   },
   auth: {
     signIn: 'Sign in',
@@ -11,22 +11,22 @@ module.exports = {
     switchAccount: 'Switch account',
     requestMembership: 'Request membership',
     membershipProcessed: 'Your membership is being processed',
-    membershipDenied: 'Your membership has been denied'
+    membershipDenied: 'Your membership has been denied',
   },
   language: {
     language: 'Language',
     de: 'German',
-    en: 'English'
+    en: 'English',
   },
   settings: 'Settings',
   overview: {
-    title: 'Overview'
+    title: 'Overview',
   },
   index: {
     where: 'where may we take you?',
     welcome: 'and welcome!',
     noOrgs: 'You didn\'t join any organizations here yet..',
-    withdraw: 'Withdraw request'
+    withdraw: 'Withdraw request',
   },
   organization: {
     add: 'Add organization',
@@ -35,10 +35,10 @@ module.exports = {
     exists: 'The name is already taken',
     title: 'Organization',
     info: 'Organization information',
-    domains: 'Organization domains'
+    domains: 'Organization domains',
   },
   guest: {
-    domains: 'Guest domains'
+    domains: 'Guest domains',
   },
   theme: 'Theme',
   general: 'General',
@@ -49,13 +49,16 @@ module.exports = {
   domain: 'Domain | Domains',
   addDomain: 'Add domain',
   user: 'User | Users',
+  invite: {
+    userExists: 'User already exists (eventually blocked)',
+  },
   roles: {
     admin: 'Administrator',
     member: 'Member',
     guest: 'Guest',
     anyone: 'Anyone',
     applicant: 'Requesting membership',
-    denied: 'Denied'
+    denied: 'Denied',
   },
   changeStatus: 'Change status',
   elevationInfo: 'This elevates this users weighting in ratings based on likes, visits and scorings - will only affect future rating updates',
@@ -92,8 +95,8 @@ module.exports = {
   confirm: {
     delete: {
       title: 'Really delete?',
-      content: 'Deleting this can not be undone.'
-    }
+      content: 'Deleting this can not be undone.',
+    },
   },
   isPersonal: 'is personal',
   isPublic: 'is public',
@@ -106,19 +109,19 @@ module.exports = {
     scorings: 'Scorings',
     ideas: 'Ideas',
     add: 'Add a key result',
-    none: 'No key results set'
+    none: 'No key results set',
   },
   vision: {
     label: 'Vision statement',
     title: 'Vision statement title',
     defaultTitle: 'Our vision',
-    placeholder: 'Provide a clear vision statement'
+    placeholder: 'Provide a clear vision statement',
   },
   mission: {
     label: 'Mission statement',
     title: 'Mission statement title',
     defaultTitle: 'Our mission',
-    placeholder: 'Provide a clear mission statement'
+    placeholder: 'Provide a clear mission statement',
   },
   objectives: {
     title: 'Objective | Objectives',
@@ -128,7 +131,8 @@ module.exports = {
     accusative: 'objectives',
     personal_accusative: 'personal objectives',
     accusative_one: 'one',
-    new: 'New objective'
+    new: 'New objective',
+    latest: 'Latest',
   },
   ideas: {
     title: 'Idea | Ideas',
@@ -139,6 +143,7 @@ module.exports = {
     personal_accusative: 'personal ideas',
     accusative_one: 'one',
     new: 'New idea',
+    latest: 'Latest',
   },
   insights: {
     title: 'Insight | Insights',
@@ -148,7 +153,8 @@ module.exports = {
     accusative: 'insights',
     personal_accusative: 'personal insights',
     accusative_one: 'one',
-    new: 'New insight'
+    new: 'New insight',
+    latest: 'Latest',
   },
   roadmaps: {
     title: 'Roadmap | Roadmaps',
@@ -158,7 +164,8 @@ module.exports = {
     accusative: 'roadmaps',
     personal_accusative: 'personal roadmaps',
     accusative_one: 'one',
-    new: 'New roadmap'
+    new: 'New roadmap',
+    latest: 'Latest',
   },
   scoring: {
     title: 'Your scoring',
@@ -176,11 +183,11 @@ module.exports = {
       impact: 'How big do you consider the opportunity of your idea?',
       feasability: 'How easy will it be to implement this?',
       feel: 'How confident do you feel about your idea?',
-    }
+    },
   },
   links: {
     link: 'Link',
-    assign: 'Assign {resource}'
+    assign: 'Assign {resource}',
   },
   thereAreNo: 'There are no {accusative} yet',
   youDontHave: 'You don\'t have {accusative} yet',
@@ -190,12 +197,14 @@ module.exports = {
   fields: {
     subtitle: {
       label: 'subtitle',
-      placeholder: 'Short subtitle to get a quick idea of what this is about'
+      placeholder: 'Short subtitle to get a quick idea of what this is about',
     },
     description: {
       label: 'description',
-      placeholder: 'Describe what this is about in detail'
+      placeholder: 'Describe what this is about in detail',
     },
+    displayName: 'Name',
+    email: 'Email',
     parties: 'Involved users',
     tags: 'Tags',
     title: 'title',
@@ -207,19 +216,19 @@ module.exports = {
     updated: 'updated',
     period: {
       label: 'target period',
-      placeholder: 'Select within which period this should be accomplished'
+      placeholder: 'Select within which period this should be accomplished',
     },
     dueTime: 'target period',
     rank: 'ranking',
-    _score: 'relevance'
+    _score: 'relevance',
   },
   file: {
     placeholder: 'Drag and drop to upload or click here.',
     errors: {
       notAdded: 'could not be added | could not be added',
       type: 'Wrong file type',
-      limit: 'Limit exceeded'
-    }
+      limit: 'Limit exceeded',
+    },
   },
   search: 'Search',
   and: 'and',
@@ -229,7 +238,7 @@ module.exports = {
     sort: 'Sort by',
     order: 'Order',
     asc: 'Ascending',
-    desc: 'Descending'
+    desc: 'Descending',
   },
   journal: {
     archive: 'archived',
@@ -243,11 +252,20 @@ module.exports = {
     comment: 'commented',
     confirmCommentDelete: 'Really delete comment?',
     this: 'this',
-    empty: 'Nothing happened yet'
+    empty: 'Nothing happened yet',
   },
   you: 'You',
   quarter: 'Quarter',
   for: 'for',
+  transition: {
+    occasion: 'Occasion',
+    reason: 'Reason',
+    discarded: 'Discarded',
+    accepted: 'Accepted',
+    completed: 'Completed',
+    heeded: 'Heeded',
+    outdated: 'Outdated'
+  },
   detail: {
     this: 'This',
     created: 'Created {ago}',
@@ -267,6 +285,6 @@ module.exports = {
     confirm: 'You have unsaved changes - do you want to leave without saving?',
     text: 'You have unsaved changes - what do you want to do?',
     continue: 'Continue without saving',
-    save: 'Save and continue'
+    save: 'Save and continue',
   },
 };
