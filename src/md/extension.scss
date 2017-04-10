@@ -56,6 +56,34 @@ a.md-icon-link {
   top: 2px;
 }
 
+[data-md-badge] {
+  &:after {
+    content: attr(data-md-badge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+    font-size: 10px;
+    line-height: 16px;
+    text-align:center;
+    border-radius: 50%;
+    margin: 0;
+    min-width: 16px;
+    height: 16px;
+    opacity: 1.0;
+    position: relative;
+    z-index: 2;
+  }
+  &.md-icon-button {
+    overflow: visible;
+    &:after {
+      position: absolute;
+      right: 0;
+      top: 2px;
+    }
+  }
+}
+
 .md-icon.md-mini,
 .md-badge .md-icon {
   font-size: 12px;

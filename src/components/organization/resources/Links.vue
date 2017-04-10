@@ -23,9 +23,8 @@
     </template>
     <template v-if="badges">
       <md-menu md-size="5" ref="assignLinks" v-for="link in links.assign" v-if="link.items.length">
-        <md-button class="md-icon-button" @click.native="loadLinks.push(link.resource)" md-menu-trigger>
+        <md-button class="md-icon-button" @click.native="loadLinks.push(link.resource)" md-menu-trigger :data-md-badge="link.items.length">
           <md-icon>{{resources[link.resource].icon}}</md-icon>
-          <span class="md-badge">{{link.items.length}}</span>
         </md-button>
         <md-menu-content>
           <inline-list
