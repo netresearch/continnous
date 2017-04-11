@@ -8,6 +8,7 @@
     "dev": "node build/dev-server.js --firebase-config=staging",
     "deploy:staging": "node build/build.js --firebase-config=staging && firebase deploy -P staging",
     "deploy:production": "node build/build.js --firebase-config=production && firebase deploy -P production",
+    "rollout": "npm run deploy:staging && npm run deploy:production",
     "bolt:staging": "firebase-bolt database.rules.bolt && firebase deploy -P staging --only database",
     "bolt:production": "firebase-bolt database.rules.bolt && firebase deploy -P production --only database",
     "flashlight:dev": "docker-compose up -d kibana && docker-compose run --rm -e FB_ENV=staging flashlight /bin/sh -c 'node app.js'",

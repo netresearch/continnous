@@ -5,7 +5,7 @@
         :search="$t('actions.search')"
         @search="handleSearch"
         :q="$route.query.q"
-        v-if="organization && auth.user"
+        v-if="organization && auth.user && role"
     >
       <template slot="title">
         <h2 class="md-title">{{title}}</h2>
