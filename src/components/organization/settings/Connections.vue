@@ -16,10 +16,12 @@
     </md-card>
     <dialog-form
       v-if="current"
+      ref="form"
       :firebase-path="'/organizations/' + organization.key + '/connections/' + current"
       firebase-bind
       @saved="current = undefined"
       @closed="current = undefined"
+      @before-save="testConnection"
     >
       <template scope="form">
         <form-element
@@ -38,7 +40,7 @@
           v-if="form.values.type"
           validate="required"
         ></form-element>
-        <component v-if="form.values.type" :is="connectors[form.values.type].configurationForm"></component>
+        <component ref="connectionForm" v-if="form.values.type" :is="connectors[form.values.type].configurationForm"></component>
       </template>
     </dialog-form>
   </div>
@@ -64,5 +66,15 @@
         this.connectors = connectors;
       });
     },
+    methods: {
+      testConnection(promises) {
+        if (this.$refs.connectionForm.test) {
+          const values = this.$refs.form.values;
+          const Connector = this.connectors[values.type];
+          const connection = new Connector(values);
+          promises.push(this.$refs.connectionForm.test(connection));
+        }
+      }
+    }
   };
 </script>
