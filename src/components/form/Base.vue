@@ -16,6 +16,8 @@
   import Toc from './Toc';
   import UnloadProtect from './UnloadProtect';
   import { findParentForm } from './child';
+  import Validators from './Validators';
+  import Filters from './Filters';
 
   Vue.use((vm) => {
     vm.component('form-element', Element);
@@ -60,16 +62,13 @@
        fieldKey => 'method1,method2'
        fieldKey => function(value) {}
        fieldKey => ['method', function(value) {}]
+       fieldKey => {method1: true, method2: {length: 2}}
        } */
       filter: Object,
       mdInline: Boolean,
       disabled: Boolean,
       sub: Boolean,
       direct: Boolean
-    },
-    created() {
-      this.elements = [];
-      this.subForms = [];
     },
     mounted() {
       if (this.sub) {
@@ -100,8 +99,12 @@
         status: undefined,
         waiting: false,
         progress: false,
+        parentForm: undefined,
         subFormsChanged: 0,
-        subFormsErrors: 0
+        subFormsErrors: 0,
+        subFormsMissing: 0,
+        elements: [],
+        subForms: []
       };
     },
     computed: {
@@ -109,6 +112,42 @@
         return this.keys.concat(this.elementKeys).filter(
           (key, index, self) => self.indexOf(key) === index
         );
+      },
+      missing() {
+        let missing = 0;
+        this.allKeys.forEach((key) => {
+          const targets = [this];
+          const element = this.elements.find(el => el.name === key);
+          if (element) {
+            targets.push(element);
+          }
+          const isRequired = targets.find((target, isElement) => {
+            if (target.validate && (isElement || target.validate.hasOwnProperty(key))) {
+              const config = isElement ? target.validate : target.validate[key];
+              let methods = [];
+              if (typeof config === 'string') {
+                methods = config.split(',');
+              } else if (Array.isArray(config)) {
+                methods = config;
+              } else if (typeof config === 'object') {
+                methods = Object.keys(config).filter(m => !!config[m]);
+              }
+              return methods.indexOf('required') > -1;
+            }
+            return false;
+          });
+          if (isRequired && !Validators.required(this.values[key])) {
+            missing++;
+          }
+        });
+        return missing;
+      },
+      subFormsMissing() {
+        let missing = 0;
+        this.subForms.forEach((subForm) => {
+          missing += subForm.missing + subForm.subFormsMissing;
+        });
+        return missing;
       }
     },
     watch: {
@@ -233,31 +272,59 @@
       },
       filterOrValidate(type, key, incomingValue) {
         const isFilter = (type === 'filter');
+        const lib = isFilter ? Filters : Validators;
         let value = incomingValue;
-        let methods = [];
-        if (this[type] && this[type].hasOwnProperty(key)) {
-          if (typeof this[type][key] === 'string') {
-            methods = this[type][key].split(',');
-          } else if (Array.isArray(this[type][key])) {
-            methods = this[type][key];
-          } else {
-            methods = [this[type][key]];
-          }
+        const targets = [this];
+        const element = this.elements.find(el => el.name === key);
+        if (element) {
+          targets.push(element);
+        }
+        const isValid = targets.every((target, isElement) => {
+          if (target[type] && (isElement || target[type].hasOwnProperty(key))) {
+            let options = {};
+            const config = isElement ? target[type] : target[type][key];
+            let methods = [];
+            if (typeof config === 'string') {
+              methods = config.split(',');
+            } else if (Array.isArray(this[type][key])) {
+              methods = config;
+            } else if (typeof config === 'function') {
+              methods = [config];
+            } else if (typeof config === 'object') {
+              methods = Object.keys(config).filter(m => !!config[m]);
+              options = config;
+            }
 
-          methods = methods.map(method => (typeof method === 'string' ? this.$parent[method] : method));
-
-          for (let j = 0, m = methods.length; j < m; j++) {
-            if (isFilter) {
-              value = methods[j].call(this.$parent, value, key);
-            } else if (!methods[j].call(this.$parent, value, key)) {
-              return false;
+            for (let j = 0, m = methods.length; j < m; j++) {
+              let method = methods[j];
+              if (typeof method === 'string') {
+                method = (lib[method] || target.$parent[method])
+                  .bind(target.$parent, value, key, options[method]);
+              } else {
+                method = method.bind(target.$parent, value, key);
+              }
+              if (isFilter) {
+                value = method();
+              } else if (!method()) {
+                return false;
+              }
             }
           }
-        }
-        return isFilter ? value : true;
+          return true;
+        });
+        return isFilter ? value : isValid;
       },
-      isValid(key) {
-        return !this.errors.hasOwnProperty(key);
+      isValid(recursive) {
+        if (this.missing || recursive && (this.subFormsErrors || this.subFormsMissing)) {
+          return false;
+        }
+        const keys = this.allKeys;
+        for (let i = 0, l = keys.length; i < l; i++) {
+          if (this.errors[keys[i]]) {
+            return false;
+          }
+        }
+        return true;
       },
       hasChanged(includeInvalid, recursive) {
         if (recursive) {

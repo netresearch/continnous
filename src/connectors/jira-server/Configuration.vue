@@ -1,6 +1,12 @@
 <template>
   <div>
-    <form-element type="md-input" name="url" label="URL" placeholder="https://jira-instance.example.com">
+    <form-element
+        type="md-input"
+        name="url"
+        label="URL"
+        placeholder="https://jira-instance.example.com"
+        validate="required,url"
+    >
     </form-element>
   </div>
 </template>

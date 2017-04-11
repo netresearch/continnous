@@ -11,7 +11,16 @@
       mdInline: Boolean,
       mdHasPassword: Boolean,
       naked: Boolean,
-      disabled: Boolean
+      disabled: Boolean,
+      /*
+       'method'
+       'method1,method2'
+       function(value) {}
+       ['method', function(value) {}]
+       {method1: true, method2: {length: 2}}
+      */
+      validate: [String, Function, Array, Object],
+      filter: [String, Function, Array, Object],
     },
     data() {
       return {
@@ -48,7 +57,8 @@
           },
           props: Object.assign({}, this.defaultElementArgs, this.$vnode.data.attrs, {
             value,
-            disabled
+            disabled,
+            required: this.isRequired()
           }),
           ref: 'el'
         },
@@ -77,6 +87,9 @@
                 mdInline: this.mdInline || (this.form && this.form.mdInline),
                 mdHasPassword: this.mdHasPassword
               },
+              class: {
+                'md-input-invalid': this.form && this.name && this.form.errors.hasOwnProperty(this.name),
+              },
               ref: 'container'
             },
             this.label ? [h('label', this.label), element] : [element]
@@ -89,6 +102,16 @@
         this.$emit('input', value);
         this.$emit('change', value);
         this.form.onChange(this.name, value);
+      },
+      isRequired() {
+        if (typeof this.validate === 'string') {
+          return this.validate.split(',').indexOf('required') > -1;
+        } else if (Array.isArray(this.validate)) {
+          return this.validate.indexOf('required') > -1;
+        } else if (typeof this.validate === 'object') {
+          return this.validate.hasOwnProperty('required');
+        }
+        return false;
       }
     }
   };

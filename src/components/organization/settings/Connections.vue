@@ -35,6 +35,8 @@
           type="md-input"
           name="title"
           :label="$t('fields.title')"
+          v-if="form.values.type"
+          validate="required"
         ></form-element>
         <component v-if="form.values.type" :is="connectors[form.values.type].configurationForm"></component>
       </template>
