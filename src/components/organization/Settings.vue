@@ -8,7 +8,7 @@
       <md-toolbar class="md-dense md-nav-bar">
         <router-link
             exact
-            v-for="(name, path) in {'': $t('general'), 'permissions': $tc('permission', 2), 'users': $tc('user', 2)}"
+            v-for="(name, path) in {'': $t('general'), 'permissions': $tc('permission', 2), 'users': $tc('user', 2), 'connections': $tc('connections.title', 2)}"
             :to="getUrlPath({settings: path || true})" class="md-button">
           {{name}}
         </router-link>
