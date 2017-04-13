@@ -23,9 +23,9 @@ module.exports = class Flashlight {
   constructor(organization, permissions, auth) {
     this.organization = organization;
     this.permissions = permissions;
-    this.auth = auth;
     /* eslint-disable global-require */
     const Firebase = require('../firebase');
+    this.auth = auth || require('../auth').default;
     /* eslint-enable global-require */
     this.queriesRef = Firebase.database().ref(Config.flashlight.paths.queries);
     this.resultsRef = Firebase.database().ref(Config.flashlight.paths.results);

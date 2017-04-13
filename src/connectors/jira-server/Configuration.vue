@@ -24,14 +24,8 @@
     },
     methods: {
       test(connection) {
-        const login = this.$refs.login;
         this.title = connection.options.title;
-        return connection
-          .signIn(login.login)
-          .then(() => login.ok(), (e) => {
-            login.close();
-            return Promise.reject(e);
-          });
+        return connection.signIn(this.$refs.login);
       }
     }
   };

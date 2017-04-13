@@ -1,5 +1,8 @@
 import xhr from 'xhr';
 import ConfigurationForm from './Configuration';
+import LinkForm from './Link';
+
+const AUTH_PATH = 'auth/1/session';
 
 export default class JiraConnector {
   constructor(options) {
@@ -8,6 +11,10 @@ export default class JiraConnector {
   }
   static label = 'JIRA (Server)';
   static configurationForm = ConfigurationForm;
+
+  linkForm = LinkForm;
+
+  signinIn = false;
 
   get(path, options) {
     return new Promise((resolve, reject) => {
@@ -29,6 +36,32 @@ export default class JiraConnector {
           }
         }
       );
+    }).catch((error) => {
+      if (error.response.statusCode === 401 && !this.signinIn && options && options.login) {
+        let credentialsWrong;
+        this.signinIn = true;
+        const signIn = () => options.login.login(credentialsWrong)
+          .then(credentials => this.post(AUTH_PATH, credentials))
+          .catch((signInError) => {
+            if (signInError && signInError.response.statusCode === 401) {
+              credentialsWrong = true;
+              return signIn();
+            }
+            this.signinIn = false;
+            options.login.close();
+            return Promise.reject(signInError);
+          })
+          .then((session) => {
+            this.signinIn = false;
+            options.login.ok();
+            if (path !== AUTH_PATH) {
+              return session;
+            }
+            return this.get(path, options);
+          });
+        return signIn();
+      }
+      return Promise.reject(error);
     });
   }
 
@@ -36,23 +69,7 @@ export default class JiraConnector {
     return this.get(path, Object.assign({ body: data, method: 'POST' }, options));
   }
 
-  signIn(getCredentials) {
-    const path = 'auth/1/session';
-    return this.get(path).catch((error) => {
-      if (error.response.statusCode === 401) {
-        let credentialsWrong;
-        const signIn = () => getCredentials(credentialsWrong)
-          .then(credentials => this.post(path, credentials))
-          .catch((signInError) => {
-            if (signInError && signInError.response.statusCode === 401) {
-              credentialsWrong = true;
-              return signIn();
-            }
-            throw signInError;
-          });
-        return signIn();
-      }
-      throw error;
-    });
+  signIn(login) {
+    return this.get(AUTH_PATH, { login });
   }
 }

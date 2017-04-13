@@ -73,17 +73,33 @@
             selectable
             @selected="addLink($event)"
         ></inline-list>
-        <inline-list
-            v-else-if="dialogLink === true"
-            :organization="organization"
-            :permissions="permissions"
-            :personal="personal"
-            :type="links.normal.filter(function(link) { return link.mayEdit; }).map(function (link) { return link.resource; })"
-            :entries="Array.prototype.concat.apply([{id: item.id, resource: type}], links.normal.map(function(link) { return link.items; }))"
-            search
-            selectable
-            @selected="addLink($event)"
-        ></inline-list>
+        <template v-else-if="dialogLink === true">
+          <div v-if="connections && Object.keys(connections).length > 0">
+            <md-radio v-model="linkConnection" :md-value="false">Intern</md-radio>
+            <md-radio
+                v-model="linkConnection"
+                v-for="(connection, key) in connections"
+                :md-value="key"
+            >{{connection.options.title}}</md-radio>
+          </div>
+          <inline-list
+              v-if="!linkConnection"
+              :organization="organization"
+              :permissions="permissions"
+              :personal="personal"
+              :type="links.normal.filter(function(link) { return link.mayEdit; }).map(function (link) { return link.resource; })"
+              :entries="Array.prototype.concat.apply([{id: item.id, resource: type}], links.normal.map(function(link) { return link.items; }))"
+              search
+              selectable
+              @selected="addLink($event)"
+          ></inline-list>
+          <component
+              v-else
+              :is="connections[linkConnection].linkForm"
+              :connection="connections[linkConnection]"
+              @selected="addConnectionLink(linkConnection, $event)"
+          ></component>
+        </template>
       </md-dialog-content>
     </md-dialog>
   </div>
@@ -94,6 +110,7 @@
   import InlineList from './InlineList';
   import Config from '../../../models/Config';
   import auth from '../../../auth';
+  import Connections from '../../../models/Connections';
 
   export default {
     mixins: [mixin],
@@ -113,12 +130,20 @@
       return {
         resources: Config.resources,
         dialogLink: undefined,
-        loadLinks: []
+        loadLinks: [],
+        connections: undefined,
+        linkConnection: false
       };
     },
     watch: {
       dialogLink(link) {
+        this.linkConnection = false;
         if (link) {
+          if (!this.connections) {
+            Connections.getForOrganization(this.organization).then((connections) => {
+              this.connections = connections.filter(connection => connection.linkForm);
+            });
+          }
           this.$nextTick(() => {
             this.$nextTick(() => {
               this.$refs.dialog.open();
@@ -246,6 +271,14 @@
             this.personal
           );
         });
+        if (this.$refs.dialog) {
+          this.$refs.dialog.close();
+        }
+      },
+      addConnectionLink(connectionKey, link) {
+        this.getFirebaseRef(
+          this.archive, this.item.id, this.personal
+        ).child('links/' + connectionKey).push(link);
         if (this.$refs.dialog) {
           this.$refs.dialog.close();
         }
