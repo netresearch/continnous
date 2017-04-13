@@ -84,7 +84,7 @@ if (!FormElement.mixins) {
 }
 FormElement.mixins.push({
   created() {
-    this.$on('after-save', (beforeSave, progress) => {
+    this.$on('after-save', (values, afterSave, progress) => {
       const ref = Firebase.storage().ref();
       this.elements.filter(
         element => element.$refs.el.$options.isFileElement
@@ -134,7 +134,7 @@ FormElement.mixins.push({
               ));
             }
           }
-          beforeSave.push(Promise.all(promises));
+          afterSave.push(Promise.all(promises));
         });
       });
     });

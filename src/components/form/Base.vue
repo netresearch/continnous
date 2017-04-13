@@ -444,7 +444,7 @@
               form.form.$emit(...args);
             });
           };
-          $emit('before-save', beforeSave, progress);
+          $emit('before-save', updates, beforeSave, progress);
           Promise.all(beforeSave).then(
             () => {
               this.$emit('progress', this.progress);
@@ -453,7 +453,7 @@
               return ref.update(updates).then(
                 () => {
                   const afterSave = [];
-                  $emit('after-save', afterSave, progress);
+                  $emit('after-save', updates, afterSave, progress);
                   Promise.all(afterSave).then(() => {
                     this.status = 1;
                     forms.forEach((form) => {

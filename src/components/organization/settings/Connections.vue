@@ -100,12 +100,12 @@
           });
         });
       },
-      testConnection(promises) {
+      testConnection(options, promises) {
+        Object.assign(options, this.$refs.form.values);
         this.loginCanceled = undefined;
         if (this.$refs.connectionForm.test) {
-          const values = this.$refs.form.values;
-          const Connector = this.connectors[values.type];
-          const connection = new Connector(values);
+          const Connector = this.connectors[options.type];
+          const connection = new Connector(options);
           promises.push(
             this.$refs.connectionForm.test(connection)
               .catch((e) => {

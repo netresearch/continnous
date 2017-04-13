@@ -72,7 +72,7 @@
           });
         }
       },
-      onFormSave(beforeSave) {
+      onFormSave(values, beforeSave) {
         if (this.isNew) {
           beforeSave.push(new Promise((resolve, reject) => {
             this.save().then(resolve, reject);

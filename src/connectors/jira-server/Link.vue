@@ -8,7 +8,7 @@
     <template v-if="sword && issues">
       <md-list v-if="issues.length">
         <md-list-item v-for="issue in issues" @click.native="onIssueSelected(issue)">
-          <img :src="url + issue.img">
+          <img :src="connection.options.self + issue.img">
           <div style="flex: 1; margin-left: 6px;">
             <span v-html="issue.keyHtml"></span> - <span v-html="issue.summary"></span>
           </div>
@@ -27,11 +27,6 @@
     components: { Login },
     props: {
       connection: Connector,
-    },
-    mounted() {
-      this.connection.signIn(this.$refs.login).then((user) => {
-        this.url = user.self.split('/rest/api/')[0];
-      });
     },
     data() {
       return {

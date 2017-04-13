@@ -70,6 +70,8 @@ export default class JiraConnector {
   }
 
   signIn(login) {
-    return this.get(AUTH_PATH, { login });
+    return this.get(AUTH_PATH, { login }).then((user) => {
+      this.options.self = user.self.split('/rest/api/')[0];
+    });
   }
 }
