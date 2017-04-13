@@ -76,10 +76,6 @@
     methods: {
       close() {
         if (this.toast || this.splash) {
-          if (this.element) {
-            this.$el.appendChild(this.element);
-            this.element = null;
-          }
           if (this.splashElement) {
             this.splashElement.parentNode.removeChild(this.splashElement);
           }

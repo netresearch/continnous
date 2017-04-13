@@ -16,6 +16,7 @@ export default class JiraConnector {
         Object.assign({ json: true, withCredentials: true }, options),
         (error, response, body) => {
           if (error) {
+            error.response = response;
             reject(error);
           } else if (response.statusCode !== 200) {
             const e = new Error(
@@ -43,7 +44,7 @@ export default class JiraConnector {
         const signIn = () => getCredentials(credentialsWrong)
           .then(credentials => this.post(path, credentials))
           .catch((signInError) => {
-            if (signInError.response.statusCode === 401) {
+            if (signInError && signInError.response.statusCode === 401) {
               credentialsWrong = true;
               return signIn();
             }

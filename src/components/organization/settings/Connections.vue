@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p class="md-caption">Connections</p>
+    <p class="md-caption">{{$tc('connections.title', 2)}}</p>
     <md-card>
       <md-card-content>
         <md-list v-if="connectors && organization.connections">
@@ -11,7 +11,7 @@
             </md-button>
           </md-list-item>
         </md-list>
-        <md-button @click.native="current = '{new}'">Add connector</md-button>
+        <md-button @click.native="current = '{new}'">{{$t('connections.add')}}</md-button>
       </md-card-content>
     </md-card>
     <dialog-form
@@ -19,8 +19,8 @@
       ref="form"
       :firebase-path="'/organizations/' + organization.key + '/connections/' + current"
       firebase-bind
-      @saved="current = undefined"
-      @closed="current = undefined"
+      @saved="current = loginCanceled = undefined;"
+      @closed="current = loginCanceled = undefined"
       @before-save="testConnection"
     >
       <template scope="form">
@@ -41,6 +41,7 @@
           validate="required"
         ></form-element>
         <component ref="connectionForm" v-if="form.values.type" :is="connectors[form.values.type].configurationForm"></component>
+        <p class="error" v-if="loginCanceled">{{$t('connections.loginRequired')}}</p>
       </template>
     </dialog-form>
   </div>
@@ -58,7 +59,8 @@
     data() {
       return {
         connectors: undefined,
-        current: undefined
+        current: undefined,
+        loginCanceled: undefined
       };
     },
     created() {
@@ -68,11 +70,20 @@
     },
     methods: {
       testConnection(promises) {
+        this.loginCanceled = undefined;
         if (this.$refs.connectionForm.test) {
           const values = this.$refs.form.values;
           const Connector = this.connectors[values.type];
           const connection = new Connector(values);
-          promises.push(this.$refs.connectionForm.test(connection));
+          promises.push(
+            this.$refs.connectionForm.test(connection)
+              .catch((e) => {
+                if (!e) {
+                  this.loginCanceled = true;
+                }
+                return Promise.reject(e);
+              })
+          );
         }
       }
     }

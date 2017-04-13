@@ -12,6 +12,10 @@ module.exports = {
     requestMembership: 'Mitgliedschaft anfragen',
     membershipProcessed: 'Deine Mitgliedschaft wird bearbeitet',
     membershipDenied: 'Deine Mitgliedschaft wurde abgelehnt',
+    invalid: '{usernameLabel} oder Passwort sind falsch',
+    username: 'Benutzername',
+    password: 'Passwort',
+    signInTo: 'An {to} anmelden'
   },
   language: {
     language: 'Sprache',
@@ -51,6 +55,11 @@ module.exports = {
   user: 'Benutzer | Benutzer',
   invite: {
     userExists: 'Der Benutzer existiert bereits (ist aber ggf. gesperrt).',
+  },
+  connections: {
+    title: 'Anbindung | Anbindungen',
+    add: 'Anbindung hinzufügen',
+    loginRequired: 'Um fortzufahren, ist eine erfolgreiche Anmeldung erforderlich',
   },
   roles: {
     admin: 'Administrator',

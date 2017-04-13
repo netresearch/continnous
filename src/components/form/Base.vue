@@ -445,35 +445,37 @@
             });
           };
           $emit('before-save', beforeSave, progress);
-          Promise.all(beforeSave).then(() => {
-            this.$emit('progress', this.progress);
-            this.progress = false;
-            const ref = this.firebaseRef || this.getFirebaseRef();
-            ref.update(updates).then(
-              () => {
-                const afterSave = [];
-                $emit('after-save', afterSave, progress);
-                Promise.all(afterSave).then(() => {
-                  this.status = 1;
-                  forms.forEach((form) => {
-                    if (form.form.sub && form.form.parentForm) {
-                      form.form.parentForm.subFormsChanged -= form.fields.length;
-                    }
-                    form.fields.forEach((key) => {
-                      form.form.$delete(form.form.changed, key);
+          Promise.all(beforeSave).then(
+            () => {
+              this.$emit('progress', this.progress);
+              this.progress = false;
+              const ref = this.firebaseRef || this.getFirebaseRef();
+              return ref.update(updates).then(
+                () => {
+                  const afterSave = [];
+                  $emit('after-save', afterSave, progress);
+                  Promise.all(afterSave).then(() => {
+                    this.status = 1;
+                    forms.forEach((form) => {
+                      if (form.form.sub && form.form.parentForm) {
+                        form.form.parentForm.subFormsChanged -= form.fields.length;
+                      }
+                      form.fields.forEach((key) => {
+                        form.form.$delete(form.form.changed, key);
+                      });
                     });
+                    $emit('saved', updates, ref);
+                    resolve(updates);
                   });
-                  $emit('saved', updates, ref);
-                  resolve(updates);
-                });
-              },
-              () => {
-                this.status = -1;
-                $emit('save-error', updates);
-                reject();
-              }
-            );
-          });
+                }
+              );
+            },
+            (e) => {
+              this.status = -1;
+              $emit('save-error', updates);
+              reject(e);
+            }
+          );
         } else {
           resolve();
         }
