@@ -14,6 +14,27 @@ export default class JiraConnector {
 
   linkForm = LinkForm;
 
+  /* eslint-disable class-methods-use-this */
+  getLinkImg(link) {
+    return this.options.self + link.img;
+  }
+
+  getLinkLabel(link) {
+    return link.key + ' - ' + link.summary;
+  }
+
+  getLinkUrl(link) {
+    return this.options.self + '/browse/' + link.key;
+  }
+
+  addLink() {
+    return Promise.resolve();
+  }
+
+  removeLink() {
+    return Promise.resolve();
+  }
+
   signinIn = false;
 
   get(path, options) {

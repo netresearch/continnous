@@ -54,6 +54,12 @@ Vue.mixin({
         }
       }
       return path || '/';
+    },
+    getAbsoluteUrl(...args) {
+      /* global document */
+      return document.location.origin
+        + (this.$router.mode === 'hash' ? '/#' : '')
+        + this.getUrlPath(...args);
     }
   }
 });

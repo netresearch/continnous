@@ -41,7 +41,7 @@
         </md-menu-content>
       </md-menu>
     </template>
-    <template v-if="list && links.numItems">
+    <template v-if="list && (links.numItems || connectionLinks)">
       <slot></slot>
       <div class="resource-links-list">
         <inline-list
@@ -54,6 +54,23 @@
             @clear="removeLink"
             link
         ></inline-list>
+        <div class="resource-link resource-connections-links"  v-if="connectionLinks && connections">
+          <md-list>
+            <template v-for="(cLinks, connectionKey) in connectionLinks">
+              <md-list-item
+                  v-for="(link, linkKey) in cLinks">
+                <span><img :src="connections[connectionKey].getLinkImg(link)"/></span>
+                <div>
+                  <a
+                      :href="connections[connectionKey].getLinkUrl(link)"
+                      target="_blank"
+                  >{{connections[connectionKey].getLinkLabel(link)}}</a>
+                </div>
+                <md-button @click.native="removeConnectionLink(connectionKey, linkKey, link)" class="md-icon-button"><md-icon>clear</md-icon></md-button>
+              </md-list-item>
+            </template>
+          </md-list>
+        </div>
       </div>
     </template>
     <md-dialog v-if="dialogLink !== undefined" ref="dialog" @close="dialogLink = false">
@@ -97,6 +114,7 @@
               v-else
               :is="connections[linkConnection].linkForm"
               :connection="connections[linkConnection]"
+              :current="connectionLinks ? connectionLinks[linkConnection] : undefined"
               @selected="addConnectionLink(linkConnection, $event)"
           ></component>
         </template>
@@ -153,6 +171,25 @@
       }
     },
     computed: {
+      connectionLinks() {
+        let links;
+        if (this.item && this.item.links && this.organization && this.organization.connections) {
+          Object.keys(this.organization.connections).forEach((key) => {
+            if (this.item.links[key]) {
+              if (!links) {
+                links = {};
+              }
+              links[key] = this.item.links[key];
+            }
+          });
+          if (links && !this.connections) {
+            Connections.getForOrganization(this.organization).then((connections) => {
+              this.connections = connections.filter(connection => connection.linkForm);
+            });
+          }
+        }
+        return links;
+      },
       links() {
         if (!this.type || !this.permissions) {
           return [];
@@ -276,12 +313,21 @@
         }
       },
       addConnectionLink(connectionKey, link) {
-        this.getFirebaseRef(
-          this.archive, this.item.id, this.personal
-        ).child('links/' + connectionKey).push(link);
-        if (this.$refs.dialog) {
-          this.$refs.dialog.close();
-        }
+        this.connections[connectionKey].addLink(link, this).then(() => {
+          this.getFirebaseRef(
+            this.archive, this.item.id, this.personal
+          ).child('links/' + connectionKey).push(link);
+          if (this.$refs.dialog) {
+            this.$refs.dialog.close();
+          }
+        });
+      },
+      removeConnectionLink(connectionKey, linkKey, link) {
+        this.connections[connectionKey].removeLink(link, this).then(() => {
+          this.getFirebaseRef(
+            this.archive, this.item.id, this.personal
+          ).child('links/' + connectionKey + '/' + linkKey).remove();
+        });
       }
     }
   };
@@ -334,6 +380,24 @@
   .resource-links-dialog-content {
     .md-input-container {
       margin-top: 0;
+    }
+  }
+  .resource-connections-links {
+    .md-list-item-container {
+      span {
+        display: block;
+        width: 24px;
+        margin-right: 16px;
+        text-align: center;
+        line-height: 1px;
+      }
+      div {
+        flex: 1;
+        a {
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
     }
   }
 </style>

@@ -5,7 +5,7 @@
       <md-tooltip>{{$t('actions.share')}}</md-tooltip>
     </md-button>
     <md-dialog-alert
-        :md-content="origin + ($router.mode === 'hash' ? '/#' : '') + getUrlPath({type: type, id: id})"
+        :md-content="getAbsoluteUrl({type: type, id: id})"
         md-ok-text="OK"
         ref="dialog">
     </md-dialog-alert>
@@ -17,12 +17,6 @@
     props: {
       type: String,
       id: String
-    },
-    data() {
-      /* global document */
-      return {
-        origin: document.location.origin
-      };
     }
   };
 </script>
