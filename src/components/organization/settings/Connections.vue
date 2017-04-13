@@ -6,9 +6,14 @@
         <md-list v-if="connectors && organization.connections">
           <md-list-item v-for="(config, key) in organization.connections">
             <span><strong>{{config.title}}</strong> <span class="md-caption">{{connectors[config.type].label}}</span></span>
-            <md-button class="md-icon-button" @click.native="current = key">
-              <md-icon>edit</md-icon>
-            </md-button>
+            <div>
+              <md-button class="md-icon-button" @click.native="current = key">
+                <md-icon>edit</md-icon>
+              </md-button>
+              <md-button class="md-icon-button" @click.native="remove(key)">
+                <md-icon>clear</md-icon>
+              </md-button>
+            </div>
           </md-list-item>
         </md-list>
         <md-button @click.native="current = '{new}'">{{$t('connections.add')}}</md-button>
@@ -44,12 +49,22 @@
         <p class="error" v-if="loginCanceled">{{$t('connections.loginRequired')}}</p>
       </template>
     </dialog-form>
+    <md-dialog-confirm
+        v-if="confirm !== undefined"
+        ref="confirm"
+        :md-title="$t('confirm.' + confirm.action + '.title')"
+        :md-content="$t('confirm.' + confirm.action + '.content')"
+        :md-ok-text="$t('actions.' + confirm.action)"
+        :md-cancel-text="$t('actions.cancel')"
+        @close="$event === 'ok' ? confirm.handler() : null"
+    ></md-dialog-confirm>
   </div>
 </template>
 
 <script>
   import Connectors from '../../../connectors';
   import DialogForm from '../../form/Dialog';
+  import Firebase from '../../../firebase';
 
   export default {
     props: ['organization'],
@@ -60,6 +75,7 @@
       return {
         connectors: undefined,
         current: undefined,
+        confirm: undefined,
         loginCanceled: undefined
       };
     },
@@ -69,6 +85,21 @@
       });
     },
     methods: {
+      remove(key) {
+        this.confirm = {
+          action: 'delete',
+          handler: () => {
+            Firebase.database().ref(
+              '/organizations/' + this.organization.key + '/connections/' + key
+            ).remove();
+          }
+        };
+        this.$nextTick(() => {
+          this.$nextTick(() => {
+            this.$refs.confirm.open();
+          });
+        });
+      },
       testConnection(promises) {
         this.loginCanceled = undefined;
         if (this.$refs.connectionForm.test) {
