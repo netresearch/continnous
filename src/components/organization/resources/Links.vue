@@ -54,22 +54,18 @@
             @clear="removeLink"
             link
         ></inline-list>
-        <div class="resource-link resource-connections-links"  v-if="connectionLinks && connections">
-          <md-list>
-            <template v-for="(cLinks, connectionKey) in connectionLinks">
-              <md-list-item
-                  v-for="(link, linkKey) in cLinks">
-                <span><img :src="connections[connectionKey].getLinkImg(link)"/></span>
-                <div>
-                  <a
-                      :href="connections[connectionKey].getLinkUrl(link)"
-                      target="_blank"
-                  >{{connections[connectionKey].getLinkLabel(link)}}</a>
-                </div>
-                <md-button @click.native="removeConnectionLink(connectionKey, linkKey, link)" class="md-icon-button"><md-icon>clear</md-icon></md-button>
-              </md-list-item>
-            </template>
-          </md-list>
+        <div class="resource-link"  v-if="connectionLinks && connections">
+          <component
+              v-for="(cLinks, connectionKey) in connectionLinks"
+              :is="connections[connectionKey].linkList"
+              :connection="connections[connectionKey]"
+              :links="cLinks"
+              :item="item"
+              :type="type"
+              :clearable="permissions[type].write"
+              @clear="removeConnectionLink(connectionKey, $event)"
+          >
+          </component>
         </div>
       </div>
     </template>
@@ -157,11 +153,7 @@
       dialogLink(link) {
         this.linkConnection = false;
         if (link) {
-          if (!this.connections) {
-            Connections.getForOrganization(this.organization).then((connections) => {
-              this.connections = connections.filter(connection => connection.linkForm);
-            });
-          }
+          this.loadConnections();
           this.$nextTick(() => {
             this.$nextTick(() => {
               this.$refs.dialog.open();
@@ -182,10 +174,8 @@
               links[key] = this.item.links[key];
             }
           });
-          if (links && !this.connections) {
-            Connections.getForOrganization(this.organization).then((connections) => {
-              this.connections = connections.filter(connection => connection.linkForm);
-            });
+          if (links) {
+            this.loadConnections();
           }
         }
         return links;
@@ -259,6 +249,13 @@
       },
     },
     methods: {
+      loadConnections() {
+        if (!this.connections) {
+          Connections.getForOrganization(this.organization).then((connections) => {
+            this.connections = connections.filter(connection => connection.linkForm);
+          });
+        }
+      },
       removeLink(item) {
         return new Promise((resolve) => {
           this.getFirebaseRef('resources', this.item.id)
@@ -322,12 +319,10 @@
           }
         });
       },
-      removeConnectionLink(connectionKey, linkKey, link) {
-        this.connections[connectionKey].removeLink(link, this).then(() => {
-          this.getFirebaseRef(
-            this.archive, this.item.id, this.personal
-          ).child('links/' + connectionKey + '/' + linkKey).remove();
-        });
+      removeConnectionLink(connectionKey, linkKey) {
+        this.getFirebaseRef(
+          this.archive, this.item.id, this.personal
+        ).child('links/' + connectionKey + '/' + linkKey).remove();
       }
     }
   };
@@ -380,24 +375,6 @@
   .resource-links-dialog-content {
     .md-input-container {
       margin-top: 0;
-    }
-  }
-  .resource-connections-links {
-    .md-list-item-container {
-      span {
-        display: block;
-        width: 24px;
-        margin-right: 16px;
-        text-align: center;
-        line-height: 1px;
-      }
-      div {
-        flex: 1;
-        a {
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      }
     }
   }
 </style>

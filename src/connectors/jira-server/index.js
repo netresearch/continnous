@@ -1,6 +1,7 @@
 import xhr from 'xhr';
 import ConfigurationForm from './Configuration';
 import LinkForm from './Link';
+import LinkList from './Links';
 
 const AUTH_PATH = 'auth/1/session';
 
@@ -14,26 +15,7 @@ export default class JiraConnector {
 
   linkForm = LinkForm;
 
-  /* eslint-disable class-methods-use-this */
-  getLinkImg(link) {
-    return this.options.self + link.img;
-  }
-
-  getLinkLabel(link) {
-    return link.key + ' - ' + link.summary;
-  }
-
-  getLinkUrl(link) {
-    return this.options.self + '/browse/' + link.key;
-  }
-
-  addLink() {
-    return Promise.resolve();
-  }
-
-  removeLink() {
-    return Promise.resolve();
-  }
+  linkList = LinkList;
 
   signinIn = false;
 
@@ -88,6 +70,10 @@ export default class JiraConnector {
 
   post(path, data, options) {
     return this.get(path, Object.assign({ body: data, method: 'POST' }, options));
+  }
+
+  delete(path, options) {
+    return this.get(path, Object.assign({ method: 'DELETE' }, options));
   }
 
   signIn(login) {
