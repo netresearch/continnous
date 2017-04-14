@@ -28,7 +28,7 @@ export default class JiraConnector {
           if (error) {
             error.response = response;
             reject(error);
-          } else if (response.statusCode !== 200) {
+          } else if (response.statusCode < 200 || response.statusCode > 299) {
             const e = new Error(
               body && body.errorMessages ? body.errorMessages[0] : 'Unknown error'
             );

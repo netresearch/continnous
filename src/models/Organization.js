@@ -42,7 +42,23 @@ export default class Organization {
           push();
         }
       },
-      getRef: () => journalRef
+      getRef: () => journalRef,
+      getArchiveInfo(item) {
+        const ref = journalRef.orderByChild('id').equalTo(item.id);
+        return new Promise((resolve) => {
+          ref.on('child_added', (sn) => {
+            const archiveInfo = sn.val();
+            if (archiveInfo.action === 'archive') {
+              ref.off('child_added');
+              const states = ['discarded', 'accepted', 'completed', 'heeded', 'outdated'];
+              const doneStates = ['accepted', 'completed', 'heeded'];
+              archiveInfo.occasion = states.find(status => archiveInfo[status] === true);
+              archiveInfo.icon = doneStates.indexOf(archiveInfo.occasion) < 0 ? 'block' : 'done';
+              resolve(archiveInfo);
+            }
+          });
+        });
+      }
     };
   }
 }

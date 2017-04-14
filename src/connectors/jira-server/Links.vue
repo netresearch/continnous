@@ -8,11 +8,12 @@
             {{issue.key}} - {{issue.summary}}
           </a>
         </div>
-        <md-button v-if="clearable" @click.native="removeLink(issue, key)" class="md-icon-button"><md-icon>clear</md-icon></md-button>
+        <md-button v-if="clearable && !deleting" @click.native="removeLink(issue, key)" class="md-icon-button"><md-icon>clear</md-icon></md-button>
+        <md-spinner v-if="deleting === key" :md-size="20" style="min-width: 20px; max-width: 20px;" md-indeterminate></md-spinner>
       </md-list-item>
     </md-list>
     <login ref="login" :title="$t('auth.signInTo', { to: connection.options.title })"></login>
-    <md-dialog-alert ref="error" :md-title="$t('errors.general')" :md-content="$t('connections.couldntClear')"></md-dialog-alert>
+    <md-dialog-alert ref="error" :md-title="$t('errors.general')" :md-content="$t('links.errorClear')"></md-dialog-alert>
   </div>
 </template>
 
@@ -29,9 +30,15 @@
       type: String,
       clearable: Boolean
     },
+    data() {
+      return {
+        deleting: undefined
+      };
+    },
     methods: {
       removeLink(issue, key) {
         const path = 'api/2/issue/' + issue.key + '/remotelink?globalId=' + this.item.id;
+        this.deleting = key;
         this.connection
           .signIn(this.$refs.login)
           .then(() => this.connection.delete(path))
@@ -46,7 +53,8 @@
                 this.$refs.error.open();
               }
             }
-          );
+          )
+          .then(() => { this.deleting = undefined; });
       }
     }
   };

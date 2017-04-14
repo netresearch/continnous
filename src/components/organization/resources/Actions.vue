@@ -25,9 +25,9 @@
             </div>
             <div class="resource-actions-archive-info-occasion">
               <md-icon class="md-small" :class="archiveInfo.completed ? 'md-primary' : 'md-warn'">
-                {{archiveInfo.completed ? 'done' : 'block'}}
+                {{archiveInfo.icon}}
               </md-icon>
-              <span>{{$t('transition.' + (archiveInfo.completed ? 'completed' : 'discarded'))}}</span>
+              <span>{{$t('transition.' + archiveInfo.occasion)}}</span>
             </div>
             <md-text v-if="archiveInfo.comment" :text="archiveInfo.comment"></md-text>
             <div class="resource-actions-archive-info-actions" v-if="permissions[type].write">
@@ -217,6 +217,7 @@
         handler(item) {
           this.hasLiked = false;
           this.watching = undefined;
+          this.archiveInfo = undefined;
           if (this.refs) {
             this.refs.forEach(ref => ref.off('value'));
           }
@@ -266,12 +267,8 @@
           return;
         }
         this.archiveInfo = undefined;
-        const ref = this.organization.journal.getRef().orderByChild('id').equalTo(this.item.id);
-        ref.on('child_added', (sn) => {
-          if (sn.val().action === 'archive') {
-            this.archiveInfo = sn.val();
-            ref.off('child_added');
-          }
+        this.organization.journal.loadArchiveInfo(this.item).then((archiveInfo) => {
+          this.archiveInfo = archiveInfo;
         });
       },
       toggleWatching() {

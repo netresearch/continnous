@@ -109,9 +109,13 @@
           <component
               v-else
               :is="connections[linkConnection].linkForm"
+              :organization="organization"
+              :item="item"
+              :type="type"
+              :archive="archive"
               :connection="connections[linkConnection]"
               :current="connectionLinks ? connectionLinks[linkConnection] : undefined"
-              @selected="addConnectionLink(linkConnection, $event)"
+              @add="addConnectionLink(linkConnection, $event)"
           ></component>
         </template>
       </md-dialog-content>
@@ -310,14 +314,12 @@
         }
       },
       addConnectionLink(connectionKey, link) {
-        this.connections[connectionKey].addLink(link, this).then(() => {
-          this.getFirebaseRef(
-            this.archive, this.item.id, this.personal
-          ).child('links/' + connectionKey).push(link);
-          if (this.$refs.dialog) {
-            this.$refs.dialog.close();
-          }
-        });
+        this.getFirebaseRef(
+          this.archive, this.item.id, this.personal
+        ).child('links/' + connectionKey).push(link);
+        if (this.$refs.dialog) {
+          this.$refs.dialog.close();
+        }
       },
       removeConnectionLink(connectionKey, linkKey) {
         this.getFirebaseRef(

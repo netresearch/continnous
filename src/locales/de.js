@@ -60,7 +60,6 @@ module.exports = {
     title: 'Anbindung | Anbindungen',
     add: 'Anbindung hinzufügen',
     loginRequired: 'Um fortzufahren, ist eine erfolgreiche Anmeldung erforderlich',
-    couldntClear: 'Die Verbindung konnte nicht entfernt werden'
   },
   roles: {
     admin: 'Administrator',
@@ -198,6 +197,8 @@ module.exports = {
   links: {
     link: 'Verknüpfen',
     assign: '{resource} zuweisen',
+    errorClear: 'Die Verknüpfung konnte nicht entfernt werden',
+    errorAdd: 'Die Verknüpfung konnte angelegt werden'
   },
   thereAreNo: 'Es gibt noch keine {accusative}',
   youDontHave: 'Du hast noch keine {accusative}',
