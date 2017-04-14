@@ -323,7 +323,13 @@
         });
       },
       forEachLink(callback) {
-        Object.keys(this.item.links).forEach((resource) => {
+        if (!this.item.links) {
+          return;
+        }
+        Object.keys(Config.resources).forEach((resource) => {
+          if (!this.item.links[resource]) {
+            return;
+          }
           Object.keys(this.item.links[resource]).forEach((id) => {
             let item = this.item.links[resource][id];
             if (item === true) {
