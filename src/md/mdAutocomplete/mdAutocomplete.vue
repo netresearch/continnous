@@ -39,7 +39,6 @@ export default {
       default: 1
     },
     matchCase: Boolean,
-    isSearch: Boolean,
     inputSelector: {
       type: String,
       default: 'input'

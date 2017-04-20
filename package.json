@@ -29,7 +29,7 @@
     "moment": "^2.17.1",
     "mutation-observer": "^1.0.2",
     "nouislider": "^9.2.0",
-    "quill": "^1.2.2",
+    "quill": "^1.2.4",
     "sort-by": "^1.1.1",
     "vue": "^2.2.1",
     "vue-i18n": "^5.0.3",

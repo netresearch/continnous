@@ -2,6 +2,7 @@
   <div :class="['md-editor', {'md-editor-notempty': !empty, 'md-editor-focused': focused}]">
     <input type="text" @focus="focused = true">
     <div ref="editor" class="md-editor-editor"></div>
+    <slot></slot>
   </div>
 </template>
 
@@ -145,6 +146,8 @@
 
           this.toolbarElement = this.$el.querySelector('.ql-toolbar');
           document.body.addEventListener('click', this.detectFocus);
+
+          this.$emit('editor-mounted', this.editor);
         }
       },
       destroyEditor() {
@@ -154,6 +157,8 @@
           this.$refs.editor.innerHTML = this.value || '';
           this.toolbarElement.parentNode.removeChild(this.toolbarElement);
           document.body.removeEventListener('click', this.detectFocus);
+
+          this.$emit('editor-destroyed');
         }
       },
       getFilteredHTML() {
@@ -183,6 +188,7 @@
   @import '~quill/dist/quill.snow.css';
   .md-editor {
     width: 100%;
+    position: relative;
     > input {
       width: 1px;
       height: 1px;
