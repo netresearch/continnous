@@ -1,3 +1,5 @@
+<style lang="scss" src="./mdAutocomplete.scss"></style>
+
 <template>
   <div class="md-autocomplete">
     <div ref="content" class="md-autocomplete-content">
@@ -5,22 +7,20 @@
     </div>
     <md-progress md-indeterminate v-if="loading"></md-progress>
     <div class="md-autocomplete-flyout" :class="above ? 'md-autocomplete-above' : ''" ref="flyout">
-      <div class="md-autocomplete-flyout-inner md-whiteframe md-whiteframe-1dp" v-show="q && currentResults">
+      <div class="md-autocomplete-flyout-inner md-whiteframe md-whiteframe-1dp" v-show="q && currentResults || forceFlyout">
         <md-list class="md-autocomplete-results" v-if="currentResults && currentResults.length">
           <md-list-item
               v-for="(value, i) in currentResults"
               :class="currentKey === i ? 'md-autocomplete-selected' : ''"
-              @click.native="selectResult(value)">
+              @click.native="select(i)">
             <slot :value="value" :q="q">{{value}}</slot>
           </md-list-item>
         </md-list>
-        <slot name="flyout" v-if="q" :currentResults="currentResults" :results="results" :q="q"></slot>
+        <slot name="flyout" v-if="q || forceFlyout" :currentResults="currentResults" :results="results" :q="q"></slot>
       </div>
     </div>
   </div>
 </template>
-
-<style lang="scss" src="./mdAutocomplete.scss"></style>
 
 <script>
 import MutationObserver from 'mutation-observer';
@@ -42,7 +42,8 @@ export default {
     inputSelector: {
       type: String,
       default: 'input'
-    }
+    },
+    forceFlyout: Boolean
   },
   data() {
     return {
@@ -74,13 +75,13 @@ export default {
 
       this.input = input;
       this.input.addEventListener('input', this.onInput);
-      this.input.addEventListener('focus', this.onFocus);
+      this.input.addEventListener('focus', this.show);
       this.input.addEventListener('blur', this.onBlur);
       this.input.addEventListener('keydown', this.onKeyDown);
       this.unregisterInput = () => {
         if (this.input) {
           this.input.removeEventListener('input', this.onInput);
-          this.input.removeEventListener('focus', this.onFocus);
+          this.input.removeEventListener('focus', this.show);
           this.input.removeEventListener('blur', this.onBlur);
           this.input.removeEventListener('keydown', this.onKeyDown);
           this.input = undefined;
@@ -152,11 +153,17 @@ export default {
     }
   },
   methods: {
-    onFocus() {
+    show() {
       this.focused = true;
       document.body.appendChild(this.flyout);
       this.onInput();
       this.positionFlyout();
+      window.setTimeout(this.positionFlyout, 200);
+    },
+    hide() {
+      this.focused = false;
+      this.currentKey = undefined;
+      this.$el.appendChild(this.flyout);
     },
     onBlur(e) {
       if (e.relatedTarget && this.flyout && this.flyout.contains(e.relatedTarget)) {
@@ -178,8 +185,7 @@ export default {
         this.input.blur();
         return;
       }
-      this.currentKey = undefined;
-      this.$el.appendChild(this.flyout);
+      this.hide();
     },
     onInput() {
       let q = this.input.value.trim();
@@ -216,28 +222,63 @@ export default {
       }
     },
     onKeyDown(e) {
-      if (!this.currentResults || !this.currentResults.length) {
-        return;
-      }
-      if (e.keyCode === 40 || e.keyCode === 38) {
-        // 40 == ArrowDown, 38 == ArrowUp
+      // 40 == ArrowDown, 38 == ArrowUp, 13 = Enter
+      const code = e.keyCode;
+      if ([40, 38].indexOf(code) > -1 && this.cursor(code) !== false) {
         e.preventDefault();
-        const direction = (e.keyCode === 40 ? 1 : -1) * (this.above ? -1 : 1);
-        const current = this.currentKey === undefined ? -1 : this.currentKey;
-        let next = current + direction;
-        if (next >= this.currentResults.length) {
-          next = 0;
-        } else if (next < 0) {
-          next = this.currentResults.length - 1;
-        }
-        this.currentKey = next;
-      } else if (this.currentKey !== undefined && e.keyCode === 13) {
+      } else if (code === 13 && this.select() !== false) {
         e.preventDefault();
-        this.selectResult(this.currentResults[this.currentKey]);
       }
     },
+    cursor(direction) {
+      if (!this.currentResults || !this.currentResults.length) {
+        return false;
+      }
+      let d = direction || 1;
+      if (d === 40) {
+        d = 1;
+      } else if (d === 38) {
+        d = -1;
+      } else if (d !== 1 || d !== -1) {
+        return false;
+      }
+      d *= (this.above ? -1 : 1);
+      const current = this.currentKey === undefined ? -1 : this.currentKey;
+      let next = current + d;
+      if (next >= this.currentResults.length) {
+        next = 0;
+      } else if (next < 0) {
+        next = this.currentResults.length - 1;
+      }
+      this.currentKey = next;
+      return next;
+    },
+    select(key) {
+      if (!this.currentResults || !this.currentResults.length) {
+        return false;
+      }
+      const select = key || this.currentKey;
+      if (select === undefined || this.currentResults[select] === undefined) {
+        return false;
+      }
+      const value = this.currentResults[select];
+      this.currentKey = undefined;
+      this.blur();
+      const event = {
+        q: this.q,
+        currentResults: this.currentResults,
+        results: this.results,
+        input: this.input,
+        propagate: true
+      };
+      this.$emit('selected', value, event);
+      if (event.propagate && this.input) {
+        this.input.value = value;
+      }
+      return select;
+    },
     setCurrentResults(results) {
-      if (typeof results !== 'object' || Object.prototype.toString.call(results) !== '[object Array]') {
+      if (!Array.isArray(results)) {
         /* eslint-disable no-console */
         console.warn('MD-AUTOCOMPLETE WARNING: results must be array - refused taking over');
         /* eslint-enable no-console */
@@ -254,21 +295,6 @@ export default {
       this.results = {};
       if (this.focused) {
         this.onInput();
-      }
-    },
-    selectResult(value) {
-      this.currentKey = undefined;
-      this.blur();
-      const event = {
-        q: this.q,
-        currentResults: this.currentResults,
-        results: this.results,
-        input: this.input,
-        propagate: true
-      };
-      this.$emit('selected', value, event);
-      if (event.propagate && this.input) {
-        this.input.value = value;
       }
     },
     positionFlyout() {
@@ -310,7 +336,7 @@ export default {
         'style',
           'top: ' + (above ? p.top - fHeight + padding : p.top + pHeight - padding) + 'px; '
         + 'left: ' + (p.left - padding) + 'px; '
-        + 'width: ' + (p.width + 2 * padding) + 'px;'
+        + 'min-width: ' + (p.width + 2 * padding) + 'px;'
         + 'max-height: ' + (Math.max(1, above ? pTop : pBottom) - padding) + 'px'
       );
     }

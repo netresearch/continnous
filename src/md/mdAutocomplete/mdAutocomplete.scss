@@ -17,7 +17,6 @@
   overflow: hidden;
   top: -1px;
   left: -1px;
-  width: 1px;
   padding: 4px;
   .md-autocomplete-flyout-inner {
     position: relative;
@@ -49,15 +48,23 @@
     align-items: center;
     justify-content: flex-start;
     flex: 1;
+    white-space: nowrap;
+    text-align: left;
     &:hover {
       background-color: rgba(#999, .2);
     }
-    span {
+    > span {
       flex: 1;
       margin-left: 16px;
     }
     .md-icon {
       color: rgba(#000, 0.56);
+    }
+    > .md-button:first-child {
+      margin-left: 0;
+    }
+    > .md-button:last-child {
+      margin-right: -10px;
     }
   }
 }

@@ -2,18 +2,38 @@
   <md-autocomplete
       ref="autocomplete"
       :provider="provider"
-      :filter="filter"
-      :min-length="minLength"
+      :min-length="minLength + 1"
       :match-case="matchCase"
+      :force-flyout="!!current"
       input-selector="input.md-mentions-value"
       class="md-mentions-autocomplete"
       @selected="onSelected"
   >
     <template scope="autocomplete">
-      <slot :value="autocomplete.value" :q="autocomplete.q">{{autocomplete.value}}</slot>
+      <slot :value="autocomplete.value" :k="autocomplete.q[0]" :q="autocomplete.q.substr(1)">
+        {{normalize[autocomplete.q[0]](autocomplete.value).text}}
+      </slot>
     </template>
     <template slot="input" scope="autocomplete">
       <input ref="input" :value="sword" type="text" class="md-mentions-value">
+    </template>
+    <template slot="flyout" scope="autocomplete">
+      <div v-if="current" class="md-autocomplete-flyout-item md-primary">
+        <slot name="current" :k="current.key" :id="current.id" :text="current.text">
+          {{current.text}}
+        </slot>
+        <md-button class="md-icon-button" @click.native.prevent.stop="removeMention">
+          <md-icon>clear</md-icon>
+        </md-button>
+      </div>
+      <slot
+          name="flyout"
+          v-if="autocomplete.q && autocomplete.currentResults"
+          :currentResults="autocomplete.currentResults"
+          :results="autocomplete.results"
+          :q="autocomplete.q.substr(1)"
+          :k="autocomplete.q[0]"
+          :current="current"></slot>
     </template>
   </md-autocomplete>
 </template>
@@ -27,29 +47,54 @@
   const Delta = Quill.import('delta');
   const Inline = Quill.import('blots/inline');
 
-  // TODO: Re-implement this as an embed
   class MentionBlot extends Inline {
     static blotName = 'mention';
     static tagName = 'SPAN';
     static className = 'md-mention';
 
-    static create(id) {
+    static create(mention) {
       const node = super.create();
-      node.dataset.key = id[0];
-      node.dataset.id = id.substr(1);
+      MentionBlot.format(node, mention);
       return node;
+    }
+
+    static format(node, mention) {
+      node.dataset.key = mention.key;
+      if (mention.id) {
+        node.dataset.id = mention.id;
+      } else {
+        delete node.dataset.id;
+      }
+      ['focused', 'current'].forEach((key) => {
+        if (mention[key]) {
+          node.dataset[key] = true;
+        } else {
+          delete node.dataset[key];
+        }
+      });
     }
 
     static formats(node) {
       return {
         key: node.dataset.key,
         id: node.dataset.id,
-        text: node.innerText
+        text: node.innerText,
+        focused: node.dataset.focused || false
       };
     }
 
+    format(name, value) {
+      if (name === 'mention' && value) {
+        MentionBlot.format(this.domNode, value);
+      } else {
+        super.format(name, value);
+      }
+    }
+
     formatAt(index, length, name, value) {
-      this.format(name, value);
+      if (name === 'mention') {
+        super.formatAt(index, length, name, value);
+      }
     }
 
     formats() {
@@ -59,29 +104,9 @@
     }
   }
 
-
   Quill.register({
     'formats/mention': MentionBlot
   });
-
-  function getRange() {
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      return selection.getRangeAt(0);
-    }
-    return undefined;
-  }
-
-  function getPrecedingRange() {
-    const r = getRange();
-    if (r) {
-      const range = r.cloneRange();
-      range.collapse(true);
-      range.setStart(range.endContainer, 0);
-      return range;
-    }
-    return undefined;
-  }
 
   export default {
     props: {
@@ -89,30 +114,34 @@
         type: Object,
         required: true
       },
-      filter: Function,
+      normalize: {
+        type: Object,
+        required: true
+      },
       minLength: {
         type: Number,
         default: 1
       },
       matchCase: Boolean,
+      ignoreAfter: {
+        type: RegExp,
+        default() {
+          return /[a-z]/i;
+        }
+      }
     },
     data() {
       return {
-        focused: false,
-        active: undefined,
-        sword: ''
+        sword: '',
+        current: undefined
       };
     },
     mounted() {
       this.registerEditor = () => {
-        const editorEl = this.$parent.$el.querySelector('[contenteditable]');
         const editor = this.$parent.editor;
 
         const addOrRemoveListeners = (add) => {
           let fn = (add === true ? 'add' : 'remove') + 'EventListener';
-          ['Focus', 'Blur', 'KeyDown'].forEach((e) => {
-            editorEl[fn](e.toLowerCase(), this['on' + e]);
-          });
           window[fn]('resize', this.positionAutocomplete);
 
           this.$parent[add ? '$once' : '$off']('editor-destroyed', addOrRemoveListeners);
@@ -124,11 +153,12 @@
           if (add) {
             this.editor = editor;
             const bindings = this.editor.keyboard.bindings;
-            this.editor.keyboard.addBinding({
-              key: 13,
-              format: ['mention']
-            }, (keyboard, range, curContext) => console.log(keyboard, range, curContext));
-            bindings[13].unshift(bindings[13].pop());
+            const keys = [13, 27, 37, 38, 39, 40];
+            const format = ['mention'];
+            keys.forEach((key) => {
+              this.editor.keyboard.addBinding({ key, format }, this.onKeyDown.bind(this, key));
+              bindings[key].unshift(bindings[key].pop());
+            });
           } else {
             delete this.editor;
           }
@@ -162,46 +192,150 @@
         const retain = ops[0].hasOwnProperty('retain') ? ops.shift().retain : 0;
         const insert = ops[0].insert;
         const mention = (ops[0].attributes ? ops[0].attributes : this.editor.getFormat()).mention;
-        if (mention) {
+        if (mention && !mention.id) {
           this.sword = mention.key + mention.text;
-          this.positionAutocomplete();
-          if (!this.$refs.autocomplete.focused) {
-            this.$refs.autocomplete.onFocus();
-          }
-          this.$nextTick(() => {
-            this.$refs.autocomplete.onInput();
-          });
+          this.showAutocomplete();
         } else if (insert && this.providers.hasOwnProperty(insert)) {
-          this.editor.deleteText(retain, 1);
-          this.editor.format('mention', insert);
+          if (!retain || !this.ignoreAfter.test(this.editor.getText(retain - 1, 1))) {
+            this.editor.deleteText(retain, 1);
+            this.editor.format('mention', { key: insert, focused: true });
+          }
         } else {
           this.sword = '';
         }
-        console.log(this.active, this.sword, insert);
       },
       onSelectionChange(range, oldRange, source) {
-      },
-      onFocus(e) {
-        this.focused = true;
-        console.log(e);
-      },
-      onBlur(e) {
-        this.focused = false;
-        console.log(e);
-      },
-      onKeyDown(e) {
-        if (!this.editor.getFormat().mention) {
-          return;
+        if (!range) {
+          this.blurMention();
+        } else if (range.length) {
+          const mention = this.editor.getFormat(range).mention;
+          const oldMention = oldRange ? this.editor.getFormat(oldRange).mention : undefined;
+          if (mention ? !oldMention : oldMention) {
+            this.blurMention();
+          }
+        } else if (source === 'user') {
+          const mention = this.editor.getFormat(range.index).mention;
+          if (mention && !mention.focused && !mention.current) {
+            if (oldRange) {
+              const oldMention = this.editor.getFormat(oldRange).mention;
+              if (oldMention && (oldMention.focused || oldMention.current)) {
+                this.blurMention();
+              }
+            }
+            let length = 0;
+            let index = range.index;
+            while (index - 1 > -1 && this.editor.getFormat(index).mention) {
+              index--;
+              length++;
+            }
+            while (this.editor.getFormat(index + length + 1).mention) {
+              length++;
+            }
+            this.editor.formatText(index, length, 'mention', Object.assign({}, mention, {
+              current: true
+            }), 'silent');
+            this.current = mention;
+            this.showAutocomplete();
+          } else if (!mention) {
+            this.blurMention();
+          }
         }
-        if (e.keyCode === 40 || e.keyCode === 38 || e.keyCode === 13) {
-          this.$refs.autocomplete.onKeyDown(e);
-          e.stopPropagation();
-          e.stopImmediatePropagation();
+      },
+      onKeyDown(key, range, curContext) {
+        const autocomplete = this.$refs.autocomplete;
+        if (key === 38 || key === 40) {
+          if (autocomplete.cursor(key) === false) {
+            this.blurMention();
+          } else {
+            return false;
+          }
         }
+        if (key === 13) {
+          autocomplete.select();
+          return false;
+        }
+        if (key === 37 && !curContext.prefix || key === 39 && !curContext.suffix) {
+          this.blurMention();
+          this.editor.format('mention', null);
+        }
+        if (key === 27) {
+          this.blurMention();
+          return false;
+        }
+        return true;
+      },
+      getMention() {
+        const node = this.editor.root.querySelector(
+          '.md-mention[data-focused], .md-mention[data-current]'
+        );
+        if (!node) {
+          return undefined;
+        }
+        const blot = Quill.find(node);
+        if (!blot) {
+          return undefined;
+        }
+        const attributes = MentionBlot.formats(node);
+        const index = this.editor.getIndex(blot);
+        const length = blot.length();
+        return { blot, attributes, index, length };
+      },
+      blurMention() {
+        const mention = this.getMention();
+        if (mention) {
+          const { attributes, index, length } = mention;
+          if (attributes.id) {
+            delete attributes.focused;
+            this.editor.formatText(index, length, 'mention', attributes);
+          } else {
+            this.editor.removeFormat(index, length);
+            this.editor.insertText(index, attributes.key);
+          }
+        }
+        this.hideAutocomplete();
+      },
+      removeMention() {
+        const mention = this.getMention();
+        if (mention) {
+          const { index, length } = mention;
+          this.editor.removeFormat(index, length, 'user');
+        }
+        this.hideAutocomplete();
       },
       onSelected(value, e) {
         e.propagate = false;
-        console.log(this.editor.getFormat());
+        const mention = this.getMention();
+        if (mention) {
+          const { attributes, index, length } = mention;
+          const normalized = this.normalize[attributes.key](value);
+          const ops = [
+            { delete: length },
+            {
+              insert: normalized.text,
+              attributes: {
+                mention: { key: attributes.key, id: normalized.id }
+              }
+            },
+            { insert: ' ' }
+          ];
+          if (index > 0) {
+            ops.unshift({ retain: index });
+          }
+          this.editor.updateContents({ ops }, 'user');
+        }
+        this.hideAutocomplete();
+      },
+      hideAutocomplete() {
+        this.sword = '';
+        this.current = undefined;
+        this.$refs.autocomplete.hide();
+        this.$refs.autocomplete.$el.removeAttribute('style');
+      },
+      showAutocomplete() {
+        this.positionAutocomplete();
+        this.$nextTick(() => {
+          this.$refs.autocomplete.show();
+        });
       },
       positionAutocomplete() {
         const selection = window.getSelection();
@@ -228,26 +362,3 @@
     }
   };
 </script>
-
-<style lang="scss" rel="stylesheet/scss">
-  .md-mention {
-    display: inline-block;
-    white-space: nowrap;
-    $r: 3px;
-    border-radius: $r;
-    background: rgba(#000, 0.06);
-    border: 1px solid rgba(#000, 0.12);
-    padding-right: $r;
-    &:before {
-      display:inline-block;
-      content: attr(data-key);
-      background: rgba(#000, 0.06);
-      padding: 0 $r;
-      margin-right: $r;
-    }
-  }
-  .md-mentions-autocomplete {
-    display: none;
-    position: absolute !important;
-  }
-</style>

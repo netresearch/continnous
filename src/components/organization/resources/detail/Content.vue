@@ -6,13 +6,7 @@
       <resource-image :image="item.image"></resource-image>
       <md-text class="resource-detail-description" v-if="item.description" :text="item.description"></md-text>
     </template>
-
-    <md-input-container slot="input">
-      <md-editor>
-        <md-mentions :providers="{'@': () => ['franz', 'jochen', 'ulf']}"></md-mentions>
-      </md-editor>
-    </md-input-container>
-
+    
     <slot></slot>
   </div>
 </template>

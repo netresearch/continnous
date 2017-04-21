@@ -1,3 +1,5 @@
+<style lang="scss" src="./mdEditor.scss"></style>
+
 <template>
   <div :class="['md-editor', {'md-editor-notempty': !empty, 'md-editor-focused': focused}]">
     <input type="text" @focus="focused = true">
@@ -183,73 +185,3 @@
     }
   };
 </script>
-
-<style lang="scss" rel="stylesheet/scss">
-  @import '~quill/dist/quill.snow.css';
-  .md-editor {
-    width: 100%;
-    position: relative;
-    > input {
-      width: 1px;
-      height: 1px;
-      margin: -1px;
-      padding: 0;
-      overflow: hidden;
-      position: absolute;
-      clip: rect(0 0 0 0);
-      border: 0;
-    }
-    .ql-toolbar {
-      margin-top: -2px;
-      max-height: 1px;
-      padding: 0;
-      border: none;
-      border-bottom: 1px solid rgba(#000, 0);
-      overflow: visible;
-      transition: max-height 0.2s, border-color 0.2s, padding 0.2s;
-      position: relative;
-      z-index: 1;
-      button {
-        color: #707070;
-      }
-    }
-    &.md-editor-focused .ql-toolbar {
-      z-index: 3;
-      border-color: rgba(#000, 0.12);
-      max-height: 72px;
-      padding: 8px 0;
-      transition: max-height 0.2s, border-color 0.2s, padding 0.2s, z-index 0s 0.2s;
-    }
-    .ql-container {
-      background: #fff;
-      z-index: 2;
-      border: none;
-      height: auto;
-      font-family: inherit;
-      line-height: inherit;
-      margin-bottom: 2px;
-    }
-    .ql-editor {
-      padding: 5px 0 3px;
-      font-size: 16px;
-      &.ql-blank:before {
-        color: rgba(#000, 0.56);
-        font-style: normal;
-      }
-    }
-    .ql-stroke, .ql-stroke-miter {
-      stroke: currentColor !important;
-    }
-    .ql-fill {
-      fill: currentColor !important;
-    }
-  }
-  .md-input-container:not(.md-input-focused) .md-editor {
-    .ql-container {
-      background: transparent;
-    }
-    .ql-toolbar {
-      display: none;
-    }
-  }
-</style>

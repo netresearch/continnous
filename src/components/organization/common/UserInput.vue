@@ -1,5 +1,5 @@
 <template>
-  <md-autocomplete ref="autocomplete" @selected="onUserSelected" :provider="search" :filter="filter">
+  <md-autocomplete ref="autocomplete" @selected="onUserSelected" :provider="searchUsers" :filter="filter">
     <template scope="item">
       <avatar :user="item.value"></avatar>
     </template>
@@ -34,20 +34,19 @@
 </template>
 
 <script>
-  import Flashlight from '../../../models/Flashlight';
   import User from '../../../models/User';
   import Avatar from '../../Avatar';
   import UserInvite from './UserInvite';
   import auth from '../../../auth';
+  import searchMixin from './mixins/search';
 
   export default {
     components: { Avatar, UserInvite },
+    mixins: [searchMixin],
     props: {
       value: [String, Array],
       multiple: Boolean,
       disabled: Boolean,
-      organization: Object,
-      permissions: Object
     },
     data() {
       return {
@@ -83,27 +82,6 @@
       }
     },
     methods: {
-      search(search) {
-        return new Promise((resolve) => {
-          if (!this.flashlight) {
-            this.flashlight = new Flashlight(this.organization, this.permissions);
-            this.flashlight.ignoreSubsequents();
-          }
-          this.flashlight.suggest(search, 'users').then((results) => {
-            const users = [];
-            if (results.length) {
-              results[0].hits.forEach((hit) => {
-                /* eslint-disable no-underscore-dangle */
-                const user = new User(
-                  Object.assign({ uid: hit._id }, hit._source), this.organization
-                );
-                users.push(user);
-              });
-            }
-            resolve(users);
-          });
-        });
-      },
       filter(user) {
         if (user.uid === auth.user.uid) {
           return false;

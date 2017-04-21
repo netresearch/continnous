@@ -29,10 +29,12 @@
     </form-element>
 
     <form-element
-        type="md-editor"
+        type="editor"
         name="description"
         :label="$t('fields.description.label')"
         :placeholder="$t('fields.description.placeholder')"
+        :organization="organization"
+        :permissions="permissions"
         md-inline
     >
     </form-element>
@@ -63,11 +65,13 @@
 <script>
   import UserInput from '../../common/UserInput';
   import TagsInput from '../../common/TagsInput';
+  import Editor from '../../common/Editor';
   import FormElement from '../../../form/Element';
   import Firebase from '../../../../firebase';
 
   FormElement.components.UserInput = UserInput;
   FormElement.components.TagsInput = TagsInput;
+  FormElement.components.Editor = Editor;
 
   export default {
     props: {
