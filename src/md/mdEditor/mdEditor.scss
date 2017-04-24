@@ -73,6 +73,7 @@
 
 .md-mention[data-focused] {
   color: inherit !important;
+  text-decoration: none !important;
   display: inline-block;
   white-space: nowrap;
   $r: 3px;

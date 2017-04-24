@@ -199,8 +199,11 @@
           this.showAutocomplete();
         } else if (insert && this.providers.hasOwnProperty(insert)) {
           if (!retain || !this.ignoreAfter.test(this.editor.getText(retain - 1, 1))) {
-            this.editor.deleteText(retain, 1);
-            this.editor.format('mention', { key: insert, focused: true });
+            this.editor.insertText(retain, '\uFEFF', 'mention', { key: insert, focused: true });
+            this.editor.deleteText(retain + 1, 1);
+            if (!retain) {
+              this.editor.root.classList.remove('ql-blank');
+            }
           }
         } else {
           this.sword = '';
@@ -256,13 +259,12 @@
           autocomplete.select();
           return false;
         }
-        if (key === 37 && !curContext.prefix || key === 39 && !curContext.suffix) {
+        if (key === 37 && !curContext.prefix.trim() || key === 39 && !curContext.suffix) {
           this.blurMention();
-          this.editor.format('mention', null);
-        }
-        if (key === 27) {
-          this.blurMention();
-          return false;
+          if (key === 39 || key === 27) {
+            this.editor.setSelection(range.index + 1);
+          }
+          return key !== 27;
         }
         return true;
       },
@@ -293,6 +295,7 @@
           } else {
             this.editor.removeFormat(index, length);
             this.editor.insertText(index, attributes.key);
+            this.editor.deleteText(index + 1, 1);
           }
         }
         this.hideAutocomplete();
