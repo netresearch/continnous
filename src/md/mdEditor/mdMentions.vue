@@ -49,7 +49,7 @@
 
   class MentionBlot extends Inline {
     static blotName = 'mention';
-    static tagName = 'SPAN';
+    static tagName = 'A';
     static className = 'md-mention';
 
     static create(mention) {
@@ -59,12 +59,7 @@
     }
 
     static format(node, mention) {
-      node.dataset.key = mention.key;
-      if (mention.id) {
-        node.dataset.id = mention.id;
-      } else {
-        delete node.dataset.id;
-      }
+      node.setAttribute('rel', mention.key + (mention.id || ''));
       ['focused', 'current'].forEach((key) => {
         if (mention[key]) {
           node.dataset[key] = true;
@@ -72,14 +67,21 @@
           delete node.dataset[key];
         }
       });
+      if (mention.focused) {
+        node.dataset.key = mention.key;
+      } else {
+        delete node.dataset.key;
+      }
     }
 
     static formats(node) {
+      const rel = node.getAttribute('rel') || '';
       return {
-        key: node.dataset.key,
-        id: node.dataset.id,
+        key: rel[0],
+        id: rel.substr(1),
         text: node.innerText,
-        focused: node.dataset.focused || false
+        focused: node.dataset.focused || false,
+        current: node.dataset.current || false
       };
     }
 
@@ -286,6 +288,7 @@
           const { attributes, index, length } = mention;
           if (attributes.id) {
             delete attributes.focused;
+            delete attributes.current;
             this.editor.formatText(index, length, 'mention', attributes);
           } else {
             this.editor.removeFormat(index, length);
