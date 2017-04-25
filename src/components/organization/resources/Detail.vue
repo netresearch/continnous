@@ -8,6 +8,7 @@
       :keys="id ? ['updated'] : ['creator', 'created', 'updated']"
       :validate="{title: validateTitle}"
       ref="form"
+      @before-save="onBeforeSave"
       @saved="onSaved"
       @cancel="$router.back()"
       :disabled="!mayEdit"
@@ -183,6 +184,7 @@
   import auth from '../../../auth';
   import Config from '../../../models/Config';
   import mixin from './mixin';
+  import editorMixin from '../common/mixins/editor';
   import ResourceContent from './detail/Content';
   import ResourceForm from './detail/Form';
   import ResourceComment from './detail/Comment';
@@ -219,7 +221,7 @@
   });
 
   export default {
-    mixins: [mixin],
+    mixins: [mixin, editorMixin],
     props: ['organization', 'permissions'],
     components,
     data() {
@@ -290,14 +292,39 @@
         }
         return item;
       },
+      onBeforeSave(updates) {
+        this.previousMentions = {};
+        Object.keys(updates).forEach((field) => {
+          this.previousMentions[field] = this.id ? this.getMentions(this.item[field], '@') : [];
+        });
+      },
       onSaved(updates, ref) {
         this.edit = false;
         if (!this.personal) {
+          const mentions = {};
+          Object.keys(updates).forEach((field) => {
+            const m = this.getMentions(updates[field], '@');
+            const pm = this.previousMentions[field];
+            m.concat(pm).forEach((uid) => {
+              if (!mentions[uid]) {
+                mentions[uid] = {};
+              }
+              if (!this.id || pm.indexOf(uid) < 0) {
+                mentions[uid][field] = true;
+              } else if (this.id && pm.indexOf(uid) >= 0 && m.indexOf(uid) < 0) {
+                mentions[uid][field] = false;
+              }
+            });
+          });
           if (this.id) {
             const keys = Object.keys(updates).filter(field => field !== 'updated');
-            this.organization.journal.addEntry(this.type, this.personal, this.id, 'update', keys);
+            this.organization.journal.addEntry(
+              this.type, this.personal, this.id, 'update', keys, null, { mentions }
+            );
           } else {
-            this.organization.journal.addEntry(this.type, this.personal, ref.key, 'create');
+            this.organization.journal.addEntry(
+              this.type, this.personal, ref.key, 'create', null, null, { mentions }
+            );
           }
         }
         if (!this.id) {

@@ -73,6 +73,7 @@
   import moment from 'moment';
   import Autolinker from 'autolinker';
   import sortBy from 'sort-by';
+  import extend from 'extend';
   import Config from '../../models/Config';
   import auth from '../../auth';
   import Avatar from '../Avatar';
@@ -159,7 +160,27 @@
           lastGroup.push(entry);
           lastGroup.sort(sortBy((this.reverse ? '' : '-') + 'time'));
         });
-        this.groups = groups;
+        const reducedGroups = [];
+        groups.forEach((group) => {
+          const reduced = [];
+          reduced.uid = group.uid;
+          reducedGroups.push(reduced);
+          group.forEach((entry) => {
+            const l = reduced.length;
+            if (l > 0
+              && entry.action !== 'comment'
+              && reduced[l - 1].id === entry.id
+              && reduced[l - 1].action === entry.action) {
+              reduced[l - 1] = extend(
+                true, {}, reduced[l - 1], entry,
+                { time: Math.max(reduced[l - 1].time, entry.time) }
+              );
+            } else {
+              reduced.push(entry);
+            }
+          });
+        });
+        this.groups = reducedGroups;
       },
       onEntryAdded(snapshot) {
         const entry = Object.assign({ journalId: snapshot.key }, snapshot.val());
