@@ -29,7 +29,7 @@
               </md-icon>
               <span>{{$t('transition.' + archiveInfo.occasion)}}</span>
             </div>
-            <md-text v-if="archiveInfo.comment" :text="archiveInfo.comment"></md-text>
+            <editor-text v-if="archiveInfo.comment" :organization="organization" :text="archiveInfo.comment"></editor-text>
             <div class="resource-actions-archive-info-actions" v-if="permissions[type].write">
               <md-button @click.native="$refs.archiveInfo.close(); toggleArchive()">{{$t('actions.restore')}}</md-button>
             </div>
@@ -145,7 +145,7 @@
         </div>
         <md-input-container>
           <label>{{$t('transition.reason')}}</label>
-          <md-editor ref="transitionReason" v-model="transition.reason" toolbar="small"></md-editor>
+          <editor ref="transitionReason" :organization="organization" v-model="transition.reason" toolbar="small"></editor>
         </md-input-container>
       </md-dialog-content>
       <md-dialog-actions>
@@ -163,11 +163,13 @@
   import Share from '../../Share';
   import ResourceLinks from './Links';
   import Avatar from '../../Avatar';
+  import Editor from '../common/Editor';
+  import EditorText from '../common/EditorText';
   import Config from '../../../models/Config';
 
   export default {
     mixins: [mixin],
-    components: { Share, ResourceLinks, Avatar },
+    components: { Share, ResourceLinks, Avatar, Editor, EditorText },
     props: {
       organization: Object,
       type: String,

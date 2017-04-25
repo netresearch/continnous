@@ -28,12 +28,18 @@ export default {
       }
       let newString = string;
       const mentionTags = string.match(/<a[^>]+class="md-mention"[^>]+>/g);
+      const uris = {};
       if (mentionTags) {
         mentionTags.forEach((match) => {
           const relMatch = /\s+rel="([^"])([^"]+)"/.exec(match);
           if (relMatch) {
-            const uri = callback(relMatch[1], relMatch[2]);
-            newString = newString.replace(match.replace(relMatch[0], ' href="' + uri + '"'));
+            const k = relMatch[1] + relMatch[2];
+            if (!uris.hasOwnProperty(k)) {
+              uris[k] = callback(relMatch[1], relMatch[2]);
+            }
+            if (uris[k]) {
+              newString = newString.replace(match, match.replace(relMatch[0], ' href="' + uris[k] + '"'));
+            }
           }
         });
       }

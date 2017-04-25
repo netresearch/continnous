@@ -30,6 +30,8 @@ Vue.mixin({
       }
       if (params.settings) {
         path += '/settings' + (params.settings === true ? '' : '/' + params.settings);
+      } else if (params.user) {
+        path += '/user/' + (typeof params.user === 'object' ? params.user.uid : params.user);
       } else {
         if (params.search) {
           path += '/search';

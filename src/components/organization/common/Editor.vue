@@ -4,6 +4,7 @@
       :value="value"
       :placeholder="placeholder"
       :disabled="disabled"
+      :toolbar="toolbar"
       @change="$emit('change', $event)"
       @input="$emit('input', $event)"
   >
@@ -32,6 +33,10 @@
       value: String,
       placeholder: String,
       disabled: Boolean,
+      toolbar: {
+        type: [String, Array],
+        default: 'normal'
+      },
     },
     methods: {
       normalizeUser(user) {

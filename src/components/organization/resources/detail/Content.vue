@@ -4,7 +4,7 @@
       <h2>{{item.title}}</h2>
       <p class="resource-detail-subtitle" v-if="item.subtitle">{{item.subtitle}}</p>
       <resource-image :image="item.image"></resource-image>
-      <md-text class="resource-detail-description" v-if="item.description" :text="item.description"></md-text>
+      <editor-text class="resource-detail-description" v-if="item.description" :text="item.description"></editor-text>
     </template>
     
     <slot></slot>
@@ -13,9 +13,10 @@
 
 <script>
   import ResourceImage from '../Image';
+  import EditorText from '../../common/EditorText';
 
   export default {
-    components: { ResourceImage },
+    components: { ResourceImage, EditorText },
     props: {
       type: String,
       item: Object
