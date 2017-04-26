@@ -36,6 +36,7 @@
         <h3 v-else-if="type" style="flex: 1">{{$t(type + '.new')}}</h3>
         <resource-actions
             class="md-card-actions"
+            v-if="!id || !edit"
             :organization="organization"
             :permissions="permissions"
             :type="type"
