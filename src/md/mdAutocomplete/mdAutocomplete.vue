@@ -257,7 +257,7 @@ export default {
       if (!this.currentResults || !this.currentResults.length) {
         return false;
       }
-      const select = key || this.currentKey;
+      const select = key !== undefined ? key : this.currentKey;
       if (select === undefined || this.currentResults[select] === undefined) {
         return false;
       }
