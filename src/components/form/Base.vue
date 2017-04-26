@@ -500,6 +500,13 @@
           this.$delete(this.errors, element.name);
           this.$delete(this.values, element.name);
         }
+      },
+      getElements(recursive) {
+        const elements = this.elements.slice(0);
+        if (recursive) {
+          this.subForms.forEach(form => Array.prototype.push.apply(elements, form.elements));
+        }
+        return elements;
       }
     }
   };

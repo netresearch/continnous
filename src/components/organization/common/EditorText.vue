@@ -3,17 +3,16 @@
 </template>
 
 <script>
-  import editorMixin from './mixins/editor';
+  import Mentions from '../../../models/Mentions';
 
   export default {
-    mixins: [editorMixin],
     props: {
       text: String,
       organization: Object
     },
     computed: {
       formattedText() {
-        return this.linkMentions(this.text, (scheme, id) => {
+        return Mentions.linkMentions(this.text, (scheme, id) => {
           if (scheme === '@') {
             return this.getUrlPath({ user: id });
           }

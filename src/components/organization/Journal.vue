@@ -73,7 +73,6 @@
   import moment from 'moment';
   import Autolinker from 'autolinker';
   import sortBy from 'sort-by';
-  import extend from 'extend';
   import Config from '../../models/Config';
   import auth from '../../auth';
   import Avatar from '../Avatar';
@@ -111,10 +110,7 @@
         if (this.editComment) {
           const comment = this.editComment.comment.trim();
           if (comment && comment !== originalComment.comment) {
-            this.organization.journal.getRef()
-              .child(this.editComment.journalId)
-              .child('comment')
-              .set(comment);
+            this.organization.journal.updateComment(originalComment.journalId, this.item, comment);
             this.editComment = undefined;
           } else {
             this.commentInputs[0].$el.focus();
@@ -160,27 +156,7 @@
           lastGroup.push(entry);
           lastGroup.sort(sortBy((this.reverse ? '' : '-') + 'time'));
         });
-        const reducedGroups = [];
-        groups.forEach((group) => {
-          const reduced = [];
-          reduced.uid = group.uid;
-          reducedGroups.push(reduced);
-          group.forEach((entry) => {
-            const l = reduced.length;
-            if (l > 0
-              && entry.action !== 'comment'
-              && reduced[l - 1].id === entry.id
-              && reduced[l - 1].action === entry.action) {
-              reduced[l - 1] = extend(
-                true, {}, reduced[l - 1], entry,
-                { time: Math.max(reduced[l - 1].time, entry.time) }
-              );
-            } else {
-              reduced.push(entry);
-            }
-          });
-        });
-        this.groups = reducedGroups;
+        this.groups = groups;
       },
       onEntryAdded(snapshot) {
         const entry = Object.assign({ journalId: snapshot.key }, snapshot.val());

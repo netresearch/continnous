@@ -20,7 +20,6 @@
 <script>
   import Avatar from '../../../Avatar';
   import mixin from '../mixin';
-  import auth from '../../../../auth';
 
   export default {
     components: { Avatar },
@@ -47,16 +46,13 @@
           this.$refs.textarea.focus();
         } else {
           this.organization.journal.addEntry(
+            this.item,
             this.type,
             this.personal,
-            this.item.id,
             'comment',
             undefined,
             text
           );
-          if (this.item.creator !== auth.user.uid) {
-            this.getWatcherRef(this.item.id).set(true);
-          }
           this.$emit('comment', this.text);
           this.text = '';
         }

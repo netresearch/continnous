@@ -9,6 +9,7 @@
       :validate="{title: validateTitle}"
       ref="form"
       @before-save="onBeforeSave"
+      @after-save="onAfterSave"
       @saved="onSaved"
       @cancel="$router.back()"
       :disabled="!mayEdit"
@@ -184,7 +185,6 @@
   import auth from '../../../auth';
   import Config from '../../../models/Config';
   import mixin from './mixin';
-  import editorMixin from '../common/mixins/editor';
   import ResourceContent from './detail/Content';
   import ResourceForm from './detail/Form';
   import ResourceComment from './detail/Comment';
@@ -197,6 +197,7 @@
   import Journal from '../Journal';
   import Avatar from '../../Avatar';
   import Period from '../../../models/Period';
+  import Mentions from '../../../models/Mentions';
 
   const components = {
     BaseForm,
@@ -221,7 +222,7 @@
   });
 
   export default {
-    mixins: [mixin, editorMixin],
+    mixins: [mixin],
     props: ['organization', 'permissions'],
     components,
     data() {
@@ -292,41 +293,47 @@
         }
         return item;
       },
-      onBeforeSave(updates) {
-        this.previousMentions = {};
-        Object.keys(updates).forEach((field) => {
-          this.previousMentions[field] = this.id ? this.getMentions(this.item[field], '@') : [];
+      getMentions(object) {
+        const m = [];
+        Object.keys(object).forEach((field) => {
+          Mentions.getMentions(object[field], '@').forEach(uid => m.push(uid));
         });
-      },
-      onSaved(updates, ref) {
-        this.edit = false;
-        if (!this.personal) {
-          const mentions = {};
-          Object.keys(updates).forEach((field) => {
-            const m = this.getMentions(updates[field], '@');
-            const pm = this.previousMentions[field];
-            m.concat(pm).forEach((uid) => {
-              if (!mentions[uid]) {
-                mentions[uid] = {};
-              }
-              if (!this.id || pm.indexOf(uid) < 0) {
-                mentions[uid][field] = true;
-              } else if (this.id && pm.indexOf(uid) >= 0 && m.indexOf(uid) < 0) {
-                mentions[uid][field] = false;
-              }
-            });
-          });
-          if (this.id) {
-            const keys = Object.keys(updates).filter(field => field !== 'updated');
-            this.organization.journal.addEntry(
-              this.type, this.personal, this.id, 'update', keys, null, { mentions }
-            );
-          } else {
-            this.organization.journal.addEntry(
-              this.type, this.personal, ref.key, 'create', null, null, { mentions }
-            );
+        this.$refs.form.getElements(true).forEach((element) => {
+          if (element.name && element.type === 'user-input') {
+            if (object[element.name]) {
+              object[element.name].forEach(uid => m.push(uid));
+            }
           }
+        });
+        return m;
+      },
+      onBeforeSave() {
+        this.previousMentions = this.id ? this.getMentions(this.item) : [];
+      },
+      onAfterSave(updates, promises) {
+        if (!this.personal) {
+          const item = Object.assign({}, this.item, updates);
+          const mentions = {};
+          const m = this.getMentions(item);
+          const pm = this.previousMentions;
+          m.concat(pm).forEach((uid) => {
+            if (!this.id || pm.indexOf(uid) < 0) {
+              mentions[uid] = true;
+            } else if (this.id && pm.indexOf(uid) >= 0 && m.indexOf(uid) < 0) {
+              mentions[uid] = false;
+            }
+          });
+          promises.push(this.organization.journal.addEntry(
+            item, this.type, this.personal,
+            this.id ? 'update' : 'create',
+            this.id ? Object.keys(updates).filter(field => field !== 'updated') : null,
+            null,
+            { mentions }
+          ));
         }
+      },
+      onSaved() {
+        this.edit = false;
         if (!this.id) {
           this.$router.replace(this.getUrlPath(this.$refs.form.firebaseRef.key));
         } else {

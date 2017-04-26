@@ -54,7 +54,7 @@
     <md-button
         @click.native="toggleWatching"
         :class="['md-icon-button', {'md-warn': personal}]"
-        v-if="watching">
+        v-if="watcher && watcher.isWatching">
       <md-icon>
         notifications
         <md-tooltip>{{$t('actions.stopWatching')}}</md-tooltip>
@@ -89,7 +89,7 @@
           <md-icon>edit</md-icon>
           <span>{{$t('actions.edit')}}</span>
         </md-menu-item>
-        <md-menu-item v-if="watching === false" @selected="toggleWatching">
+        <md-menu-item v-if="watcher && watcher.isWatching === false" @selected="toggleWatching">
           <md-icon>notifications</md-icon>
           <span>{{$t('actions.watch')}}</span>
         </md-menu-item>
@@ -194,7 +194,7 @@
         confirm: undefined,
         transition: undefined,
         archiveInfo: false,
-        watching: undefined
+        watcher: undefined
       };
     },
     computed: {
@@ -218,7 +218,7 @@
         immediate: true,
         handler(item) {
           this.hasLiked = false;
-          this.watching = undefined;
+          this.watcher = undefined;
           this.archiveInfo = undefined;
           if (this.refs) {
             this.refs.forEach(ref => ref.off('value'));
@@ -232,12 +232,7 @@
             });
           }
           if (item && item.creator && this.showNotifications) {
-            const watchingRef = this.getWatcherRef(item.id);
-            this.watchingRef = watchingRef;
-            this.refs.push(watchingRef);
-            watchingRef.on('value', (sn) => {
-              this.watching = sn.exists() ? sn.val() : item.creator === auth.user.uid;
-            });
+            this.watcher = this.organization.watchers.get(item, auth.user.uid);
           }
         }
       },
@@ -252,6 +247,9 @@
       if (this.refs) {
         this.refs.forEach(ref => ref.off('value'));
         delete this.refs;
+      }
+      if (this.watcher) {
+        this.watcher.off();
       }
     },
     methods: {
@@ -274,12 +272,7 @@
         });
       },
       toggleWatching() {
-        const watching = !this.watching;
-        if (!watching || watching && this.item.creator === auth.user.uid) {
-          this.watchingRef.remove();
-        } else {
-          this.watchingRef.set(watching);
-        }
+        this.watcher.toggle();
       },
       togglePersonal() {
         const it = this.item;
@@ -359,7 +352,7 @@
               props[transition.occasion] = true;
             }
             this.organization.journal.addEntry(
-              this.type, this.personal, item.id, archive ? 'unarchive' : 'archive',
+              item, this.type, this.personal, archive ? 'unarchive' : 'archive',
               undefined, transition.reason, props
             );
             this.updateLinks(!archive, this.personal);
@@ -372,18 +365,10 @@
       },
       deleteItem() {
         const item = this.item;
-        const promises = [];
-        promises.push(new Promise((resolve) => {
-          this.organization.journal.getRef()
-            .orderByChild('id')
-            .equalTo(item.id)
-            .once('value', (sn) => {
-              sn.forEach((csn) => {
-                promises.push(csn.ref.remove());
-              });
-              resolve();
-            });
-        }));
+        const promises = [
+          this.organization.journal.clear(item),
+          this.organization.watchers.clear(item)
+        ];
         this.forEachLink((link) => {
           promises.push(
             this.getFirebaseRef(link.archive, link.id, link.personal, link.resource)

@@ -105,11 +105,6 @@ export default {
       }
       return Firebase.database().ref(path + '/' + lastParts.join('/'));
     },
-    getWatcherRef(id) {
-      return Firebase.database().ref(
-        'watchers/organizations/' + this.organization.key + '/' + id + '/' + auth.user.uid
-      );
-    },
     setLike(item, like) {
       const byResourceRef = this.getLikesRef(item.id, false, false);
       const byUserRef = this.getLikesRef(item.id, false, true);
@@ -127,7 +122,7 @@ export default {
           this.updateRank(item);
 
           if (like) {
-            this.organization.journal.addEntry(this.type, this.personal, item.id, 'like');
+            this.organization.journal.addEntry(item, this.type, this.personal, 'like');
           } else {
             // Remove all like journal entries
             this.organization.journal.getRef().orderByChild('id').equalTo(item.id).once('value', (snapshot) => {

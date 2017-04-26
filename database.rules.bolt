@@ -81,6 +81,7 @@ path /scorings/organizations/{oid}/{rid}/{uid} {
 
 path /watchers/organizations/{oid} {
     read() { isAuthenticated() && isAllowed('organization', 'read', oid) }
+    write() { isAuthenticated() && isAdmin(oid) }
 }
 path /watchers/organizations/{oid}/{rid}/{uid} {
     write() { isAuthenticated() && isAllowed('organization', 'read', oid) }
