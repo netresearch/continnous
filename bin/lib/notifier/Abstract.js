@@ -56,9 +56,9 @@ module.exports = class AbstractNotifier {
    * @returns {Promise}
    */
   getUser(uid) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.db.ref('users/organizations/' + this.organization.key + '/' + uid).once('value', (sn) => {
-        resolve(sn.val());
+        sn.exists() ? resolve(Object.assign({ uid }, sn.val())) : reject();
       });
     });
   }
@@ -103,42 +103,43 @@ module.exports = class AbstractNotifier {
    * @returns {Promise}
    */
   getWatchers(item, excludeUids) {
+    const org = this.organization.key;
+    const watchers = [];
+    const ref = this.db.ref('watchers/organizations/' + org + '/' + item.id);
     return new Promise((resolve) => {
       const uids = [item.creator];
-      const org = this.organization.key;
-      const watchers = [];
-      this.db.ref('watchers/organizations/' + org + '/' + item.id).once('value', (wsn) => {
+      ref.once('value', (wsn) => {
         wsn.forEach((wcsn) => {
           const i = uids.indexOf(wcsn.key);
-          if (i === -1 && wsn.val()) {
+          if (i === -1 && wcsn.val() === true) {
             uids.push(wcsn.key);
-          } else if (i > -1 && !wsn.val()) {
+          } else if (i > -1 && wcsn.val() === false) {
             uids.splice(i, 1);
           }
         });
-        uids.forEach((uid, i) => {
-          const r = () => {
-            if (i === uids.length - 1) {
-              resolve(watchers);
-            }
-          };
-          if (excludeUids && excludeUids.indexOf(uid) > -1) {
-            r();
-            return;
-          }
-          this.db.ref('/security/organizations/' + org + '/users/' + uid).once('value', (ugsn) => {
-            if (ugsn.val() === '?' || ugsn.val() === '!') {
-              r();
-              return;
-            }
-            this.getUser(uid).then((user) => {
-              watchers.push(user);
-              r();
-            });
-          });
-        });
+        resolve(uids.filter(uid => !excludeUids || excludeUids.indexOf(uid) < 0));
       });
-    });
+    }).then(
+      (uids) => Promise.all(
+        uids.map(
+          (uid) => new Promise((resolve) => {
+            this.db.ref('/security/organizations/' + org + '/users/' + uid).once('value', (ugsn) => {
+              if (ugsn.val() === '?' || ugsn.val() === '!') {
+                resolve();
+                return;
+              }
+              this.getUser(uid).then(
+                (user) => {
+                  watchers.push(user);
+                  resolve();
+                },
+                () => ref.child(uid).remove().then(resolve)
+              );
+            });
+          })
+        )
+      )
+    ).then(() => watchers);
   }
 
   /**

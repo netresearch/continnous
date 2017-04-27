@@ -31,6 +31,7 @@ services:
     volumes:
       - ./bin:/opt/app/bin
       - ./src/models/Config.js:/opt/app/src/models/Config.js
+      - ./src/models/Mentions.js:/opt/app/src/models/Mentions.js
       - ./.firebaserc:/opt/app/.firebaserc
   mailhog:
     image: mailhog/mailhog

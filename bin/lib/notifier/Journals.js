@@ -1,6 +1,7 @@
 const AbstractNotifier = require('./Abstract');
 const html2text = require('html-to-text');
 const Config = require('../../../src/models/Config');
+const Mentions = require('../../../src/models/Mentions');
 
 /**
  * Send emails to item watchers on new journal entries
@@ -9,46 +10,70 @@ const Config = require('../../../src/models/Config');
  */
 module.exports = class JournalsNotifier extends AbstractNotifier {
   /**
-   * Initialize - listen for new journal items
+   * Initialize - listen for new or updated journal items
    */
   init() {
-    let fromTime = +new Date();
-    this.db.ref('journals/organizations/' + this.organization.key)
-      .orderByChild('time').startAt(fromTime).on('child_added', (sn) => {
-      const entry = sn.val();
-      if (entry && entry.time >= fromTime) {
-        fromTime = entry.time;
-        this.notifyWatchers(entry);
-      }
+    const ref = this.db.ref('journals/organizations/' + this.organization.key);
+    const watch = [
+      { key: 'time', mentionsOnly: false, from: +new Date() },
+      { key: 'updated', mentionsOnly: true, from: +new Date() }
+    ];
+    watch.forEach((conf) => {
+      ref.orderByChild(conf.key).startAt(conf.from).on('child_added', (sn) => {
+        const entry = sn.val();
+        if (entry && entry[conf.key] >= conf.from) {
+          conf.from = entry[conf.key];
+          this.notify(entry, conf.mentionsOnly).then(
+            () => sn.ref.child('mentions').remove()
+          );
+        }
+      });
     });
   }
 
   /**
-   * Gather causer, watchers, item and send the emails
+   * Gather causer, mentions, watchers, item and send the emails
    *
    * @param {Object} entry
+   * @param {Boolean=} mentionsOnly
+   * @return {Promise}
    */
-  notifyWatchers(entry) {
+  notify(entry, mentionsOnly) {
     let causer;
     let watchers;
+    const mentionedUids = entry.mentions ? Object.keys(entry.mentions) : [];
+    const mentions = [];
     let item;
-    Promise.all([
+    return Promise.all([
       this.getUser(entry.uid).then((user) => {
         causer = user;
       }),
+      Promise.all(
+        mentionedUids
+          .filter(uid => uid !== entry.uid)
+          .map(uid => this.getUser(uid).then(
+            user => mentions.push(user)
+          ))
+      ),
       this.getItem(entry.id, entry.resource, entry.action === 'archive', true)
         .then((i) => {
           item = i;
-          return this.getWatchers(i, [entry.uid]);
+          if (!mentionsOnly) {
+            return this.getWatchers(i, mentionedUids.concat(entry.uid)).then((w) => {
+              watchers = w;
+            });
+          }
+          return undefined;
         })
-        .then((w) => {
-          watchers = w;
-        })
-    ]).then(() => {
-      watchers.forEach((watcher) => {
-        this.sendWatcherMail(entry, item, watcher, causer);
-      });
-    });
+    ]).then(() => Promise.all(
+      mentions.map(
+        watcher => this.sendMail(entry, item, watcher, causer, true)
+      ).concat(
+        mentionsOnly ? [] : watchers.map(
+          watcher => this.sendMail(entry, item, watcher, causer)
+        )
+      )
+    ));
   }
 
   /**
@@ -58,10 +83,11 @@ module.exports = class JournalsNotifier extends AbstractNotifier {
    * @param {Object} item
    * @param {Object} watcher
    * @param {Object} causer
+   * @param {Boolean=} isMention
    *
    * @returns {Promise}
    */
-  sendWatcherMail(entry, item, watcher, causer) {
+  sendMail(entry, item, watcher, causer, isMention) {
     const href = this.href(entry.resource + '/' + entry.id);
     let status;
     if (entry.action === 'archive') {
@@ -69,35 +95,34 @@ module.exports = class JournalsNotifier extends AbstractNotifier {
         occasion => entry[occasion] === true
       );
     }
-    return this.sendMail({
+
+    let html = '<b>' + causer.displayName + '</b> ';
+    if (isMention) {
+      html += 'mentioned you while ' + entry.action.replace(/e$/, '') + 'ing ';
+    } else {
+      html += entry.action.replace(/t$/, 'te') + 'd ';
+    }
+    if (entry.action === 'comment') {
+      html += 'on ';
+    }
+    html += '<a href="' + href + '">' + item.title + '</a>';
+    if (status) {
+      html += ' (<b>' + status + '</b>)';
+    }
+    if (entry.comment) {
+      html += ':<br><br>';
+      html += Mentions.linkMentions(
+        entry.comment,
+        (scheme, id) => (scheme === '@' ? this.href('user/' + id) : '')
+      );
+    }
+
+    return super.sendMail({
       to: this.emailAddress(watcher.displayName, watcher.email),
       from: this.emailAddress(causer.displayName),
-      subject: item.title,
-      html: (() => {
-        let html = '<b>' + causer.displayName + '</b> ';
-        html += entry.action + 'd ' + (entry.action === 'comment' ? 'on ' : '');
-        html += '<a href="' + href + '">' + item.title + '</a>';
-        if (status) {
-          html += ' (<b>' + status + '</b>)';
-        }
-        if (entry.comment) {
-          html += ':<br><br>';
-          html += entry.comment;
-        }
-        return html;
-      })(),
-      text: (() => {
-        let text = causer.displayName + ' ' + entry.action + 'd ';
-        text += (entry.action === 'comment' ? 'on ' : '');
-        text += item.title + ' [' + href + ']';
-        if (status) {
-          text += ' (' + status + ')';
-        }
-        if (entry.comment) {
-          text += ':\n\n' + html2text.fromString(entry.comment);
-        }
-        return text;
-      })()
+      subject: (isMention ? causer.displayName + ' mentioned you in ' : '') + item.title,
+      html,
+      text: html2text.fromString(html)
     });
   }
-}
+};

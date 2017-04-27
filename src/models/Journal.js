@@ -10,22 +10,35 @@ import auth from '../auth';
  *   (not forced - so watch is not set to true, until those users
  *    actually view the item)
  *
- * @param {Organization} organization The organization object
+ * @param {Journal} journal The journal object
  * @param {Object} item The resource item
  * @param {Object} entry The full entry or updates to it
- * @param {firebase.database.Reference} ref The DB reference to the entry
+ * @param {String=} id The id of the entry to update
+ * @param {String=} id The id of the entry to update
+ * @param {Object=} current The current entry object if present
  * @return {Promise}
  */
-const save = (organization, item, entry, ref) => {
+const save = (journal, item, entry, id, current) => {
+  const ref = id ? journal.getRef().child(id) : journal.getRef().push();
+
+  if (id && !current) {
+    return new Promise(r => ref.once('value', sn => (sn.exists() ? r(sn.val()) : Promise.reject())))
+      .then(c => save(journal, item, entry, id, c));
+  }
+
   if (entry.comment) {
+    const cm = current ? Mentions.getMentions(current.comment, '@') : [];
     entry.mentions = entry.mentions || {};
     Mentions.getMentions(entry.comment, '@').forEach((uid) => {
-      entry.mentions[uid] = true;
+      if (cm.indexOf(uid) < 0) {
+        entry.mentions[uid] = true;
+      }
     });
   }
 
   const promises = [];
-  if (entry.uid !== item.creator) {
+  const organization = journal.organization;
+  if (entry.uid && entry.uid !== item.creator) {
     promises.push(organization.watchers.add(item, entry.uid, true));
   }
   if (entry.mentions) {
@@ -52,7 +65,12 @@ export default class Journal {
     const ref = Firebase.database().ref(
       '/journals/organizations/' + organization.key
     );
-    // Don't set this.ref but use getter because of trouble with Vue bindings
+
+    /**
+     * Don't set this.ref but use getter because of trouble with Vue bindings
+     *
+     * @return {firebase.database.Reference}
+     */
     this.getRef = () => ref;
   }
 
@@ -80,8 +98,6 @@ export default class Journal {
       uid: auth.user.uid
     }, props || {});
 
-    const ref = this.getRef().push();
-
     if (action === 'update') {
       const prevRef = this.getRef().orderByChild('id').equalTo(item.id).limitToLast(1);
       return new Promise(r => prevRef.once('value', sn => r(sn)))
@@ -101,10 +117,10 @@ export default class Journal {
           });
           return ret;
         })
-        .then(() => save(this.organization, item, entry, ref));
+        .then(() => save(this, item, entry));
     }
 
-    return save(this.organization, item, entry, ref);
+    return save(this, item, entry);
   }
 
   /**
@@ -113,26 +129,12 @@ export default class Journal {
    * @param {String} id The journal entry ID
    * @param {Object} item
    * @param {String} comment
-   * @param {Object=} current The current entry object if available
+   * @param {Object=} current The current entry object if present
    * @return {Promise}
    */
   updateComment(id, item, comment, current) {
-    const ref = this.getRef().child(id);
-    const update = (entry) => {
-      const updates = { comment, updated: +new Date(), };
-      if (entry.mentions) {
-        updates.mentions = {};
-        Object.keys(entry.mentions).forEach((uid) => {
-          updates.mentions[uid] = false;
-        });
-      }
-      return save(this.organization, item, updates, ref);
-    };
-    if (!current) {
-      return new Promise(r => ref.once('value', sn => r(sn)))
-        .then(sn => (sn.exists() ? update(sn.val()) : Promise.reject()));
-    }
-    return update(current);
+    const updates = { comment, updated: +new Date(), };
+    return save(this, item, updates, id, current);
   }
 
   /**
