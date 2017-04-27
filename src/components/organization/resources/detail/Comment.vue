@@ -1,49 +1,44 @@
 <template>
-  <div class="resource-detail-comment">
+  <md-input-container class="resource-detail-comment">
+    <div class="resource-detail-comment-whiteframe"></div>
     <avatar :organization="organization" uid="current" no-name></avatar>
-    <md-input-container>
-      <md-textarea
-          v-model="text"
-          ref="textarea"
-          @focus.native="focused = true; updateTextarea()"
-          @blur.native="focused = false; updateTextarea()"
-          :placeholder="$t('actions.writeComment') + '...'"></md-textarea>
-      <md-icon
-          ref="button"
+    <editor
+        v-model="text"
+        ref="editor"
+        toolbar="mini"
+        :class="{'md-editor-sticky-toolbar': !!text.trim()}"
+        :organization="organization"
+        :placeholder="$t('actions.writeComment') + '...'"></editor>
+    <div class="resource-detail-comment-buttons">
+      <md-button
           @click.native="save()"
-          :class="['resource-comment-send', {'resource-comment-send-disabled': !text.trim().length}]"
-      >add_box</md-icon>
-    </md-input-container>
-  </div>
+          :disabled="!text.trim().length"
+          class="md-primary md-raised"
+      >Post comment</md-button>
+      <md-button @click.native="$refs.editor.blur(); text = ''">Cancel</md-button>
+    </div>
+  </md-input-container>
 </template>
 
 <script>
   import Avatar from '../../../Avatar';
   import mixin from '../mixin';
+  import Editor from '../../common/Editor';
 
   export default {
-    components: { Avatar },
+    components: { Avatar, Editor },
     props: ['organization', 'type', 'item', 'personal'],
     mixins: [mixin],
     data() {
       return {
-        focused: false,
         text: ''
       };
     },
     methods: {
-      updateTextarea() {
-        this.$nextTick(() => {
-          /* global document */
-          const evt = document.createEvent('Event');
-          evt.initEvent('autosize:update', true, false);
-          this.$refs.textarea.$el.dispatchEvent(evt);
-        });
-      },
       save() {
-        const text = this.text.trim().replace(/\r/g, '');
+        const text = this.text;
         if (!text.length) {
-          this.$refs.textarea.focus();
+          this.$refs.editor.focus();
         } else {
           this.organization.journal.addEntry(
             this.item,
@@ -62,38 +57,70 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
+  $buttons-height: 36px;
+  $buttons-padding: 10px;
+  $avatar-width: 30px;
   .resource-detail-comment {
-    margin-top: 16px;
-    display: flex;
-    flex-flow: row wrap;
-    .md-input-container {
-      min-height: 0;
-      flex: 1;
-      margin: 0;
-      margin-left: 10px;
-      padding-top: 5px;
-      min-width: 100px;
+    min-height: 0;
+    flex: 1;
+    margin: 16px 0 0;
+    padding-top: 0;
+    min-width: 100px;
+    transition: margin 0.4s;
+    &:after {
+      opacity: 0;
+      z-index: 3;
+      left: $avatar-width + $buttons-padding;
+    }
+    .resource-detail-comment-whiteframe {
+      box-shadow: 0px 1px 8px 0px rgba(0,0,0,0.3);
+      position: absolute;
+      opacity: 0;
+      top: -6px;
+      left: -$buttons-padding;
+      right: -$buttons-padding;
+      bottom: 0;
+      transition: opacity 0.2s, bottom 0.4s;
+    }
+    .md-editor {
+      background: #fff !important;
+      z-index: 2;
+      margin-left: $buttons-padding;
+      margin-top: 5px;
+      transition: margin-top 0.2s;
+    }
+    .resource-detail-comment-buttons {
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      opacity: 0;
+      right: 0;
+      left: $avatar-width + $buttons-padding;
+      transition: top 0.4s, opacity 0.4s;
+      margin-top: $buttons-padding;
+      .md-button {
+        margin: 0;
+        &:not(.md-primary) {
+          float: right;
+        }
+      }
+    }
+    &.md-input-focused,
+    &.md-has-value {
+      margin: 16px + $buttons-padding 0 $buttons-height + $buttons-padding * 2;
       &:after {
-        opacity: 0;
+        opacity: 1;
       }
-      .resource-comment-send {
-        cursor: pointer;
-        opacity: 0;
-        &:after {
-          display: none;
-        }
-        &.resource-comment-send-disabled {
-          color: rgba(#000, 0.54) !important;
-          cursor: default;
-        }
+      .md-editor {
+        margin-top: 0;
       }
-      &.md-input-focused {
-        .resource-comment-send {
-          opacity: 1;
-        }
-        &:after {
-          opacity: 1;
-        }
+      .resource-detail-comment-whiteframe {
+        bottom: -1 * ($buttons-height + $buttons-padding * 2);
+        opacity: 1;
+      }
+      .resource-detail-comment-buttons {
+        top: 100%;
+        opacity: 1;
       }
     }
   }

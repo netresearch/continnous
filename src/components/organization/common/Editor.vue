@@ -44,6 +44,12 @@
           id: user.uid,
           text: user.displayName
         };
+      },
+      focus() {
+        this.$refs.editor.focus();
+      },
+      blur() {
+        this.$refs.editor.blur();
       }
     },
     mounted() {

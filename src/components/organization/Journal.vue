@@ -13,9 +13,10 @@
               <md-icon v-if="i > 0" class="md-mini">arrow_{{reverse ? 'down' : 'up'}}ward</md-icon>{{formatTime(entry.time)}}
             </div>
             <div class="journal-comment" v-if="noResource && entry.action === 'comment' && entry.comment">
-              <span
+              <editor-text
                   v-if="!editComment || editComment.journalId !== entry.journalId"
-                  v-html="formatComment(entry.comment)"></span>
+                  :organization="organization"
+                  :text="entry.comment"></editor-text>
               <md-input-container v-else>
                 <md-textarea
                     ref="commentInputs"
@@ -71,15 +72,16 @@
 
 <script>
   import moment from 'moment';
-  import Autolinker from 'autolinker';
   import sortBy from 'sort-by';
   import Config from '../../models/Config';
   import auth from '../../auth';
   import Avatar from '../Avatar';
+  import Editor from './common/Editor';
+  import EditorText from './common/EditorText';
   import Firebase from '../../firebase';
 
   export default {
-    components: { Avatar },
+    components: { Avatar, Editor, EditorText },
     props: {
       organization: Object,
       item: Object,
@@ -211,17 +213,6 @@
       },
       formatTime(time) {
         return moment(time).calendar();
-      },
-      formatComment(comment) {
-        return Autolinker.link(
-          comment
-          .replace(/\r/g, '')
-          .replace(/\n/g, '<br>'),
-          {
-            phone: false,
-            mention: false,
-          }
-        );
       },
       joinFields(fields) {
         if (!fields || !fields.length) {
