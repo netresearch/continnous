@@ -144,7 +144,7 @@
           }
 
           this.toolbarElement = this.$el.querySelector('.ql-toolbar');
-          document.body.addEventListener('click', this.detectFocus);
+          document.body.addEventListener('mousedown', this.detectFocus);
 
           this.$emit('editor-mounted', this.editor);
         }
@@ -155,7 +155,7 @@
           delete this.editor;
           this.$refs.editor.innerHTML = this.value || '';
           this.toolbarElement.parentNode.removeChild(this.toolbarElement);
-          document.body.removeEventListener('click', this.detectFocus);
+          document.body.removeEventListener('mousedown', this.detectFocus);
 
           this.$emit('editor-destroyed');
         }
