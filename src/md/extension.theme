@@ -1,4 +1,9 @@
 .THEME_NAME {
+  a:not(.md-button) {
+    color: #{'PRIMARY-COLOR'};
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+  }
+
   span.md-primary,
   span.md-link,
   span.md-icon-link {

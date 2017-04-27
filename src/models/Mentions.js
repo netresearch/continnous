@@ -40,7 +40,11 @@ module.exports = class Mentions {
             uris[k] = callback(relMatch[1], relMatch[2]);
           }
           if (uris[k]) {
-            newString = newString.replace(match, match.replace(relMatch[0], ' href="' + uris[k] + '"'));
+            newString = newString.replace(
+              match,
+              match.replace(relMatch[0], ' href="' + uris[k] + '"')
+              + '<i>' + relMatch[1] + '</i>'
+            );
           }
         }
       });

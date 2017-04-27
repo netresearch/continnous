@@ -58,6 +58,11 @@
     fill: currentColor !important;
   }
 }
+
+.ql-editor {
+  line-height: inherit;
+}
+
 .md-input-container:not(.md-input-focused) .md-editor {
   .ql-container {
     background: transparent;
@@ -71,22 +76,41 @@
   display: inline-block;
 }
 
-.md-mention[data-focused] {
-  color: inherit !important;
+$r: 3px;
+.md-mention[data-focused],
+.md-mention[href] {
   text-decoration: none !important;
   display: inline-block;
   white-space: nowrap;
-  $r: 3px;
   border-radius: $r;
-  background: rgba(#000, 0.06);
+  background: rgba(#000, 0.03);
   border: 1px solid rgba(#000, 0.12);
   padding-right: $r;
+}
+.md-mention[data-focused] {
+  padding-right: $r;
+  color: inherit !important;
   &:before {
     display:inline-block;
     content: attr(data-key);
     background: rgba(#000, 0.06);
     padding: 0 $r;
     margin-right: $r;
+  }
+}
+.md-mention[href] {
+  line-height: 20px - $r;
+  > i {
+    display: inline-block;
+    color: rgba(#000, 0.48);
+    font-style: normal;
+    padding: 0 $r / 2 0 $r;
+    font-size: 13px;
+    position: relative;
+    top: -0.5 * $r;
+  }
+  &:hover {
+    border-color: rgba(#000, 0.18);
   }
 }
 .md-mentions-autocomplete {
