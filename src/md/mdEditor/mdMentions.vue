@@ -328,6 +328,7 @@
             ops.unshift({ retain: index });
           }
           this.editor.updateContents({ ops }, 'user');
+          this.editor.setSelection(index + normalized.text.length + 1);
         }
         this.hideAutocomplete();
       },
