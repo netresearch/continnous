@@ -20,19 +20,37 @@
     border: none;
     border-bottom: 1px solid rgba(#000, 0);
     overflow: visible;
-    transition: max-height 0.2s, border-color 0.2s, padding 0.2s;
+    opacity: 0;
+    transition: max-height 0.2s, border-bottom-color 0.2s, padding 0.2s;
     position: relative;
     z-index: 1;
     button {
       color: #707070;
     }
+    &:after {
+      position: absolute;
+      display: block;
+      z-index: 4;
+      content: "";
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    }
   }
-  &.md-editor-focused .ql-toolbar {
+  &.md-editor-focused .ql-toolbar,
+  &.md-editor-sticky-toolbar .ql-toolbar {
     z-index: 3;
-    border-color: rgba(#000, 0.12);
+    border-bottom-color: rgba(#000, 0.12);
     max-height: 72px;
     padding: 8px 0;
-    transition: max-height 0.2s, border-color 0.2s, padding 0.2s, z-index 0s 0.2s;
+    opacity: 1;
+    pointer-events: auto;
+    transition: max-height 0.2s, border-bottom-color 0.2s, padding 0.2s, z-index 0s 0.2s;
+    &:after {
+      z-index: -1;
+      transition: z-index 0s 0.2s;
+    }
   }
   .ql-container {
     background: #fff;
@@ -61,15 +79,6 @@
 
 .ql-editor {
   line-height: inherit;
-}
-
-.md-input-container:not(.md-input-focused) .md-editor {
-  .ql-container {
-    background: transparent;
-  }
-  .ql-toolbar {
-    display: none;
-  }
 }
 
 .md-mention[data-current] {
