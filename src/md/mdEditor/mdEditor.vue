@@ -72,16 +72,12 @@
           if (this.editor) {
             const v = value || '';
             if (v !== this.getFilteredHTML()) {
-              this.editor.root.innerHTML = v;
+              this.editor.root.innerHTML = this.restoreHTML(v);
               this.editor.update('silent');
             }
           }
           if (!value) {
             this.empty = true;
-          } else {
-            this.$nextTick(() => {
-              this.empty = this.isEmpty();
-            });
           }
         }
       },
@@ -120,7 +116,7 @@
       },
       buildEditor() {
         if (!this.editor && this.mounted) {
-          this.$refs.editor.innerHTML = this.value || '';
+          this.$refs.editor.innerHTML = this.restoreHTML(this.value || '');
 
           this.editor = new Quill(this.$refs.editor, {
             theme: 'snow',
@@ -131,11 +127,12 @@
           });
           this.editor.on('text-change', () => {
             const value = this.getFilteredHTML();
-
-            this.setParentValue();
-            this.parentContainer.inputLength = value ? value.length : 0;
-            this.$emit('change', value);
-            this.$emit('input', value);
+            if (value !== this.value) {
+              this.setParentValue();
+              this.parentContainer.inputLength = value ? value.length : 0;
+              this.$emit('change', value);
+              this.$emit('input', value);
+            }
           });
 
           if (!this.allowClipboardAttributes) {
@@ -163,18 +160,39 @@
           this.$emit('editor-destroyed');
         }
       },
-      getFilteredHTML() {
-        return this.editor && this.getFilteredContent().length ? this.editor.root.innerHTML : '';
-      },
-      getFilteredContent() {
-        if (!this.editor) {
-          return '';
+      restoreHTML(html) {
+        if (html && !html.match(/^<(p|ul|ol|div|h[1-6]|blockquote)(\s|>)/)) {
+          return '<p>' + html + '</p>';
         }
-        const content = this.editor.root.textContent || this.editor.root.innerText || '';
-        return content.trim();
+        return html;
       },
-      isEmpty() {
-        return this.getFilteredContent().length === 0;
+      getFilteredHTML() {
+        let html = '';
+        if (this.editor) {
+          const nodes = this.editor.root.childNodes;
+          let l = nodes.length;
+          if (l === 1 && nodes[0].tagName === 'P' && !nodes[0].attributes.length) {
+            html = nodes[0].innerHTML;
+          } else if (l) {
+            let start = 0;
+            for (let i = 0; i < l; i++) {
+              if (nodes[i].innerText.trim()) {
+                break;
+              }
+              start++;
+            }
+            for (let i = l - 1; i >= start; i--) {
+              if (nodes[i].innerText.trim()) {
+                break;
+              }
+              l--;
+            }
+            for (let i = start; i < l; i++) {
+              html += nodes[i].outerHTML;
+            }
+          }
+        }
+        return html;
       },
       focus() {
         this.focused = true;
