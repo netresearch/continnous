@@ -69,29 +69,22 @@
       value: {
         immediate: true,
         handler(value) {
-          if (this.editor) {
-            const v = value || '';
-            if (v !== this.getFilteredHTML()) {
-              this.editor.root.innerHTML = this.restoreHTML(v);
-              this.editor.update('silent');
-            }
-          }
+          this.setFilteredHTML(value);
           if (!value) {
             this.empty = true;
           }
         }
       },
       focused(focused) {
-        if (focused) {
-          if (this.editor) {
+        if (this.parentContainer) {
+          this.parentContainer.isFocused = focused;
+        }
+        if (this.editor) {
+          if (focused) {
             this.editor.focus();
-          }
-          this.onFocus();
-        } else {
-          if (this.editor) {
+          } else {
             this.editor.blur();
           }
-          this.onBlur();
         }
       },
       disabled(disabled) {
@@ -116,7 +109,7 @@
       },
       buildEditor() {
         if (!this.editor && this.mounted) {
-          this.$refs.editor.innerHTML = this.restoreHTML(this.value || '');
+          this.setFilteredHTML(this.value);
 
           this.editor = new Quill(this.$refs.editor, {
             theme: 'snow',
@@ -128,8 +121,7 @@
           this.editor.on('text-change', () => {
             const value = this.getFilteredHTML();
             if (value !== this.value) {
-              this.setParentValue();
-              this.parentContainer.inputLength = value ? value.length : 0;
+              this.updateValues(value);
               this.$emit('change', value);
               this.$emit('input', value);
             }
@@ -160,26 +152,32 @@
           this.$emit('editor-destroyed');
         }
       },
-      restoreHTML(html) {
-        if (html && !html.match(/^<(p|ul|ol|div|h[1-6]|blockquote)(\s|>)/)) {
-          return '<p>' + html + '</p>';
+      setFilteredHTML(html) {
+        const root = this.editor ? this.editor.root : this.$refs.editor;
+        if (root && html !== this.getFilteredHTML()) {
+          let h = html || '';
+          if (h && !h.match(/^<(p|ul|ol|div|h[1-6]|blockquote)(\s|>)/)) {
+            h = '<p>' + h + '</p>';
+          }
+          root.innerHTML = h;
+          if (this.editor) {
+            this.editor.update('silent');
+          }
         }
-        return html;
       },
       getFilteredHTML() {
         let html = '';
-        if (this.editor) {
-          const nodes = this.editor.root.childNodes;
+        const root = this.editor ? this.editor.root : this.$refs.editor;
+        if (root) {
+          const nodes = root.childNodes;
           let l = nodes.length;
-          if (l === 1 && nodes[0].tagName === 'P' && !nodes[0].attributes.length) {
-            html = nodes[0].innerHTML;
-          } else if (l) {
+          if (l) {
             let start = 0;
             for (let i = 0; i < l; i++) {
               if (nodes[i].innerText.trim()) {
                 break;
               }
-              start++;
+              start = i;
             }
             for (let i = l - 1; i >= start; i--) {
               if (nodes[i].innerText.trim()) {
@@ -187,8 +185,12 @@
               }
               l--;
             }
-            for (let i = start; i < l; i++) {
-              html += nodes[i].outerHTML;
+            if (l === 1 && nodes[start].tagName === 'P' && !nodes[start].attributes.length) {
+              html = nodes[start].innerHTML;
+            } else {
+              for (let i = start; i < l; i++) {
+                html += nodes[i].outerHTML;
+              }
             }
           }
         }
