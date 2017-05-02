@@ -73,7 +73,7 @@
   import Firebase from 'firebase';
   import auth from '../auth';
   import AccountSwitcher from './AccountSwitcher';
-  import Journal from './organization/Journal';
+  import Journal from './organization/common/Journal';
   import Organization from '../models/Organization';
   import Config from '../models/Config';
   import Permissions from '../models/Permissions';

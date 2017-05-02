@@ -88,10 +88,8 @@
         }
       },
       disabled(disabled) {
-        if (disabled) {
-          this.destroyEditor();
-        } else {
-          this.buildEditor();
+        if (this.editor) {
+          this.editor.enable(!disabled);
         }
       }
     },

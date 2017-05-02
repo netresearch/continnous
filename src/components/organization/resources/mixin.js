@@ -1,20 +1,25 @@
-import extend from 'extend';
 import moment from 'moment';
 import Firebase from '../../../firebase';
 import auth from '../../../auth';
 import ResourceImage from './Image';
-import Config from '../../../models/Config';
+import Item from '../../../models/Item';
 
 const viewed = {};
 
 export default {
   components: { ResourceImage },
   methods: {
+    /**
+     * @deprecated Use Item.getFirebaseRef()
+     *
+     * @param pathArgs Args for {@link getFirebasePath}
+     * @return {firebase.database.Reference}
+     */
     getFirebaseRef(...pathArgs) {
       return Firebase.database().ref(this.getFirebasePath(...pathArgs));
     },
     /**
-     * @todo Refactor method (branch to (bool) archive and as second arg)
+     * @deprecated Use Item.getFirebasePath()
      *
      * @param branch
      * @param id
@@ -23,73 +28,39 @@ export default {
      * @returns {string}
      */
     getFirebasePath(branch, id, personal, type) {
-      let b = branch;
-      if (typeof b !== 'string') {
-        if (b === undefined) {
-          b = this.archive;
-        }
-        b = b ? 'archive' : 'resources';
+      let archive = branch;
+      if (typeof archive === 'string') {
+        // Legacy stuff
+        archive = archive === 'archive';
       }
-      const p = personal === undefined ? this.personal : personal;
-      return '/' + b
-        + '/organizations/' + this.organization.key
-        + '/' + (p ? auth.user.uid : 'organization')
-        + '/' + (type || this.type)
-        + (id ? '/' + id : '');
+      return Item.getFirebasePath(
+        this.organization,
+        type || this.type,
+        archive === undefined ? this.archive : archive,
+        personal === undefined ? this.personal : personal,
+        id
+      );
     },
+    /**
+     * @deprecated Use new Item()
+     *
+     * @param {String} id
+     * @param {Object} data
+     * @param {String} resource
+     * @param {Boolean} personal
+     * @return {Item}
+     */
     createItem(id, data, resource, personal) {
-      const item = Object.assign({}, data, { id });
-      if (resource) {
-        item.resource = resource;
-      }
-      if (personal !== undefined) {
-        item.personal = personal;
-      }
-
-      // The links objects need to be given for proper binding
-      // and we need to check if all links are allowed to be seen
-      /* eslint-disable no-underscore-dangle */
-      if (!item.links) {
-        item.links = {};
-        item._origLinks = null;
-      } else {
-        item._origLinks = extend(true, {}, item.links);
-      }
-      Object.keys(Config.resources).forEach((key) => {
-        const ar = this.permissions[key].read;
-        const arp = this.permissions['personal_' + key].read;
-        if (ar || arp) {
-          if (!item.links[key]) {
-            item.links[key] = {};
-          }
-          Object.keys(item.links[key]).forEach((target) => {
-            const value = item.links[key][target];
-            if (typeof value === 'object' && value.personal) {
-              if (value.personal !== auth.user.uid || !arp) {
-                delete item.links[key][target];
-              } else {
-                value.personal = true;
-              }
-            } else if (!ar) {
-              delete item.links[key][target];
-            }
-          });
-        } else {
-          delete item.links[key];
-        }
-      });
-      return item;
+      return new Item(id, data, resource, undefined, personal).setPermissions(this.permissions);
     },
+    /**
+     * @deprecated Use Item.prepareForFirebase()
+     *
+     * @param {Item} item
+     * @return {Object}
+     */
     prepareItemForFirebase(item) {
-      const fbItem = extend(true, {}, item);
-      delete fbItem.resource;
-      delete fbItem.personal;
-      /* eslint-disable no-underscore-dangle */
-      if (fbItem.hasOwnProperty('_origLinks')) {
-        fbItem.links = fbItem._origLinks;
-        delete fbItem._origLinks;
-      }
-      return fbItem;
+      return item instanceof Item ? item.prepareForFirebase() : item;
     },
     moment(time) {
       return moment(time);

@@ -1,7 +1,9 @@
 import extend from 'extend';
+import sortBy from 'sort-by';
 import Firebase from '../firebase';
 import Mentions from './Mentions';
 import auth from '../auth';
+import Item from './Item';
 
 /**
  * Save an entry or updates to an entry
@@ -11,9 +13,8 @@ import auth from '../auth';
  *    actually view the item)
  *
  * @param {Journal} journal The journal object
- * @param {Object} item The resource item
+ * @param {Item} item The resource item
  * @param {Object} entry The full entry or updates to it
- * @param {String=} id The id of the entry to update
  * @param {String=} id The id of the entry to update
  * @param {Object=} current The current entry object if present
  * @return {Promise}
@@ -53,6 +54,50 @@ const save = (journal, item, entry, id, current) => {
   return ref.update(entry).then(() => Promise.all(promises));
 };
 
+/**
+ * @member {String} id The journal entry ID
+ * @member {Item} item
+ * @member {String} uid The user ID
+ * @member {String} resource
+ * @member {Boolean=} personal
+ * @member {String} action
+ * @member {Array=} fields
+ */
+export class JournalEntry {
+  /**
+   * @param {Journal} journal
+   * @param {String} id
+   * @param {Object} data
+   * @param {Item} item
+   */
+  constructor(journal, id, data, item) {
+    this.journal = journal;
+    Object.assign(this, data);
+    this.id = id;
+    this.item = item;
+  }
+
+  /**
+   * Update the comment of this entry
+   *
+   * @param {String} comment
+   * @return {Promise}
+   */
+  updateComment(comment) {
+    const updates = { comment, updated: +new Date(), };
+    return save(this.journal, this.item, updates, this.id, this);
+  }
+
+  /**
+   * Delete the entry
+   *
+   * @returns {firebase.Promise<any>}
+   */
+  remove() {
+    return this.journal.getRef().child(this.id).remove();
+  }
+}
+
 export default class Journal {
   /**
    * Constructor
@@ -77,7 +122,7 @@ export default class Journal {
   /**
    * Add an entry
    *
-   * @param {Object} item
+   * @param {Item} item
    * @param {String} resource
    * @param {Boolean} personal
    * @param {String} action
@@ -124,20 +169,6 @@ export default class Journal {
   }
 
   /**
-   * Update the comment of an entry
-   *
-   * @param {String} id The journal entry ID
-   * @param {Object} item
-   * @param {String} comment
-   * @param {Object=} current The current entry object if present
-   * @return {Promise}
-   */
-  updateComment(id, item, comment, current) {
-    const updates = { comment, updated: +new Date(), };
-    return save(this, item, updates, id, current);
-  }
-
-  /**
    * Remove all entries for an item
    *
    * @param item
@@ -161,7 +192,7 @@ export default class Journal {
   /**
    * Get latest archive information for an item
    *
-   * @param {Object} item
+   * @param {Item} item
    * @return {Promise.<Object>}
    */
   getArchiveInfo(item) {
@@ -180,5 +211,122 @@ export default class Journal {
         }
       });
     });
+  }
+
+  getEntries(item, options) {
+    const opt = options || {};
+    let ref;
+    const items = {};
+    if (item) {
+      ref = this.getRef().orderByChild('id').equalTo(item.id);
+    } else {
+      ref = this.getRef().orderByChild('personal').equalTo(false).limitToLast(10);
+    }
+
+    let reversed = opt.reverse;
+
+    /**
+     * @type {Array.<Item>}
+     */
+    const entries = [];
+    entries.off = () => {
+      ref.off('child_added');
+      ref.off('child_removed');
+      ref.off('child_changed');
+    };
+    /**
+     * @type {Array.<Array.<Item>>}
+     */
+    entries.groups = [];
+
+    const groupEntries = () => {
+      entries.sort(sortBy((reversed ? '' : '-') + 'time'));
+      const groups = [];
+      let lastGroup;
+      entries.forEach((entry) => {
+        if (!lastGroup || lastGroup.uid !== entry.uid) {
+          lastGroup = [];
+          lastGroup.uid = entry.uid;
+          groups.push(lastGroup);
+        }
+        lastGroup.push(entry);
+        lastGroup.sort(sortBy((reversed ? '' : '-') + 'time'));
+      });
+      entries.groups = groups;
+    };
+    entries.reverse = (reverse) => {
+      if (typeof reverse === 'boolean') {
+        if (reverse === reversed) {
+          return entries;
+        }
+        reversed = reverse;
+      } else {
+        reversed = !reversed;
+      }
+      groupEntries();
+      return entries;
+    };
+
+    let loading = Promise.resolve();
+    ref.on('child_added', (sn) => {
+      let entry = sn.val();
+
+      if (!item && items.hasOwnProperty(entry.id) && !items[entry.id]) {
+        // Exit early when previously loading the item failed
+        return;
+      }
+
+      const handleCallbackReturn = ret => new Promise((resolve) => {
+        const addEntry = (e) => {
+          entries.push(e);
+          groupEntries();
+          resolve();
+        };
+        if (typeof ret === 'object') {
+          if (ret instanceof JournalEntry) {
+            addEntry(ret);
+            return;
+          } else if (ret.then && typeof ret.then === 'function') {
+            ret.then(handleCallbackReturn);
+            return;
+          }
+          entry = ret;
+        }
+        if (ret === false) {
+          resolve();
+        } else {
+          Promise.resolve(
+            item || items[entry.id] || Item.load(
+              this.organization, entry.resource, entry.action === 'archive', entry.personal, entry.id, 'title'
+            ).then(loadedItem => (items[entry.id] = loadedItem))
+          ).then(
+            finalItem => addEntry(new JournalEntry(this, sn.key, entry, finalItem)),
+            () => { items[entry.id] = false; resolve(); }
+          );
+        }
+      });
+      loading = loading.then(
+        () => handleCallbackReturn(opt.onBeforeAdd ? opt.onBeforeAdd(entry, sn.key) : true)
+      );
+    });
+
+    ref.on('child_removed', (snapshot) => {
+      entries.forEach((entry, i) => {
+        if (entry.id === snapshot.key) {
+          entries.splice(i, 1);
+          groupEntries();
+        }
+      });
+    });
+
+    ref.on('child_changed', (snapshot) => {
+      entries.forEach((entry) => {
+        if (entry.id === snapshot.key) {
+          Object.assign(entry, snapshot.val(), { id: entry.id });
+        }
+      });
+    });
+
+    return entries;
   }
 }

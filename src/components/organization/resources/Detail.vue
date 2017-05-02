@@ -165,16 +165,12 @@
           </div>
         </div>
         <div class="resource-detail-comments" v-if="!edit">
-          <journal
-              actions="comment"
-              @update="comments = $event.entries.length"
+          <resource-comments
               :organization="organization"
+              :type="type"
               :item="item"
-              no-resource
-              reverse
-              no-empty-message
-          ></journal>
-          <resource-comment :organization="organization" :type="type" :item="item" :personal="personal"></resource-comment>
+              :personal="personal"
+          ></resource-comments>
         </div>
       </div>
     </md-whiteframe>
@@ -188,14 +184,14 @@
   import mixin from './mixin';
   import ResourceContent from './detail/Content';
   import ResourceForm from './detail/Form';
-  import ResourceComment from './detail/Comment';
+  import ResourceComments from './detail/Comments';
   import ResourceResults from './detail/Results';
   import ResourceScoring from './detail/Scoring';
   import ResourceTags from './detail/Tags';
   import ResourceLikes from './detail/Likes';
   import ResourceLinks from './Links';
   import ResourceActions from './Actions';
-  import Journal from '../Journal';
+  import Journal from '../common/Journal';
   import Avatar from '../../Avatar';
   import Period from '../../../models/Period';
   import Mentions from '../../../models/Mentions';
@@ -204,7 +200,7 @@
     BaseForm,
     ResourceContent,
     ResourceForm,
-    ResourceComment,
+    ResourceComments,
     ResourceResults,
     ResourceScoring,
     ResourceTags,
@@ -236,7 +232,6 @@
         archive: false,
         edit: false,
         scrollTop: 0,
-        comments: 0,
         hasLinks: false
       };
     },

@@ -200,7 +200,9 @@
         } else if (insert && this.providers.hasOwnProperty(insert)) {
           if (!retain || !this.ignoreAfter.test(this.editor.getText(retain - 1, 1))) {
             this.editor.insertText(retain, '\uFEFF', 'mention', { key: insert, focused: true });
-            this.editor.deleteText(retain + 1, 1);
+            window.setTimeout(() => {
+              this.editor.deleteText(retain + 1, 1);
+            });
             if (!retain) {
               this.editor.root.classList.remove('ql-blank');
             }

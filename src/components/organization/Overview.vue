@@ -37,7 +37,7 @@
 </template>
 
 <script>
-  import Journal from './Journal';
+  import Journal from './common/Journal';
   import mixin from './resources/mixin';
   import ResourceItem from './resources/ListItem';
   import Config from '../../models/Config';
