@@ -12,6 +12,10 @@ module.exports = {
     requestMembership: 'Request membership',
     membershipProcessed: 'Your membership is being processed',
     membershipDenied: 'Your membership has been denied',
+    invalid: '{usernameLabel} or passwort are wrong',
+    username: 'Username',
+    password: 'Password',
+    signInTo: 'Sign in to {to}',
   },
   language: {
     language: 'Language',
@@ -52,6 +56,13 @@ module.exports = {
   invite: {
     userExists: 'User already exists (eventually blocked)',
   },
+  connections: {
+    title: 'Connection | Connections',
+    add: 'Add connection',
+    type: 'Type',
+    typePlaceholder: 'Select type',
+    loginRequired: 'Successful login required to proceed',
+  },
   roles: {
     admin: 'Administrator',
     member: 'Member',
@@ -82,6 +93,8 @@ module.exports = {
     unlike: 'I don\'t like this anymore',
     like: 'I like this',
     writeComment: 'Write comment',
+    postComment: 'Post comment',
+    updateComment: 'Update comment',
     editAll: 'Edit all fields',
     cancelEdit: 'Cancel edit',
     share: 'Share',
@@ -188,6 +201,8 @@ module.exports = {
   links: {
     link: 'Link',
     assign: 'Assign {resource}',
+    errorClear: 'Could not remove link',
+    errorAdd: 'Could not add link',
   },
   thereAreNo: 'There are no {accusative} yet',
   youDontHave: 'You don\'t have {accusative} yet',
@@ -264,7 +279,7 @@ module.exports = {
     accepted: 'Accepted',
     completed: 'Completed',
     heeded: 'Heeded',
-    outdated: 'Outdated'
+    outdated: 'Outdated',
   },
   detail: {
     this: 'This',

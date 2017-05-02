@@ -15,7 +15,7 @@ module.exports = {
     invalid: '{usernameLabel} oder Passwort sind falsch',
     username: 'Benutzername',
     password: 'Passwort',
-    signInTo: 'An {to} anmelden'
+    signInTo: 'An {to} anmelden',
   },
   language: {
     language: 'Sprache',
@@ -59,6 +59,8 @@ module.exports = {
   connections: {
     title: 'Anbindung | Anbindungen',
     add: 'Anbindung hinzufügen',
+    type: 'Typ',
+    typePlaceholder: 'Typ auswählen',
     loginRequired: 'Um fortzufahren, ist eine erfolgreiche Anmeldung erforderlich',
   },
   roles: {
@@ -91,6 +93,8 @@ module.exports = {
     unlike: 'Mir gefällt das nicht mehr',
     like: 'Mir gefällt das',
     writeComment: 'Schreibe einen Kommentar',
+    postComment: 'Kommentar hinzufügen',
+    updateComment: 'Kommentar aktualisieren',
     editAll: 'Alle Felder bearbeiten',
     cancelEdit: 'Bearbeitung abbrechen',
     share: 'Teilen',
@@ -198,7 +202,7 @@ module.exports = {
     link: 'Verknüpfen',
     assign: '{resource} zuweisen',
     errorClear: 'Die Verknüpfung konnte nicht entfernt werden',
-    errorAdd: 'Die Verknüpfung konnte angelegt werden'
+    errorAdd: 'Die Verknüpfung konnte angelegt werden',
   },
   thereAreNo: 'Es gibt noch keine {accusative}',
   youDontHave: 'Du hast noch keine {accusative}',
@@ -275,7 +279,7 @@ module.exports = {
     accepted: 'Angenommen',
     completed: 'Abgeschlossen',
     heeded: 'Beherzigt',
-    outdated: 'Veraltet'
+    outdated: 'Veraltet',
   },
   detail: {
     this: 'Das',

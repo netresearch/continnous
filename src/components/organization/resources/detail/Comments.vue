@@ -40,7 +40,7 @@
             @click.native="save()"
             :disabled="!text || saving"
             class="md-primary md-raised"
-        >Post comment</md-button>
+        >{{$t('actions.' + (editComment ? 'update' : 'post') + 'Comment')}}</md-button>
         <md-button
             @click.native="$refs.editor.blur(); editComment = undefined; text = ''"
             :disabled="saving"
