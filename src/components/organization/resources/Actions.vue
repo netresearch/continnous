@@ -267,7 +267,7 @@
           return;
         }
         this.archiveInfo = undefined;
-        this.organization.journal.loadArchiveInfo(this.item).then((archiveInfo) => {
+        this.organization.journal.getArchiveInfo(this.item).then((archiveInfo) => {
           this.archiveInfo = archiveInfo;
         });
       },
