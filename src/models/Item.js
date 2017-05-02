@@ -58,9 +58,12 @@ export default class Item {
 
     this.prepareForFirebase = () => {
       const fbItem = extend(true, {}, this);
+      delete fbItem.id;
       delete fbItem.resource;
       delete fbItem.personal;
       delete fbItem.archive;
+      delete fbItem.setPermissions;
+      delete fbItem.prepareForFirebase;
       if (origLinks) {
         fbItem.links = origLinks;
       }
