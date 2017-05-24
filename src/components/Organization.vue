@@ -33,7 +33,7 @@
             <span>{{$t('overview.title')}}</span>
             <router-link v-if="role === 'admin'" :to="getUrlPath({settings: true})" class="md-button md-icon-button md-list-action">
               <md-icon>settings</md-icon>
-              <md-tooltip>{{$t('settings')}}</md-tooltip>
+              <md-tooltip>{{$t('settings.title')}}</md-tooltip>
             </router-link>
           </router-link>
         </md-list-item>
@@ -79,6 +79,7 @@
   import Permissions from '../models/Permissions';
   import Flashlight from '../models/Flashlight';
   import locales from '../locales';
+  import File from '../models/File';
 
   /* global document */
   const titleElements = document.querySelectorAll(
@@ -93,6 +94,19 @@
         el.innerText = title;
       } else {
         el.setAttribute('content', title);
+      }
+    });
+  };
+
+  const iconElements = document.querySelectorAll('html > head > link[rel="icon"]');
+  const defaultIcons = [];
+  iconElements.forEach((element) => {
+    defaultIcons.push(element.getAttribute('href'));
+  });
+  const setIcon = (isFavicon, src) => {
+    iconElements.forEach((element, i) => {
+      if (!isFavicon || element.getAttribute('type') === 'image/x-icon') {
+        element.setAttribute('href', src || defaultIcons[i]);
       }
     });
   };
@@ -172,6 +186,15 @@
                   }
                   this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
                   setTitle(this.title);
+                  ['icon', 'favicon'].forEach((type, isFavicon) => {
+                    if (this.organization[type]) {
+                      File.getURL(this.organization[type].id, (src) => {
+                        setIcon(isFavicon, src);
+                      });
+                    } else {
+                      setIcon(isFavicon, null);
+                    }
+                  });
                 });
               });
             } else {

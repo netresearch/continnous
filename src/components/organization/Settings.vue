@@ -2,7 +2,7 @@
   <div class="scroll-container">
     <template v-if="auth.user">
       <md-toolbar class="md-dense">
-        <h2 class="md-title">{{$t('settings')}}</h2>
+        <h2 class="md-title">{{$t('settings.title')}}</h2>
       </md-toolbar>
 
       <md-toolbar class="md-dense md-nav-bar">

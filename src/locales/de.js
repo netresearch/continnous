@@ -22,7 +22,18 @@ module.exports = {
     de: 'Deutsch',
     en: 'Englisch',
   },
-  settings: 'Einstellungen',
+  settings: {
+    title: 'Einstellungen',
+    icons: 'Icons',
+    fields: {
+      favicon: {
+        label: 'Favicon'
+      },
+      icon: {
+        label: 'App-Icon'
+      }
+    }
+  },
   overview: {
     title: 'Übersicht',
   },

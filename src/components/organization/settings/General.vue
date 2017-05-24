@@ -3,7 +3,6 @@
     <p class="md-caption">{{$t('organization.info')}}</p>
     <card-form
         v-model="organization"
-        :validate="{name: validateName}"
         :firebase-path="'/organizations/' + organization.key"
         :defaults="{title: organization.name + ' ' + $t('thisPlatform'), visionTitle: $t('vision.defaultTitle'), missionTitle: $t('mission.defaultTitle')}"
     >
@@ -15,6 +14,7 @@
             :name="key + 'Title'"
             :label="$t(key + '.title')"
             :placeholder="$t(key + '.placeholder')"
+            :validate="{minLength: 2, required: true}"
         ></form-element>
         <form-element
             type="md-textarea"
@@ -30,6 +30,19 @@
       </form-element>
       <md-button slot="secondaryButtons" @click.native="$refs.theme.$refs.el.resetToDefaults()" class="md-dense">{{$t('actions.resetToDefaults')}}</md-button>
     </card-form>
+    <p class="md-caption">{{$t('settings.icons')}}</p>
+    <card-form
+        :value="organization"
+        :firebase-path="'/organizations/' + organization.key"
+    >
+      <form-element
+          type="form-file"
+          v-for="key in ['icon', 'favicon']"
+          :accept="'image/png' + (key === 'favicon' ? ',image/vnd.microsoft.icon,image/x-icon' : '')"
+          :name="key"
+          :label="$t('settings.fields.' + key + '.label')"
+      ></form-element>
+    </card-form>
   </div>
 </template>
 
@@ -42,9 +55,6 @@
       CardForm
     },
     methods: {
-      validateName(value) {
-        return typeof value === 'string' && value.length > 2;
-      },
       onThemeSaved() {
         /* global document */
         document.location.reload();
