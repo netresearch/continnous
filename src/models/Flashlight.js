@@ -67,7 +67,7 @@ module.exports = class Flashlight {
             if (finalQuery.q) {
               finalQuery.body = {
                 query: {
-                  simple_query_string: {
+                  query_string: {
                     query: finalQuery.q
                   }
                 }
