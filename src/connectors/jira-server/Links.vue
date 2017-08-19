@@ -27,7 +27,6 @@
       connection: Connector,
       links: Object,
       item: Object,
-      type: String,
       clearable: Boolean
     },
     data() {

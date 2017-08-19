@@ -110,7 +110,7 @@
                 url: this.getAbsoluteUrl(this.item.id),
                 title: this.item.title,
                 icon: {
-                  url16x16: icnUrlPre + Config.resources[this.type].icon + icnUrlPost,
+                  url16x16: icnUrlPre + Config.resources[this.item.resource].icon + icnUrlPost,
                   title: this.$tc(this.type + '.title', 1)
                 },
                 status: !archiveInfo ? undefined : {

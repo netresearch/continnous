@@ -62,7 +62,7 @@
               :links="cLinks"
               :item="item"
               :type="item.resource"
-              :clearable="permissions[type].write"
+              :clearable="permissions[item.resource].write"
               @clear="removeConnectionLink(connectionKey, $event)"
           >
           </component>
@@ -111,8 +111,6 @@
               :is="connections[linkConnection].linkForm"
               :organization="organization"
               :item="item"
-              :type="item.resource"
-              :archive="item.archive"
               :connection="connections[linkConnection]"
               :current="connectionLinks ? connectionLinks[linkConnection] : undefined"
               @add="addConnectionLink(linkConnection, $event)"
