@@ -61,7 +61,7 @@
               :connection="connections[connectionKey]"
               :links="cLinks"
               :item="item"
-              :type="type"
+              :type="item.resource"
               :clearable="permissions[type].write"
               @clear="removeConnectionLink(connectionKey, $event)"
           >
@@ -78,11 +78,11 @@
             v-if="typeof dialogLink === 'object'"
             :organization="organization"
             :permissions="permissions"
-            :personal="personal"
+            :personal="item.personal"
             :all="!dialogLink.reverse"
             :type="dialogLink.resource"
             :search="dialogLink.reverse"
-            :entries="Array.prototype.concat.apply([{id: item.id, resource: type}], dialogLink.items)"
+            :entries="Array.prototype.concat.apply([item], dialogLink.items)"
             selectable
             @selected="addLink($event)"
         ></inline-list>
@@ -99,9 +99,9 @@
               v-if="!linkConnection"
               :organization="organization"
               :permissions="permissions"
-              :personal="personal"
+              :personal="item.personal"
               :type="links.normal.filter(function(link) { return link.mayEdit; }).map(function (link) { return link.resource; })"
-              :entries="Array.prototype.concat.apply([{id: item.id, resource: type}], links.normal.map(function(link) { return link.items; }))"
+              :entries="Array.prototype.concat.apply([{item}], links.normal.map(function(link) { return link.items; }))"
               search
               selectable
               @selected="addLink($event)"
@@ -111,8 +111,8 @@
               :is="connections[linkConnection].linkForm"
               :organization="organization"
               :item="item"
-              :type="type"
-              :archive="archive"
+              :type="item.resource"
+              :archive="item.archive"
               :connection="connections[linkConnection]"
               :current="connectionLinks ? connectionLinks[linkConnection] : undefined"
               @add="addConnectionLink(linkConnection, $event)"
@@ -129,15 +129,13 @@
   import Config from '../../../models/Config';
   import auth from '../../../auth';
   import Connections from '../../../models/Connections';
+  import Item from '../../../models/Item';
 
   export default {
     mixins: [mixin],
     components: { InlineList },
     props: {
       item: Object,
-      type: String,
-      personal: Boolean,
-      archive: Boolean,
       organization: Object,
       permissions: Object,
       list: Boolean,
@@ -185,7 +183,7 @@
         return links;
       },
       links() {
-        if (!this.type || !this.permissions) {
+        if (!this.item || !this.permissions) {
           return [];
         }
         const links = [];
@@ -194,13 +192,13 @@
             return;
           }
           const rc = this.resources[resource];
-          if (rc.links && rc.links[this.type]) {
-            let link = rc.links[this.type];
+          if (rc.links && rc.links[this.item.resource]) {
+            let link = rc.links[this.item.resource];
             if (typeof link !== 'object') {
               link = {};
             }
             links.push(Object.assign({ resource }, link));
-          } else if (rc.links && resource === this.type) {
+          } else if (rc.links && resource === this.item.resource) {
             Object.keys(rc.links).forEach((r) => {
               let rLink = rc.links[r];
               if (typeof rLink !== 'object') {
@@ -212,7 +210,7 @@
         });
         links.numItems = 0;
         links.mayLink = false;
-        const mayEdit = this.permissions[this.type].write;
+        const mayEdit = this.permissions[this.item.resource].write;
         links.forEach((link) => {
           link.mayEdit = mayEdit || this.permissions[link.resource].write;
           if (!link.assign && link.mayEdit) {
@@ -220,12 +218,7 @@
           }
           if (this.item.links && this.item.links[link.resource]) {
             link.items = Object.keys(this.item.links[link.resource]).map((id) => {
-              const linkItem = {
-                id,
-                resource: link.resource,
-                archive: false,
-                personal: false
-              };
+              const linkItem = new Item(link.resource, id);
               const value = this.item.links[link.resource];
               if (typeof value === 'object') {
                 Object.assign(linkItem, value);
@@ -262,13 +255,11 @@
       },
       removeLink(item) {
         return new Promise((resolve) => {
-          this.getFirebaseRef('resources', this.item.id)
+          this.item.ref()
             .child('links/' + item.resource + '/' + item.id)
             .remove().then(() => {
-              this.getFirebaseRef(
-                'resources', item.id, this.personal, item.resource
-              )
-                .child('links/' + this.type + '/' + this.item.id)
+              item.ref()
+                .child('links/' + this.item.resource + '/' + this.item.id)
                 .remove().then(() => {
                   resolve();
                 });
@@ -294,19 +285,15 @@
           };
           // ours:
           setLink(
-            this.getFirebaseRef(
-                this.archive, this.item.id, this.personal
-            ).child('links/' + item.resource + '/' + item.id),
+            this.item.ref().child('links/' + item.resource + '/' + item.id),
             item.archive,
             item.personal
           );
           // theirs:
           setLink(
-            this.getFirebaseRef(
-                item.archive, item.id, item.personal, item.resource
-            ).child('links/' + this.type + '/' + this.item.id),
-            this.archive,
-            this.personal
+            item.ref().child('links/' + this.item.resource + '/' + this.item.id),
+            this.item.archive,
+            this.item.personal
           );
         });
         if (this.$refs.dialog) {
@@ -314,17 +301,13 @@
         }
       },
       addConnectionLink(connectionKey, link) {
-        this.getFirebaseRef(
-          this.archive, this.item.id, this.personal
-        ).child('links/' + connectionKey).push(link);
+        this.item.ref().child('links/' + connectionKey).push(link);
         if (this.$refs.dialog) {
           this.$refs.dialog.close();
         }
       },
       removeConnectionLink(connectionKey, linkKey) {
-        this.getFirebaseRef(
-          this.archive, this.item.id, this.personal
-        ).child('links/' + connectionKey + '/' + linkKey).remove();
+        this.item.ref().child('links/' + connectionKey + '/' + linkKey).remove();
       }
     }
   };

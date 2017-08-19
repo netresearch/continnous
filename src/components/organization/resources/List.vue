@@ -85,10 +85,7 @@
         <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
           <resource-item
               :item="item"
-              :archive="archive"
-              :personal="item.hasOwnProperty('personal') ? item.personal : personal"
               :permissions="permissions"
-              :type="item.resource || type"
               :organization="organization"
               @resource-image-shown="updateMasonry"
           ></resource-item>

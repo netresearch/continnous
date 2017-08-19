@@ -1,7 +1,7 @@
 <template>
   <base-form
       :class="['resource-detail', 'resource-' + (this.id ? (edit ? 'edit' : 'view') : 'create'), {'resource-detail-archive': archive}]"
-      :firebase-path="getFirebasePath(archive ? 'archive' : 'resources', id || '{new}')"
+      :firebase-path="Item.getFirebasePath(type, archive, personal, id || '{new}')"
       firebase-bind
       :firebase-receive="firebaseReceive"
       :defaults="{creator: auth.user.uid}"
@@ -39,10 +39,7 @@
             v-if="!id || !edit"
             :organization="organization"
             :permissions="permissions"
-            :type="type"
             :item="item"
-            :personal="personal"
-            :archive="archive"
             show-personal
             show-notifications
             redirect-on-toggle
@@ -80,7 +77,7 @@
         <div class="resource-detail-main">
           <div class="resource-detail-section">
             <md-icon class="md-primary">{{config.icon}}</md-icon>
-            <resource-form v-if="edit || !id" :type="type" :organization="organization" :permissions="permissions" :personal="personal" :item="item">
+            <resource-form v-if="edit || !id" :item="item" :organization="organization" :permissions="permissions">
               <component :is="type + '-form'"></component>
               <form-element
                   type="form-file"
@@ -88,7 +85,7 @@
                   name="attachments"
                   multiple></form-element>
             </resource-form>
-            <resource-content v-else :type="type" :organization="organization" :personal="personal" :item="item">
+            <resource-content v-else :item="item">
               <component :is="type + '-content'" :item="item"></component>
             </resource-content>
           </div>
@@ -99,13 +96,13 @@
           <template v-if="!edit">
             <div class="resource-detail-section" v-if="config.scoring && config.scoring.length">
               <md-icon>thumbs_up_down</md-icon>
-              <resource-scoring :criteria="config.scoring" :is-new="!id" :organization="organization" :type="type" :item="item"></resource-scoring>
+              <resource-scoring :criteria="config.scoring" :is-new="!id" :organization="organization" :item="item"></resource-scoring>
             </div>
             <resource-links
                 class="resource-detail-links resource-detail-section"
                 list
                 :organization="organization"
-                :type="type" :item="item"
+                :item="item"
                 :permissions="permissions"
                 v-if="hasLinks"
             >
@@ -137,7 +134,7 @@
             </div>
             <div class="resource-detail-section" v-if="item.tags">
               <md-icon>local_offer</md-icon>
-              <resource-tags :organization="organization" :type="type" :item="item"></resource-tags>
+              <resource-tags :organization="organization" :item="item"></resource-tags>
             </div>
             <base-form sub direct class="resource-detail-section" v-if="mayEdit || item.attachments">
               <form-element
@@ -167,9 +164,7 @@
         <div class="resource-detail-comments" v-if="!edit">
           <resource-comments
               :organization="organization"
-              :type="type"
               :item="item"
-              :personal="personal"
           ></resource-comments>
         </div>
       </div>
@@ -195,6 +190,7 @@
   import Avatar from '../../Avatar';
   import Period from '../../../models/Period';
   import Mentions from '../../../models/Mentions';
+  import Item from '../../../models/Item';
 
   const components = {
     BaseForm,
@@ -232,7 +228,8 @@
         archive: false,
         edit: false,
         scrollTop: 0,
-        hasLinks: false
+        hasLinks: false,
+        Item
       };
     },
     watch: {
@@ -272,7 +269,7 @@
       },
       firebaseReceive(snapshot) {
         this.hasLinks = false;
-        const item = this.createItem(snapshot.key, snapshot.val());
+        const item = new Item(this.type, snapshot.key, snapshot.val(), this.archive, this.personal);
         if (this.id) {
           if (snapshot.val()) {
             this.item = item;
@@ -320,7 +317,7 @@
             }
           });
           promises.push(this.organization.journal.addEntry(
-            item, this.type, this.personal,
+            item,
             this.id ? 'update' : 'create',
             this.id ? Object.keys(updates).filter(field => field !== 'updated') : null,
             null,

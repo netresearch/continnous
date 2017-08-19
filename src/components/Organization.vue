@@ -181,6 +181,7 @@
                 const ul = sn.val() ? sn.val().lang : null;
                 (ul ? locales.set(ul) : locales.setFromNavigator()).then(() => {
                   this.organization = organization;
+                  Organization.current = organization;
                   if (this.organization.theme) {
                     this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
                   }
@@ -200,6 +201,7 @@
             } else {
               locales.setFromNavigator().then(() => {
                 this.organization = null;
+                Organization.current = undefined;
                 this.title = null;
                 setTitle(defaultTitle);
               });
@@ -208,6 +210,7 @@
           () => {
             locales.setFromNavigator().then(() => {
               this.organization = false;
+              Organization.current = undefined;
               /* global window */
               window.setTimeout(() => {
                 this.fetchOrganization(organizationKey);
@@ -220,6 +223,7 @@
         this.$nextTick(() => {
           const user = this.auth.user;
           const orgKey = this.key;
+          Permissions.current = this.permissions;
           this.permissions.bind(orgKey, user, () => {
             this.role = this.permissions.role;
             if ((this.role || this.organization) && user) {

@@ -33,6 +33,7 @@
   import ResourceList from './List';
   import Config from '../../../models/Config';
   import Period from '../../../models/Period';
+  import Item from '../../../models/Item';
 
   export default {
     mixins: [mixin],
@@ -105,7 +106,7 @@
           this.itemsRef.off('child_moved');
           this.itemsRef.off('child_removed');
         }
-        const ref = this.getFirebaseRef(this.archive ? 'archive' : 'resources');
+        const ref = Item.getFirebaseRef(this.type, this.archive, this.personal);
         if (this.period) {
           this.itemsRef = ref.orderByChild('dueTime')
             .startAt(this.period.start)
@@ -123,13 +124,13 @@
           this.status = 1;
         });
         this.itemsRef.on('child_added', (item) => {
-          this.items.push(this.createItem(item.key, item.val()));
+          this.items.push(new Item(this.type, item.key, item.val(), this.archive, this.personal));
           this.items.sort(sortBy((this.order === 'desc' ? '-' : '') + this.sort));
         });
         this.itemsRef.on('child_changed', (item) => {
           for (let i = 0; i < this.items.length; i++) {
             if (this.items[i].id === item.key) {
-              Object.assign(this.items[i], this.createItem(item.key, item.val()));
+              this.items[i].update(item.val());
             }
           }
         });

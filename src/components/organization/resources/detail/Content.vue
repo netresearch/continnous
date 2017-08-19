@@ -18,7 +18,6 @@
   export default {
     components: { ResourceImage, EditorText },
     props: {
-      type: String,
       item: Object
     }
   };

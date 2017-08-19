@@ -4,9 +4,8 @@
 
 <template>
   <div class="resource-actions">
-    <md-menu md-size="5" ref="archiveInfo" v-if="archive">
+    <md-menu md-size="5" ref="archiveInfo" v-if="item.archive">
       <md-button
-          v-if="archive"
           class="md-icon-button md-warn resource-actions-archive-info-btn"
           @click.native="loadArchiveInfo()"
           md-menu-trigger
@@ -30,7 +29,7 @@
               <span>{{$t('transition.' + archiveInfo.occasion)}}</span>
             </div>
             <editor-text v-if="archiveInfo.comment" :organization="organization" :text="archiveInfo.comment"></editor-text>
-            <div class="resource-actions-archive-info-actions" v-if="permissions[type].write">
+            <div class="resource-actions-archive-info-actions" v-if="permissions[item.resource].write">
               <md-button @click.native="$refs.archiveInfo.close(); toggleArchive()">{{$t('actions.restore')}}</md-button>
             </div>
           </template>
@@ -40,20 +39,20 @@
 
     <md-button
         @click.native="!item.creator ? $emit('togglePersonal') : togglePersonal()"
-        :class="['md-icon-button', {'md-warn': personal}]"
-        v-if="personal || !item.creator">
+        :class="['md-icon-button', {'md-warn': item.personal}]"
+        v-if="item.personal || !item.creator">
       <md-icon>
         lock_outline
         <md-tooltip>
-          {{$t(type + '.this')}} {{$t('is' + (personal ? 'Personal' : 'Public'))}} -
-          {{$t('actions.make' + (!personal ? 'Personal' : 'Public')).toLowerCase()}}
+          {{$t(item.resource + '.this')}} {{$t('is' + (item.personal ? 'Personal' : 'Public'))}} -
+          {{$t('actions.make' + (!item.personal ? 'Personal' : 'Public')).toLowerCase()}}
         </md-tooltip>
       </md-icon>
     </md-button>
 
     <md-button
         @click.native="toggleWatching"
-        :class="['md-icon-button', {'md-warn': personal}]"
+        :class="['md-icon-button']"
         v-if="watcher && watcher.isWatching">
       <md-icon>
         notifications
@@ -62,9 +61,8 @@
     </md-button>
 
     <resource-links
-        v-if="!archive && showLinkBadges"
-        badges
-        :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions"
+        v-if="!item.archive && showLinkBadges"
+        badges :item="item" :organization="organization" :permissions="permissions"
     ></resource-links>
 
     <div style="flex: 1" v-if="distribute"></div>
@@ -73,7 +71,7 @@
       <md-icon>favorite</md-icon>
     </md-button>
 
-    <share v-if="!archive && !personal && item.creator" :type="type" :id="item.id"></share>
+    <share v-if="!item.archive && !item.personal && item.creator" :type="item.resource" :id="item.id"></share>
 
     <md-button v-if="!showEditInMenu && item.creator" class="md-icon-button" @click.native="$router.push({ path: to.path + '/edit', query: to.query })">
       <md-icon>mode_edit</md-icon>
@@ -93,11 +91,11 @@
           <md-icon>notifications</md-icon>
           <span>{{$t('actions.watch')}}</span>
         </md-menu-item>
-        <md-menu-item @selected="togglePersonal()" v-if="showPersonal && !personal && item.creator === auth.user.uid">
+        <md-menu-item @selected="togglePersonal()" v-if="showPersonal && !item.personal && item.creator === auth.user.uid">
           <md-icon>lock_outline</md-icon>
           <span>{{$t('actions.makePersonal')}}</span>
         </md-menu-item>
-        <md-menu-item @selected="toggleArchive()" v-if="!archive && permissions[type].write">
+        <md-menu-item @selected="toggleArchive()" v-if="!item.archive && permissions[item.resource].write">
           <md-icon>archive</md-icon>
           <span>{{$t('actions.archive')}}</span>
         </md-menu-item>
@@ -108,7 +106,7 @@
           <span>{{$t('actions.delete')}}</span>
         </md-menu-item>
         <resource-links
-            :type="type" :item="item" :personal="personal" :organization="organization" :permissions="permissions" v-if="!archive"
+            :item="item" :organization="organization" :permissions="permissions" v-if="!item.archive"
             menu
         ></resource-links>
       </md-menu-content>
@@ -131,9 +129,9 @@
         :md-esc-to-close="false"
         @close="transition = false"
     >
-      <md-dialog-title>{{$t('actions.' + (archive ? 'restore' : 'archive'))}}</md-dialog-title>
+      <md-dialog-title>{{$t('actions.' + (item.archive ? 'restore' : 'archive'))}}</md-dialog-title>
       <md-dialog-content>
-        <div v-if="!archive">
+        <div v-if="!item.archive">
           <div class="md-caption">{{$t('transition.occasion')}}</div>
           <md-radio
               @change="$refs.transitionReason.focus();"
@@ -151,7 +149,7 @@
       <md-dialog-actions>
         <md-button @click.native="$refs.transitionDialog.close()">{{$t('actions.cancel')}}</md-button>
         <div style="flex: 1; min-width: 24px;"></div>
-        <md-button class="md-primary md-raised" :disabled="!archive && !transition.occasion" @click.native="toggleArchive()">{{$t('actions.' + (archive ? 'restore' : 'archive'))}}</md-button>
+        <md-button class="md-primary md-raised" :disabled="!item.archive && !transition.occasion" @click.native="toggleArchive()">{{$t('actions.' + (item.archive ? 'restore' : 'archive'))}}</md-button>
       </md-dialog-actions>
     </md-dialog>
   </div>
@@ -166,16 +164,14 @@
   import Editor from '../common/Editor';
   import EditorText from '../common/EditorText';
   import Config from '../../../models/Config';
+  import Item from '../../../models/Item';
 
   export default {
     mixins: [mixin],
     components: { Share, ResourceLinks, Avatar, Editor, EditorText },
     props: {
       organization: Object,
-      type: String,
-      personal: Boolean,
       item: Object,
-      archive: Boolean,
       permissions: Object,
       // Buttons:
       showLinkBadges: Boolean,
@@ -202,15 +198,15 @@
         const path = this.getUrlPath(Object.assign({ id: this.item.id }, this.$route.params));
         const query = Object.assign({}, this.$route.query);
         if (this.$route.params.search) {
-          query.type = this.type;
-          if (this.personal) {
+          query.type = this.item.resource;
+          if (this.item.personal) {
             query.personal = 1;
           }
         }
         return { path, query };
       },
       occasions() {
-        return this.type ? Config.resources[this.type].transitions.occasions : [];
+        return this.item ? Config.resources[this.item.resource].transitions.occasions : [];
       }
     },
     watch: {
@@ -275,11 +271,12 @@
         this.watcher.toggle();
       },
       togglePersonal() {
+        /** @type {Item} */
         const it = this.item;
-        const personal = this.personal;
-        const archive = this.archive;
-        this.getFirebaseRef(archive, it.id, !personal)
-          .set(this.prepareItemForFirebase(it))
+        const personal = it.personal;
+        const archive = it.archive;
+        Item.getFirebaseRef(it.resource, archive, !personal, it.id)
+          .set(it.prepareForFirebase())
           .then(() => {
             this.organization.journal.getRef()
               .orderByChild('id')
@@ -292,13 +289,14 @@
 
             this.updateLinks(archive, !personal);
 
-            this.getFirebaseRef(archive, it.id, personal).remove();
+            it.ref().remove();
             if (this.redirectOnToggle) {
-              this.$router.replace(this.getUrlPath(it.id, !personal, archive));
+              this.$router.replace(this.getUrlPath(it.id, !personal, archive, it.resource));
             }
           });
       },
       updateLinks(archive, personal) {
+        /** @type {Item} */
         const item = this.item;
 
         let linkValue = true;
@@ -312,8 +310,8 @@
           }
         }
         this.forEachLink((link) => {
-          this.getFirebaseRef(link.archive, link.id, link.personal, link.resource)
-            .child('links/' + this.type + '/' + item.id)
+          Item.getFirebaseRef(link.resource, link.archive, link.personal, link.id)
+            .child('links/' + item.resource + '/' + item.id)
             .set(linkValue);
         });
       },
@@ -335,8 +333,9 @@
         });
       },
       toggleArchive() {
+        /** @type {Item} */
         const item = this.item;
-        const archive = this.archive;
+        const archive = item.archive;
         if (!this.transition) {
           this.transition = { occasion: undefined, reason: undefined };
           return;
@@ -344,26 +343,29 @@
         const transition = Object.assign({}, this.transition);
         this.$refs.transitionDialog.close();
 
-        this.getFirebaseRef(!archive ? 'archive' : 'resources', item.id)
-          .set(this.prepareItemForFirebase(item))
+        Item.getFirebaseRef(item.resource, !archive, item.personal, item.id)
+          .set(item.prepareForFirebase())
           .then(() => {
             const props = {};
             if (transition.occasion) {
               props[transition.occasion] = true;
             }
             this.organization.journal.addEntry(
-              item, this.type, this.personal, archive ? 'unarchive' : 'archive',
+              item, archive ? 'unarchive' : 'archive',
               undefined, transition.reason, props
             );
-            this.updateLinks(!archive, this.personal);
-            this.getFirebaseRef(archive, item.id).remove().then(() => {
+            this.updateLinks(!archive, item.personal);
+            item.ref().remove().then(() => {
               if (this.redirectOnToggle) {
-                this.$router.replace(this.getUrlPath(item.id, this.personal, !archive));
+                this.$router.replace(
+                  this.getUrlPath(item.id, item.personal, !archive, item.resource)
+                );
               }
             });
           });
       },
       deleteItem() {
+        /** @type {Item} */
         const item = this.item;
         const promises = [
           this.organization.journal.clear(item),
@@ -371,13 +373,13 @@
         ];
         this.forEachLink((link) => {
           promises.push(
-            this.getFirebaseRef(link.archive, link.id, link.personal, link.resource)
-              .child('links/' + this.type + '/' + item.id)
+            Item.getFirebaseRef(link.resource, link.archive, link.personal, link.id)
+              .child('links/' + item.resource + '/' + item.id)
               .remove()
           );
         });
         Promise.all(promises).then(() => {
-          this.getFirebaseRef(this.archive, item.id).remove().then(() => {
+          item.ref().remove().then(() => {
             this.$emit('deleted');
           });
         });

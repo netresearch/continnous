@@ -12,6 +12,11 @@ const refs = {
 };
 
 module.exports = class Permissions {
+  /**
+   * @var {Permissions}
+   */
+  static current;
+
   constructor(permissions, defaultPermission) {
     this.organization = { read: false };
     this.set(permissions, defaultPermission);

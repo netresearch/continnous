@@ -43,6 +43,7 @@
   import mixin from './mixin';
   import Config from '../../../models/Config';
   import Flashlight from '../../../models/Flashlight';
+  import Item from '../../../models/Item';
 
   export default {
     mixins: [mixin],
@@ -107,7 +108,7 @@
             result.hits.forEach((hit) => {
               /* eslint-disable no-underscore-dangle */
               if (this.ids.indexOf(hit._id) < 0) {
-                this.items.push(this.createItem(hit._id, hit._source, result.resource));
+                this.items.push(new Item(result.resource, hit._id, hit._source));
               }
             });
           });
@@ -131,7 +132,7 @@
             this.loading = true;
             this.types.forEach((resource) => {
               [this.personal, !this.personal].forEach((personal) => {
-                const ref = this.getFirebaseRef('resources', undefined, personal, resource)
+                const ref = Item.getFirebaseRef(resource, this.archive, personal)
                     .orderByChild('updated').limitToLast(10);
                 this.refs.push(ref);
                 ref.on('value', (sn) => {
@@ -145,7 +146,9 @@
                   sn.forEach((csn) => {
                     ids.push(csn.key);
                     if (this.ids.indexOf(csn.key) < 0) {
-                      this.items.push({ id: csn.key, resource, personal, title: csn.val().title });
+                      this.items.push(new Item(
+                        resource, csn.key, { title: csn.val().title }, this.archive, personal
+                      ));
                     }
                   });
                   this.ids.forEach((id) => {
@@ -162,19 +165,19 @@
           } else if (this.entries && !this.search) {
             const singleType = this.types.length === 1 ? this.types[0] : null;
             this.entries.forEach((entry) => {
-              const item = Object.assign({
-                resource: singleType,
-                title: '...'
-              }, typeof entry === 'string' ? { id: entry } : entry);
-              if (!item.resource) {
-                throw new Error('Missing resource for item ' + item.id);
-              }
+              const item = new Item(
+                singleType,
+                (typeof entry === 'string') ? entry : entry.id,
+                Object.assign({ title: '...' }, (typeof entry === 'string') ? {} : entry),
+                this.archive,
+                this.personal
+              );
               if (!this.load) {
                 this.items.push(item);
                 return;
               }
-              const p = item.hasOwnProperty('personal') ? item.personal : this.personal;
-              const a = item.hasOwnProperty('archive') ? item.archive : this.archive;
+              const p = item.personal;
+              const a = item.archive;
               const args = [[a, p], [!a, p], [a, !p], [!a, !p]];
               const load = (archive, personal) => {
                 const next = args.shift();
@@ -184,13 +187,11 @@
                   }
                   return;
                 }
-                const ref = this.getFirebaseRef(archive, item.id, personal, item.resource).child('title');
+                const ref = Item.getFirebaseRef(item.resource, archive, personal, item.id).child('title');
                 ref.on('value', (sn) => {
                   if (sn.val()) {
                     this.refs.push(ref);
-                    item.title = sn.val();
-                    item.personal = personal;
-                    item.archive = archive;
+                    item.update({ title: sn.val(), personal, archive });
                     this.items.push(item);
                   } else {
                     ref.off('value');

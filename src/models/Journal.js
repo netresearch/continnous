@@ -131,11 +131,11 @@ export default class Journal {
    * @param {Object=} props
    * @return {Promise}
    */
-  addEntry(item, resource, personal, action, fields, comment, props) {
+  addEntry(item, action, fields, comment, props) {
     let entry = extend(true, {
       id: item.id,
-      resource,
-      personal,
+      resource: item.resource,
+      personal: item.personal,
       action,
       comment: comment || null,
       fields: fields || null,
@@ -297,7 +297,7 @@ export default class Journal {
         } else {
           Promise.resolve(
             item || items[entry.id] || Item.load(
-              this.organization, entry.resource, entry.action === 'archive', entry.personal, entry.id, 'title'
+              entry.resource, entry.action === 'archive', entry.personal, entry.id, 'title'
             ).then(loadedItem => (items[entry.id] = loadedItem))
           ).then(
             finalItem => addEntry(new JournalEntry(this, sn.key, entry, finalItem)),

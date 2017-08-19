@@ -42,6 +42,7 @@
   import ResourceItem from './resources/ListItem';
   import Config from '../../models/Config';
   import Period from '../../models/Period';
+  import Item from '../../models/Item';
 
   export default {
     components: { Journal, ResourceItem },
@@ -59,7 +60,7 @@
     },
     created() {
       Object.keys(Config.resources).forEach((resource) => {
-        let ref = this.getFirebaseRef(false, undefined, false, resource);
+        let ref = Item.getFirebaseRef(resource);
         if (Config.resources[resource].periodical) {
           ref = ref.orderByChild('dueTime')
             .startAt(this.period.start)
@@ -69,7 +70,7 @@
         }
         ref.on('value', (sn) => {
           sn.forEach((snc) => {
-            this.latestItems[resource] = this.createItem(snc.key, snc.val());
+            this.latestItems[resource] = new Item(resource, snc.key, snc.val());
           });
         }, () => {
           this.latestItems[resource] = undefined;

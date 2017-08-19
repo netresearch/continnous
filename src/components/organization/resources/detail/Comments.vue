@@ -70,9 +70,7 @@
     components: { Avatar, Editor, EditorText },
     props: {
       organization: Object,
-      type: String,
-      item: Object,
-      personal: Boolean
+      item: Object
     },
     data() {
       return {
@@ -123,12 +121,12 @@
         }
         this.$refs.editor.blur();
         this.saving = true;
-        const { item, type, personal, text, editComment } = this;
+        const { item, text, editComment } = this;
         let p;
         if (editComment) {
           p = editComment.updateComment(text);
         } else {
-          p = this.organization.journal.addEntry(item, type, personal, 'comment', undefined, text);
+          p = this.organization.journal.addEntry(item, 'comment', undefined, text);
         }
         p.then(() => {
           this.text = '';

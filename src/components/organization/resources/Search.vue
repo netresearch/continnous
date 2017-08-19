@@ -27,6 +27,7 @@
   import auth from '../../../auth';
   import mixin from './mixin';
   import ResourceList from './List';
+  import Item from '../../../models/Item';
 
   export default {
     mixins: [mixin],
@@ -112,7 +113,7 @@
           result.hits.forEach((hit) => {
             /* eslint-disable no-underscore-dangle */
             if (!this.type || (this.type === resource && this.personal === personal)) {
-              const item = this.createItem(hit._id, hit._source, resource, personal);
+              const item = new Item(resource, hit._id, hit._source, false, personal);
               order[item.id] = this.sort === '_score' ? hit._score : item[this.sort];
               items.push(item);
             }

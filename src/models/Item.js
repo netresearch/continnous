@@ -2,6 +2,8 @@ import extend from 'extend';
 import Config from './Config';
 import auth from '../auth';
 import Firebase from '../firebase';
+import Permissions from './Permissions';
+import Organization from './Organization';
 
 /**
  * // Properties not in firebase:
@@ -15,60 +17,90 @@ import Firebase from '../firebase';
  * @member {Object} links
  */
 export default class Item {
-  constructor(id, data, resource, archive, personal) {
-    extend(true, this, data, { id, resource, archive, personal });
+  id;
+  resource;
+  archive;
+  personal;
+  rawLinks;
 
-    let origLinks;
+  constructor(resource, id, data, archive, personal) {
+    this.resource = resource;
+    this.id = id;
+    if (!resource || !id) {
+      throw new Error('id and resource required');
+    }
+    if (data) {
+      this.update(data);
+    }
+
+    this.archive = archive || data && data.archive || false;
+    this.personal = personal || data && data.personal || false;
+  }
+
+  update(data) {
+    Object.keys(this)
+      .filter(key => ['id', 'resource', 'archive', 'personal'].indexOf(key) < 0)
+      .forEach((key) => {
+        delete this[key];
+      });
+
+    extend(true, this, data);
 
     // The links objects need to be given for proper binding
     // and we need to check if all links are allowed to be seen
-    if (!this.links) {
-      this.links = {};
+    if (this.links) {
+      this.rawLinks = extend(true, {}, this.links);
     } else {
-      origLinks = extend(true, {}, this.links);
+      this.links = {};
     }
-
-    this.setPermissions = (permissions) => {
-      this.links = origLinks || {};
-      Object.keys(Config.resources).forEach((key) => {
-        const ar = permissions[key].read;
-        const arp = permissions['personal_' + key].read;
-        if (ar || arp) {
-          if (!this.links[key]) {
-            this.links[key] = {};
-          }
-          Object.keys(this.links[key]).forEach((target) => {
-            const value = this.links[key][target];
-            if (typeof value === 'object' && value.personal) {
-              if (value.personal !== auth.user.uid || !arp) {
-                delete this.links[key][target];
-              } else {
-                value.personal = true;
-              }
-            } else if (!ar) {
-              delete this.links[key][target];
-            }
-          });
-        } else {
-          delete this.links[key];
+    const permissions = Permissions.current;
+    Object.keys(Config.resources).forEach((key) => {
+      const ar = permissions[key].read;
+      const arp = permissions['personal_' + key].read;
+      if (ar || arp) {
+        if (!this.links[key]) {
+          this.links[key] = {};
         }
-      });
-      return this;
-    };
-
-    this.prepareForFirebase = () => {
-      const fbItem = extend(true, {}, this);
-      delete fbItem.id;
-      delete fbItem.resource;
-      delete fbItem.personal;
-      delete fbItem.archive;
-      delete fbItem.setPermissions;
-      delete fbItem.prepareForFirebase;
-      if (origLinks) {
-        fbItem.links = origLinks;
+        Object.keys(this.links[key]).forEach((target) => {
+          const value = this.links[key][target];
+          if (typeof value === 'object' && value.personal) {
+            if (value.personal !== auth.user.uid || !arp) {
+              delete this.links[key][target];
+            } else {
+              value.personal = true;
+            }
+          } else if (!ar) {
+            delete this.links[key][target];
+          }
+        });
+      } else {
+        delete this.links[key];
       }
-      return fbItem;
-    };
+    });
+  }
+
+  ref() {
+    return Item.getFirebaseRef(
+      this.resource,
+      this.archive,
+      this.personal,
+      this.id
+    );
+  }
+
+  prepareForFirebase() {
+    const fbItem = extend(true, {}, this);
+    delete fbItem.id;
+    delete fbItem.resource;
+    delete fbItem.personal;
+    delete fbItem.archive;
+    if (fbItem.rawLinks) {
+      fbItem.links = fbItem.rawLinks;
+    } else {
+      delete fbItem.links;
+    }
+    delete fbItem.rawLinks;
+    return fbItem;
   }
 
   /**
@@ -76,7 +108,6 @@ export default class Item {
    *
    * @todo ? Find a nice way to load an item and keep it synced with on('value')
    *
-   * @param {Organization} organization
    * @param {String} resource
    * @param {Boolean} archive
    * @param {Boolean} personal
@@ -84,13 +115,13 @@ export default class Item {
    * @param {String=} property
    * @return {Promise.<Item>}
    */
-  static load(organization, resource, archive, personal, id, property) {
+  static load(resource, archive, personal, id, property) {
     if (!id) {
       throw new Error('ID is required');
     }
     const load = tryArchiveOpposite => new Promise((resolve, reject) => {
       const ref = Item.getFirebaseRef(
-        organization, resource, tryArchiveOpposite ? !archive : archive, personal, id, property
+        resource, tryArchiveOpposite ? !archive : archive, personal, id, property
       );
       ref.once('value', (sn) => {
         if (!sn.exists()) {
@@ -104,7 +135,7 @@ export default class Item {
           if (property) {
             data[property] = sn.val();
           }
-          resolve(new Item(id, data, resource, archive, personal));
+          resolve(new Item(resource, id, data, archive, personal));
         }
       });
     });
@@ -112,7 +143,6 @@ export default class Item {
   }
 
   /**
-   * @param {Organization} organization
    * @param {String} resource
    * @param {Boolean} archive
    * @param {Boolean} personal
@@ -120,12 +150,11 @@ export default class Item {
    * @param {String=} property
    * @return {string}
    */
-  static getFirebaseRef(...args) {
-    return Firebase.database().ref(this.getFirebasePath(...args));
+  static getFirebaseRef(resource, archive, personal, id, property) {
+    return Firebase.database().ref(this.getFirebasePath(resource, archive, personal, id, property));
   }
 
   /**
-   * @param {Organization} organization
    * @param {String} resource
    * @param {Boolean} archive
    * @param {Boolean} personal
@@ -133,11 +162,13 @@ export default class Item {
    * @param {String=} property
    * @return {string}
    */
-  static getFirebasePath(organization, resource, archive, personal, id, property) {
-    const p = personal === undefined ? this.personal : personal;
+  static getFirebasePath(resource, archive, personal, id, property) {
+    if (!resource) {
+      throw new Error('No resource given');
+    }
     return '/' + (archive ? 'archive' : 'resources')
-      + '/organizations/' + organization.key
-      + '/' + (p ? auth.user.uid : 'organization')
+      + '/organizations/' + Organization.current.key
+      + '/' + (personal ? auth.user.uid : 'organization')
       + '/' + resource
       + (id ? '/' + id : '')
       + (property ? '/' + property : '');

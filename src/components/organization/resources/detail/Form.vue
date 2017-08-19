@@ -4,7 +4,7 @@
         type="md-textarea"
         md-inline name="title"
         :label="$t('fields.title')"
-        :placeholder="$t(type + '.titlePlaceholder')"
+        :placeholder="$t(item.resource + '.titlePlaceholder')"
         md-inline
     ></form-element>
 
@@ -72,7 +72,7 @@
 
   export default {
     props: {
-      type: String,
+      item: Object,
       organization: Object,
       permissions: Object
     }

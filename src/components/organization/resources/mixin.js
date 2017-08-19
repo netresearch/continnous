@@ -2,69 +2,16 @@ import moment from 'moment';
 import Firebase from '../../../firebase';
 import auth from '../../../auth';
 import ResourceImage from './Image';
-import Item from '../../../models/Item';
 
 const viewed = {};
 
 export default {
   components: { ResourceImage },
   methods: {
-    /**
-     * @deprecated Use Item.getFirebaseRef()
-     *
-     * @param pathArgs Args for {@link getFirebasePath}
-     * @return {firebase.database.Reference}
-     */
-    getFirebaseRef(...pathArgs) {
-      return Firebase.database().ref(this.getFirebasePath(...pathArgs));
-    },
-    /**
-     * @deprecated Use Item.getFirebasePath()
-     *
-     * @param branch
-     * @param id
-     * @param personal
-     * @param type
-     * @returns {string}
-     */
-    getFirebasePath(branch, id, personal, type) {
-      let archive = branch;
-      if (typeof archive === 'string') {
-        // Legacy stuff
-        archive = archive === 'archive';
-      }
-      return Item.getFirebasePath(
-        this.organization,
-        type || this.type,
-        archive === undefined ? this.archive : archive,
-        personal === undefined ? this.personal : personal,
-        id
-      );
-    },
-    /**
-     * @deprecated Use new Item()
-     *
-     * @param {String} id
-     * @param {Object} data
-     * @param {String} resource
-     * @param {Boolean} personal
-     * @return {Item}
-     */
-    createItem(id, data, resource, personal) {
-      return new Item(id, data, resource, undefined, personal).setPermissions(this.permissions);
-    },
-    /**
-     * @deprecated Use Item.prepareForFirebase()
-     *
-     * @param {Item} item
-     * @return {Object}
-     */
-    prepareItemForFirebase(item) {
-      return item instanceof Item ? item.prepareForFirebase() : item;
-    },
     moment(time) {
       return moment(time);
     },
+
     getLikesRef(id, all, byUser) {
       const path = '/likes/organizations/' + this.organization.key + '/by' + (byUser ? 'User' : 'Resource');
       const lastParts = [id, auth.user.uid];
@@ -76,6 +23,11 @@ export default {
       }
       return Firebase.database().ref(path + '/' + lastParts.join('/'));
     },
+
+    /**
+     * @param {Item} item
+     * @param {Boolean} like
+     */
     setLike(item, like) {
       const byResourceRef = this.getLikesRef(item.id, false, false);
       const byUserRef = this.getLikesRef(item.id, false, true);
@@ -86,14 +38,14 @@ export default {
             item.stats = {};
           }
           item.stats.likes = Math.max(0, (item.stats.likes || 0) + (like ? 1 : -1));
-          this.getFirebaseRef(this.archive ? 'archive' : 'resources', item.id).child('stats').update({
+          item.ref().child('stats').update({
             likes: item.stats.likes
           });
 
           this.updateRank(item);
 
           if (like) {
-            this.organization.journal.addEntry(item, this.type, this.personal, 'like');
+            this.organization.journal.addEntry(item, 'like');
           } else {
             // Remove all like journal entries
             this.organization.journal.getRef().orderByChild('id').equalTo(item.id).once('value', (snapshot) => {
@@ -108,6 +60,10 @@ export default {
         });
       });
     },
+
+    /**
+     * @param {Item} item
+     */
     trackView(item) {
       if (!this.trackedViews) {
         this.trackedViews = {};
@@ -119,7 +75,7 @@ export default {
       if (!viewed[auth.user.uid]) {
         viewed[auth.user.uid] = {};
       }
-      const statsRef = this.getFirebaseRef(this.archive ? 'archive' : 'resources', item.id).child('stats');
+      const statsRef = item.ref().child('stats');
       if (!viewed[auth.user.uid][item.id]) {
         viewed[auth.user.uid][item.id] = true;
         Firebase.database().ref(
@@ -141,6 +97,10 @@ export default {
         views: item.stats && item.stats.views ? item.stats.views + 1 : 1
       });
     },
+
+    /**
+     * @param {Item} item
+     */
     updateRank(item) {
       Promise.all([
         new Promise((resolve) => {
@@ -180,7 +140,7 @@ export default {
       ]).then((factors) => {
         let sum = 0;
         factors.forEach((factor) => { sum += factor; });
-        this.getFirebaseRef(this.archive ? 'archive' : 'resources', item.id).update({
+        item.ref().update({
           rank: sum / factors.length
         });
       });

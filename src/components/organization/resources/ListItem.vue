@@ -14,10 +14,7 @@
         class="md-card-actions"
         :organization="organization"
         :permissions="permissions"
-        :type="type"
         :item="item"
-        :personal="personal"
-        :archive="archive"
         show-like
         show-link-badges
         show-edit-in-menu
@@ -37,10 +34,7 @@
     mixins: [mixin],
     components: { ResourceImage, ResourceActions },
     props: {
-      personal: Boolean,
       item: Object,
-      type: String,
-      archive: Boolean,
       permissions: Object,
       organization: Object
     },
@@ -64,8 +58,8 @@
         const path = this.getUrlPath(params);
         const query = Object.assign({}, this.$route.query);
         if (isSearch) {
-          query.type = this.type;
-          if (this.personal) {
+          query.type = this.item.resource;
+          if (this.item.personal) {
             query.personal = 1;
           }
         }
