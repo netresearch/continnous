@@ -96,7 +96,7 @@
 
   export default {
     components: { BaseForm, ResultsList, FormButton },
-    props: ['organization', 'type', 'item', 'inline', 'editable'],
+    props: ['type', 'item', 'inline', 'editable'],
     mixins: [mixin],
     data() {
       return {

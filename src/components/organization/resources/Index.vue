@@ -1,8 +1,6 @@
 <template>
   <resource-list
       :title="$tc(type + '.title', 2)"
-      :organization="organization"
-      :permissions="permissions"
       :type="type"
       :archive="archive"
       :items="items"
@@ -15,15 +13,15 @@
   >
     <md-link-button
         slot="buttons"
-        v-for="(name, p) in [organization.name + ' ' + $tc(type + '.title', 2), $tc(type + '.personal', 2)]"
+        v-for="(name, p) in [Current.organization.name + ' ' + $tc(type + '.title', 2), $tc(type + '.personal', 2)]"
         :to="getUrlPath({personal: !!p})"
-        v-if="permissions[(p ? 'personal_' : '') + type].read || permissions[(p ? 'personal_' : '') + type].write"
+        v-if="Current.permissions[(p ? 'personal_' : '') + type].read || Current.permissions[(p ? 'personal_' : '') + type].write"
         exact
         :class="{'router-link-active': !p && !personal || p && personal}">
       {{name}}
     </md-link-button>
 
-    <router-view v-if="type" :organization="organization" :type="type" :permissions="permissions"></router-view>
+    <router-view v-if="type" :type="type"></router-view>
   </resource-list>
 </template>
 
@@ -34,14 +32,11 @@
   import Config from '../../../models/Config';
   import Period from '../../../models/Period';
   import Item from '../../../models/Item';
+  import Current from '../../../models/Current';
 
   export default {
     mixins: [mixin],
     components: { ResourceList },
-    props: {
-      organization: Object,
-      permissions: Object,
-    },
     data() {
       return {
         type: undefined,
@@ -51,7 +46,8 @@
         order: 'desc',
         archive: false,
         period: undefined,
-        status: 0
+        status: 0,
+        Current
       };
     },
     watch: {
@@ -68,8 +64,9 @@
             sort: route.query.sort || this.sort,
             order: route.query.order || this.order,
           };
-          const personalAllowed = this.permissions['personal_' + p.type].read || this.permissions['personal_' + p.type].write;
-          const organizationAllowed = this.permissions[p.type].read || this.permissions[p.type].write;
+          const permissions = Current.permissions;
+          const personalAllowed = permissions['personal_' + p.type].read || permissions['personal_' + p.type].write;
+          const organizationAllowed = permissions[p.type].read || permissions[p.type].write;
           if (p.personal && !personalAllowed && organizationAllowed) {
             p.personal = false;
           } else if (!p.personal && personalAllowed && !organizationAllowed) {

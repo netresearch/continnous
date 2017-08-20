@@ -12,8 +12,6 @@
     <router-link class="resource-list-item-link" :to="to"></router-link>
     <resource-actions
         class="md-card-actions"
-        :organization="organization"
-        :permissions="permissions"
         :item="item"
         show-like
         show-link-badges
@@ -25,7 +23,6 @@
 </template>
 
 <script>
-  import auth from '../../../auth';
   import mixin from './mixin';
   import ResourceImage from './Image';
   import ResourceActions from './Actions';
@@ -34,13 +31,10 @@
     mixins: [mixin],
     components: { ResourceImage, ResourceActions },
     props: {
-      item: Object,
-      permissions: Object,
-      organization: Object
+      item: Object
     },
     data() {
       return {
-        auth,
         like: false
       };
     },

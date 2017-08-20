@@ -2,8 +2,8 @@ import extend from 'extend';
 import sortBy from 'sort-by';
 import Firebase from '../firebase';
 import Mentions from './Mentions';
-import auth from '../auth';
 import Item from './Item';
+import Current from './Current';
 
 /**
  * Save an entry or updates to an entry
@@ -140,7 +140,7 @@ export default class Journal {
       comment: comment || null,
       fields: fields || null,
       time: +new Date(),
-      uid: auth.user.uid
+      uid: Current.user.uid
     }, props || {});
 
     if (action === 'update') {

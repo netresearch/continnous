@@ -28,8 +28,6 @@
         </md-button>
         <md-menu-content>
           <inline-list
-              :organization="organization"
-              :permissions="permissions"
               :type="link.resource"
               :entries="link.items"
               :load="loadLinks.indexOf(link.resource) > -1"
@@ -46,8 +44,6 @@
       <div class="resource-links-list">
         <inline-list
             class="resource-link" v-for="link in links" v-if="link.items.length"
-            :organization="organization"
-            :permissions="permissions"
             :type="link.resource"
             :entries="link.items"
             :clearable="link.mayEdit"
@@ -76,8 +72,6 @@
       <md-dialog-content class="resource-links-dialog-content">
         <inline-list
             v-if="typeof dialogLink === 'object'"
-            :organization="organization"
-            :permissions="permissions"
             :personal="item.personal"
             :all="!dialogLink.reverse"
             :type="dialogLink.resource"
@@ -97,8 +91,6 @@
           </div>
           <inline-list
               v-if="!linkConnection"
-              :organization="organization"
-              :permissions="permissions"
               :personal="item.personal"
               :type="links.normal.filter(function(link) { return link.mayEdit; }).map(function (link) { return link.resource; })"
               :entries="Array.prototype.concat.apply([{item}], links.normal.map(function(link) { return link.items; }))"
@@ -109,7 +101,6 @@
           <component
               v-else
               :is="connections[linkConnection].linkForm"
-              :organization="organization"
               :item="item"
               :connection="connections[linkConnection]"
               :current="connectionLinks ? connectionLinks[linkConnection] : undefined"
@@ -125,7 +116,7 @@
   import mixin from './mixin';
   import InlineList from './InlineList';
   import Config from '../../../models/Config';
-  import auth from '../../../auth';
+  import Current from '../../../models/Current';
   import Connections from '../../../models/Connections';
   import Item from '../../../models/Item';
 
@@ -134,8 +125,6 @@
     components: { InlineList },
     props: {
       item: Object,
-      organization: Object,
-      permissions: Object,
       list: Boolean,
       menu: Boolean,
       badges: Boolean
@@ -165,8 +154,9 @@
     computed: {
       connectionLinks() {
         let links;
-        if (this.item && this.item.links && this.organization && this.organization.connections) {
-          Object.keys(this.organization.connections).forEach((key) => {
+        const organization = Current.organization;
+        if (this.item && this.item.links && organization && organization.connections) {
+          Object.keys(Current.organization.connections).forEach((key) => {
             if (this.item.links[key]) {
               if (!links) {
                 links = {};
@@ -246,7 +236,7 @@
     methods: {
       loadConnections() {
         if (!this.connections) {
-          Connections.getForOrganization(this.organization).then((connections) => {
+          Connections.getForOrganization(Current.organization).then((connections) => {
             this.connections = connections.filter(connection => connection.linkForm);
           });
         }
@@ -273,7 +263,7 @@
             } else {
               const data = {};
               if (personal) {
-                data.personal = auth.user.uid;
+                data.personal = Current.user.uid;
               }
               if (archive) {
                 data.archive = true;

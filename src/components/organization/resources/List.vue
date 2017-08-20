@@ -71,9 +71,9 @@
           {{
             $t(personal ? 'youDontHave' : 'thereAreNo', {accusative: $t(type + '.' + (personal ? 'personal_' : '') + 'accusative')})
             + (period ? ' ' + $t('for') + ' ' + period.format() : '')
-            + (permissions[(personal ? 'personal_' : '') + type].write ? '' : '.')
+            + (Current.permissions[(personal ? 'personal_' : '') + type].write ? '' : '.')
           }}
-          <template v-if="permissions[(personal ? 'personal_' : '') + type].write">
+          <template v-if="Current.permissions[(personal ? 'personal_' : '') + type].write">
             - {{$t('howAbout')}}
             <router-link :to="getUrlPath({create: true})">
               {{$t('addingOne', {accusative_one: $t(type + '.accusative_one')})}}</router-link>?
@@ -83,12 +83,7 @@
       <slot></slot>
       <div ref="list" :class="['resources-list']">
         <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
-          <resource-item
-              :item="item"
-              :permissions="permissions"
-              :organization="organization"
-              @resource-image-shown="updateMasonry"
-          ></resource-item>
+          <resource-item :item="item" @resource-image-shown="updateMasonry"></resource-item>
         </div>
       </div>
     </div>
@@ -98,6 +93,7 @@
 <script>
   import Masonry from 'masonry-layout';
   import ResourceItem from './ListItem';
+  import Current from '../../../models/Current';
 
   export default {
     components: { ResourceItem },
@@ -105,9 +101,7 @@
       items: [Array],
       status: Number,
       title: String,
-      organization: Object,
       type: String,
-      permissions: Object,
       archive: Boolean,
       archiveEnabled: Boolean,
       personal: Boolean,
@@ -124,7 +118,8 @@
       return {
         mounted: false,
         masonry: true,
-        columns: 1
+        columns: 1,
+        Current
       };
     },
     computed: {

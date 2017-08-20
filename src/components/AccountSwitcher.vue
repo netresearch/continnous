@@ -1,16 +1,16 @@
 <template>
   <div class="auth">
     <template v-if="auth.ready">
-      <md-button @click.native="auth.login()" v-if="!auth.user">Login</md-button>
+      <md-button @click.native="auth.login()" v-if="!Current.user">Login</md-button>
       <md-menu md-direction="bottom left" md-size="6" v-else>
-        <md-avatar-button md-menu-trigger><img :src="auth.user.photoURL"></md-avatar-button>
+        <md-avatar-button md-menu-trigger><img :src="Current.user.photoURL"></md-avatar-button>
         <md-menu-content>
           <div class="account-card">
             <md-avatar class="md-large">
-              <img :src="auth.user.photoURL">
+              <img :src="Current.user.photoURL">
             </md-avatar>
             <div class="account-card-info">
-              <div>{{auth.user.email}}</div>
+              <div>{{Current.user.email}}</div>
               <div class="author-card-links">
                 <md-button class="md-primary md-link" @click.native="auth.logout()">Logout</md-button>
               </div>
@@ -35,20 +35,22 @@
 <script>
   import locales from '../locales';
   import auth from '../auth';
+  import Current from '../models/Current';
 
   export default {
     data() {
       return {
         auth,
         languages: locales.available,
-        language: locales.current()
+        language: locales.current(),
+        Current
       };
     },
     watch: {
       language(lang) {
         this.language = lang;
         locales.set(lang);
-        auth.user.ref().update({ lang });
+        Current.user.ref().update({ lang });
       }
     }
   };

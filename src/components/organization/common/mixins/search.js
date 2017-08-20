@@ -1,15 +1,12 @@
 import Flashlight from '../../../../models/Flashlight';
 import User from '../../../../models/User';
+import Current from '../../../../models/Current';
 
 export default {
-  props: {
-    organization: Object,
-    permissions: Object
-  },
   methods: {
     getFlashlight() {
       if (!this.flashlight) {
-        this.flashlight = new Flashlight(this.organization, this.permissions);
+        this.flashlight = new Flashlight();
         this.flashlight.ignoreSubsequents();
       }
       return this.flashlight;
@@ -22,7 +19,7 @@ export default {
             results[0].hits.forEach((hit) => {
               /* eslint-disable no-underscore-dangle */
               const user = new User(
-                Object.assign({ uid: hit._id }, hit._source), this.organization
+                Object.assign({ uid: hit._id }, hit._source), Current.organization
               );
               users.push(user);
             });

@@ -3,8 +3,8 @@
     <p class="md-caption">{{$tc('connections.title', 2)}}</p>
     <md-card>
       <md-card-content>
-        <md-list v-if="connectors && organization.connections">
-          <md-list-item v-for="(config, key) in organization.connections">
+        <md-list v-if="connectors && Current.organization.connections">
+          <md-list-item v-for="(config, key) in Current.organization.connections">
             <span><strong>{{config.title}}</strong> <span class="md-caption">{{connectors[config.type].label}}</span></span>
             <div>
               <md-button class="md-icon-button" @click.native="current = key">
@@ -22,7 +22,7 @@
     <dialog-form
       v-if="current"
       ref="form"
-      :firebase-path="'/organizations/' + organization.key + '/connections/' + current"
+      :firebase-path="'/organizations/' + Current.organization.key + '/connections/' + current"
       firebase-bind
       @saved="current = loginCanceled = undefined;"
       @closed="current = loginCanceled = undefined"
@@ -65,9 +65,9 @@
   import Connectors from '../../../connectors';
   import DialogForm from '../../form/Dialog';
   import Firebase from '../../../firebase';
+  import Current from '../../../models/Current';
 
   export default {
-    props: ['organization'],
     components: {
       DialogForm
     },
@@ -76,7 +76,8 @@
         connectors: undefined,
         current: undefined,
         confirm: undefined,
-        loginCanceled: undefined
+        loginCanceled: undefined,
+        Current
       };
     },
     created() {
@@ -90,7 +91,7 @@
           action: 'delete',
           handler: () => {
             Firebase.database().ref(
-              '/organizations/' + this.organization.key + '/connections/' + key
+              '/organizations/' + Current.organization.key + '/connections/' + key
             ).remove();
           }
         };

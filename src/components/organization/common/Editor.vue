@@ -16,7 +16,7 @@
         <avatar :user="item.value"></avatar>
       </template>
       <template slot="current" scope="item">
-        <avatar :uid="item.id" :organization="organization"></avatar>
+        <avatar :uid="item.id"></avatar>
       </template>
     </md-mentions>
   </md-editor>

@@ -33,16 +33,12 @@
         name="description"
         :label="$t('fields.description.label')"
         :placeholder="$t('fields.description.placeholder')"
-        :organization="organization"
-        :permissions="permissions"
         md-inline
     >
     </form-element>
 
     <form-element
         type="user-input"
-        :organization="organization"
-        :permissions="permissions"
         name="parties"
         multiple
         :label="$t('fields.parties')"
@@ -50,8 +46,6 @@
     </form-element>
     <form-element
         type="tags-input"
-        :organization="organization"
-        :permissions="permissions"
         name="tags"
         :label="$t('fields.tags')"
     >
@@ -72,9 +66,7 @@
 
   export default {
     props: {
-      item: Object,
-      organization: Object,
-      permissions: Object
+      item: Object
     }
   };
 </script>

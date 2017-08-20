@@ -11,7 +11,7 @@
           <p class="md-caption">What's hot</p>
           <md-card>
             <md-card-content style="padding-bottom: 16px;">
-              <journal :organization="organization"></journal>
+              <journal></journal>
             </md-card-content>
           </md-card>
         </md-layout>
@@ -23,12 +23,7 @@
                 in {{period.format()}}
               </template>
             </p>
-            <resource-item
-                :type="resource"
-                :item="latestItems[resource]"
-                :permissions="permissions"
-                :organization="organization"
-            ></resource-item>
+            <resource-item :item="latestItems[resource]"></resource-item>
           </template>
         </md-layout>
       </md-layout>
@@ -47,10 +42,6 @@
   export default {
     components: { Journal, ResourceItem },
     mixins: [mixin],
-    props: {
-      organization: Object,
-      permissions: Object
-    },
     data() {
       const latestItems = {};
       Object.keys(Config.resources).forEach((resource) => {

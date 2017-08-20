@@ -1,7 +1,7 @@
 <template>
   <div :class="['journal', {'journal-reverse': reverse}]">
     <div class="journal-group" v-for="group in (entries ? entries.groups : [])">
-      <avatar :organization="organization" :uid="group.uid">
+      <avatar :uid="group.uid">
         <template scope="avatar">
           <div class="journal-entry" v-for="(entry, i) in group">
             <span class="avatar-name" v-if="i === 0">{{avatar.user.displayName}}</span>
@@ -33,13 +33,12 @@
 <script>
   import moment from 'moment';
   import Config from '../../../models/Config';
-  import auth from '../../../auth';
   import Avatar from '../../Avatar';
+  import Current from '../../../models/Current';
 
   export default {
     components: { Avatar },
     props: {
-      organization: Object,
       item: Object,
       reverse: Boolean,
       actions: [String, Array],
@@ -48,14 +47,14 @@
     data() {
       return {
         resources: Config.resources,
-        auth,
         entries: undefined,
         deleteComment: {},
-        editComment: undefined
+        editComment: undefined,
+        Current
       };
     },
     watch: {
-      organization: {
+      'Current.organization': {
         immediate: true,
         handler: 'loadEntries'
       },
@@ -67,10 +66,10 @@
           if (this.entries) {
             this.entries.off();
           }
-          if (!this.organization) {
+          if (!Current.organization) {
             return;
           }
-          this.entries = this.organization.journal.getEntries(this.item, {
+          this.entries = Current.organization.journal.getEntries(this.item, {
             reverse: this.reverse,
             onBeforeAdd: (entry) => {
               if (this.actions) {

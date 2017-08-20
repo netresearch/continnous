@@ -19,7 +19,6 @@
           ref="invite"
           v-if="invite !== undefined"
           @invited="onUserSelected($event); $refs.autocomplete.clearCache()"
-          :organization="organization"
           :defaults="{ displayName: autocomplete.q }"
           @close="invite = false"
       ></user-invite>
@@ -37,7 +36,7 @@
   import User from '../../../models/User';
   import Avatar from '../../Avatar';
   import UserInvite from './UserInvite';
-  import auth from '../../../auth';
+  import Current from '../../../models/Current';
   import searchMixin from './mixins/search';
 
   export default {
@@ -67,10 +66,10 @@
     computed: {
       users() {
         const users = [];
-        if (this.value && this.organization) {
+        if (this.value && Current.organization) {
           const uids = typeof this.value === 'string' ? [this.value] : this.value;
           uids.forEach((uid) => {
-            users.push(new User(uid, this.organization));
+            users.push(new User(uid, Current.organization));
           });
         }
         this.$nextTick(() => {
@@ -83,7 +82,7 @@
     },
     methods: {
       filter(user) {
-        if (user.uid === auth.user.uid) {
+        if (user.uid === Current.user.uid) {
           return false;
         }
         return !this.users.find(u => u.uid === user.uid);

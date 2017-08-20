@@ -7,8 +7,7 @@
 
   export default {
     props: {
-      text: String,
-      organization: Object
+      text: String
     },
     computed: {
       formattedText() {

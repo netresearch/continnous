@@ -1,8 +1,6 @@
 <template>
   <resource-list
       :title="$t('search')"
-      :organization="organization"
-      :permissions="permissions"
       :type="type"
       :items="items"
       :personal="personal"
@@ -18,31 +16,31 @@
         class="md-button"
     >{{$tc(result.resource + '.' + (result.personal ? 'personal' : 'title'), 2)}}</router-link>
 
-    <router-view :organization="organization" :permissions="permissions"></router-view>
+    <router-view></router-view>
   </resource-list>
 </template>
 
 <script>
   import Flashlight from '../../../models/Flashlight';
-  import auth from '../../../auth';
   import mixin from './mixin';
   import ResourceList from './List';
   import Item from '../../../models/Item';
+  import Current from '../../../models/Current';
 
   export default {
     mixins: [mixin],
     components: { ResourceList },
-    props: ['organization', 'permissions'],
     data() {
       return {
-        flashlight: new Flashlight(this.organization, this.permissions, auth),
+        flashlight: new Flashlight(),
         results: undefined,
         items: undefined,
         type: undefined,
         personal: false,
         sort: '_score',
         order: 'desc',
-        q: undefined
+        q: undefined,
+        Current
       };
     },
     watch: {
@@ -50,7 +48,9 @@
         immediate: true,
         handler: 'search'
       },
-      permissions: {
+      'Current.organization': 'search',
+      'Current.user': 'search',
+      'Current.permissions': {
         deep: true,
         handler: 'search'
       },
@@ -70,14 +70,14 @@
             }
           });
           if (this.q) {
-            if (search || reason === this.permissions) {
+            if (search || reason && Object.values(Current).indexOf(reason) > -1) {
               this.flashlight.search({ q: this.q, sort: this.sort + ':' + this.order }, true, '*').then(
                 (results) => {
                   this.results = results;
                   if (this.type && !results.find(
                           result => result.resource === (this.personal ? 'personal_' : '') + this.type
                       )) {
-                    this.$router.replace({ path: '/' + this.organization.key + '/search', query });
+                    this.$router.replace({ path: '/' + Current.organization.key + '/search', query });
                     return;
                   }
                   this.updateItems();

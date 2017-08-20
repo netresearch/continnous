@@ -31,7 +31,7 @@
 
 <script>
   import Firebase from '../../../firebase';
-  import auth from '../../../auth';
+  import Current from '../../../models/Current';
 
   const validEmailRegex = new RegExp(
     '^(([^<>()[\\].,;:\\s@"]+(\\.[^<>()[\\].,;:\\s@"]+)*)|(".+"))'
@@ -46,8 +46,7 @@
         default() {
           return {};
         }
-      },
-      organization: Object,
+      }
     },
     data() {
       const fields = ['displayName', 'email'];
@@ -88,7 +87,7 @@
         this.error = undefined;
         this.inviting = true;
         let firstHit = true;
-        const ref = Firebase.database().ref('/users/organizations/' + this.organization.key)
+        const ref = Firebase.database().ref('/users/organizations/' + Current.organization.key)
           .orderByChild('email')
           .equalTo(this.values.email);
         ref.on('value', (sn) => {
@@ -103,10 +102,10 @@
             this.inviting = false;
             ref.off('value');
           } else if (!user) {
-            Firebase.database().ref('/users/organizations/' + this.organization.key).push({
+            Firebase.database().ref('/users/organizations/' + Current.organization.key).push({
               displayName: this.values.displayName,
               email: this.values.email,
-              inviteBy: auth.user.uid,
+              inviteBy: Current.user.uid,
               inviteState: 0
             });
           } else if (user.inviteState !== 0) {

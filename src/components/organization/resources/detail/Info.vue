@@ -1,6 +1,6 @@
 <template>
   <div class="resource-detail-info">
-    <avatar :uid="item.creator" :organization="organization">
+    <avatar :uid="item.creator">
       <template scope="avatar">
         <span class="avatar-name">{{avatar.user.displayName}}</span>
         <span class="md-caption">
@@ -12,7 +12,7 @@
       </template>
     </avatar>
     <hr>
-    <template v-if="item.creator === auth.user.uid">
+    <template v-if="item.creator === Current.user.uid">
       <p class="md-caption">
         <span>
           {{$t(type + '.this')}} {{$t('detail.is' + (personal ? 'Personal' : 'Public'))}}
@@ -27,25 +27,24 @@
 <script>
   import Avatar from '../../../Avatar';
   import mixin from '../mixin';
-  import auth from '../../../../auth';
+  import Current from '../../../../models/Current';
 
   export default {
     mixins: [mixin],
     props: {
       item: Object,
-      organization: Object,
       personal: Boolean,
       type: String
     },
     components: { Avatar },
     data() {
       return {
-        auth
+        Current
       };
     },
     methods: {
       togglePersonal() {
-        this.organization.journal.getRef()
+        Current.organization.journal.getRef()
           .orderByChild('id')
           .equalTo(this.item.id)
           .once('value', (sn) => {

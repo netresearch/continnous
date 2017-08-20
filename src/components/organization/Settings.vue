@@ -1,6 +1,6 @@
 <template>
   <div class="scroll-container">
-    <template v-if="auth.user">
+    <template v-if="Current.user">
       <md-toolbar class="md-dense">
         <h2 class="md-title">{{$t('settings.title')}}</h2>
       </md-toolbar>
@@ -14,18 +14,17 @@
         </router-link>
       </md-toolbar>
 
-      <router-view :organization="organization" class="scroll-content"></router-view>
+      <router-view class="scroll-content"></router-view>
     </template>
   </div>
 </template>
 
 <script>
-  import auth from '../../auth';
+  import Current from '../../models/Current';
 
   export default {
-    props: ['organization'],
     data() {
-      return { auth };
+      return { Current };
     }
   };
 </script>

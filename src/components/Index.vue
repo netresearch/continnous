@@ -1,8 +1,8 @@
 <template>
   <div class="index">
     <md-message
-      v-if="!auth.user"
-      :status="auth.ready && langLoaded ? (auth.user ? (organizations ? 1 : 0) : 2) : 0"
+      v-if="!Current.user"
+      :status="auth.ready && langLoaded ? (Current.user ? (organizations ? 1 : 0) : 2) : 0"
       :timeout="0"
       splash>
       <div v-if="langLoaded">
@@ -10,13 +10,13 @@
       </div>
       <md-button v-if="langLoaded" class="md-primary md-raised" @click.native="auth.login()">{{$t('auth.signIn')}}</md-button>
     </md-message>
-    <template v-if="langLoaded && auth.user && organizations">
+    <template v-if="langLoaded && Current.user && organizations">
       <md-card>
         <md-card-header>
           <md-avatar>
-            <img :src="auth.user.photoURL">
+            <img :src="Current.user.photoURL">
           </md-avatar>
-          <div class="md-title">Hi {{auth.user.displayName.split(' ')[0]}},</div>
+          <div class="md-title">Hi {{Current.user.displayName.split(' ')[0]}},</div>
           <div class="md-subhead">{{$t('index.' + (organizations.length ? 'where' : 'welcome'))}}</div>
         </md-card-header>
         <md-card-content>
@@ -82,11 +82,13 @@
   import Firebase from '../firebase';
   import Permissions from '../models/Permissions';
   import Flashlight from '../models/Flashlight';
+  import Current from '../models/Current';
 
   export default {
     data() {
       return {
         auth,
+        Current,
         langLoaded: false,
         organizations: undefined,
         newOrganization: {
@@ -103,7 +105,7 @@
       });
     },
     watch: {
-      'auth.user': {
+      'Current.user': {
         immediate: true,
         handler(user) {
           if (user) {
@@ -149,7 +151,7 @@
           permissions: Permissions.getDefaults(),
           users: {}
         };
-        security.users[auth.user.uid] = 'admin';
+        security.users[Current.user.uid] = 'admin';
         Promise.all([
           Firebase.database().ref(key).set({ name: organization.title }),
           Firebase.database().ref('security/' + key).set(security),
@@ -164,7 +166,7 @@
       },
       withdrawMembershipRequest(organization) {
         const oid = organization.key;
-        const uid = this.auth.user.uid;
+        const uid = Current.user.uid;
         const db = Firebase.database();
         db.ref('users/organizations/' + oid + '/' + uid).remove();
         db.ref('users/' + uid + '/organizations/' + oid).remove();

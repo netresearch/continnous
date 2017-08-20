@@ -5,7 +5,7 @@
         :search="$t('actions.search')"
         @search="handleSearch"
         :q="$route.query.q"
-        v-if="organization && auth.user && role"
+        v-if="organization && Current.user && role"
     >
       <template slot="title">
         <h2 class="md-title">{{title}}</h2>
@@ -16,14 +16,14 @@
             <md-icon>whatshot</md-icon>
           </md-button>
           <md-menu-content class="md-dense">
-            <journal :organization="organization"></journal>
+            <journal></journal>
           </md-menu-content>
         </md-menu>
         <account-switcher></account-switcher>
       </template>
 
       <div class="app-content full-height">
-        <router-view :organization="organization" :permissions="permissions"></router-view>
+        <router-view></router-view>
       </div>
 
       <md-list slot="sidebar">
@@ -59,11 +59,11 @@
       </div>
       <div v-else-if="organization === false">
         <div>
-          {{$t('errors.' + (auth.user ? 403 : 401))}}
+          {{$t('errors.' + (Current.user ? 403 : 401))}}
         </div>
-        <md-button :class="{'md-raised': true, 'md-primary': !auth.user || role}" @click.native="auth.login()">{{$t('auth.' + (auth.user ? 'switchAccount' : 'signIn'))}}</md-button>
-        <md-button class="md-raised md-primary" v-if="auth.user && !role" @click.native="requestMembership">{{$t('auth.requestMembership')}}</md-button>
-        <p v-else-if="auth.user && role">{{$t('auth.membership' + (role === '!' ? 'Denied' : 'Processed'))}}.</p>
+        <md-button :class="{'md-raised': true, 'md-primary': !Current.user || role}" @click.native="auth.login()">{{$t('auth.' + (Current.user ? 'switchAccount' : 'signIn'))}}</md-button>
+        <md-button class="md-raised md-primary" v-if="Current.user && !role" @click.native="requestMembership">{{$t('auth.requestMembership')}}</md-button>
+        <p v-else-if="Current.user && role">{{$t('auth.membership' + (role === '!' ? 'Denied' : 'Processed'))}}.</p>
       </div>
     </md-message>
   </div>
@@ -71,7 +71,6 @@
 
 <script>
   import Firebase from 'firebase';
-  import auth from '../auth';
   import AccountSwitcher from './AccountSwitcher';
   import Journal from './organization/common/Journal';
   import Organization from '../models/Organization';
@@ -80,6 +79,8 @@
   import Flashlight from '../models/Flashlight';
   import locales from '../locales';
   import File from '../models/File';
+  import Current from '../models/Current';
+  import auth from '../auth';
 
   /* global document */
   const titleElements = document.querySelectorAll(
@@ -125,6 +126,7 @@
         role: undefined,
         permissions: new Permissions(),
         resources: Config.resources,
+        Current,
         auth,
         title: undefined,
         key: undefined
@@ -160,7 +162,7 @@
         immediate: true,
         handler: 'fetchOrganization'
       },
-      'auth.user': 'fetchRoleAndPermissions',
+      'Current.user': 'fetchRoleAndPermissions',
       organization: 'fetchRoleAndPermissions'
     },
     methods: {
@@ -177,11 +179,11 @@
           (snapshot) => {
             if (snapshot.val()) {
               const organization = new Organization(snapshot.key, snapshot.val());
-              auth.user.bind(organization).once('value', (sn) => {
+              Current.user.bind(organization).once('value', (sn) => {
                 const ul = sn.val() ? sn.val().lang : null;
                 (ul ? locales.set(ul) : locales.setFromNavigator()).then(() => {
                   this.organization = organization;
-                  Organization.current = organization;
+                  Current.organization = organization;
                   if (this.organization.theme) {
                     this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
                   }
@@ -201,7 +203,7 @@
             } else {
               locales.setFromNavigator().then(() => {
                 this.organization = null;
-                Organization.current = undefined;
+                Current.organization = undefined;
                 this.title = null;
                 setTitle(defaultTitle);
               });
@@ -210,7 +212,7 @@
           () => {
             locales.setFromNavigator().then(() => {
               this.organization = false;
-              Organization.current = undefined;
+              Current.organization = undefined;
               /* global window */
               window.setTimeout(() => {
                 this.fetchOrganization(organizationKey);
@@ -221,9 +223,9 @@
       },
       fetchRoleAndPermissions() {
         this.$nextTick(() => {
-          const user = this.auth.user;
+          const user = Current.user;
           const orgKey = this.key;
-          Permissions.current = this.permissions;
+          Current.permissions = this.permissions;
           this.permissions.bind(orgKey, user, () => {
             this.role = this.permissions.role;
             if ((this.role || this.organization) && user) {
@@ -254,7 +256,7 @@
         });
       },
       requestMembership() {
-        const user = this.auth.user;
+        const user = Current.user;
         const orgKey = this.key;
         Firebase.database().ref('/security/organizations/' + orgKey + '/users/' + user.uid).set('?');
       },

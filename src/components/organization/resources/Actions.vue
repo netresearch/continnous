@@ -14,7 +14,7 @@
       </md-button>
       <md-menu-content class="resource-actions-archive-info">
         <md-spinner v-if="archiveInfo === undefined" :md-size="20" md-indeterminate class="md-accent"></md-spinner>
-        <avatar :organization="organization" :uid="archiveInfo.uid" v-if="archiveInfo">
+        <avatar :uid="archiveInfo.uid" v-if="archiveInfo">
           <template scope="avatar">
             <div class="resource-actions-archive-info-label">
               {{avatar.user.displayName}} {{$t('journal.archive', {resource: $t('journal.this')})}}
@@ -28,8 +28,8 @@
               </md-icon>
               <span>{{$t('transition.' + archiveInfo.occasion)}}</span>
             </div>
-            <editor-text v-if="archiveInfo.comment" :organization="organization" :text="archiveInfo.comment"></editor-text>
-            <div class="resource-actions-archive-info-actions" v-if="permissions[item.resource].write">
+            <editor-text v-if="archiveInfo.comment" :text="archiveInfo.comment"></editor-text>
+            <div class="resource-actions-archive-info-actions" v-if="Current.permissions[item.resource].write">
               <md-button @click.native="$refs.archiveInfo.close(); toggleArchive()">{{$t('actions.restore')}}</md-button>
             </div>
           </template>
@@ -60,10 +60,7 @@
       </md-icon>
     </md-button>
 
-    <resource-links
-        v-if="!item.archive && showLinkBadges"
-        badges :item="item" :organization="organization" :permissions="permissions"
-    ></resource-links>
+    <resource-links v-if="!item.archive && showLinkBadges" badges :item="item"></resource-links>
 
     <div style="flex: 1" v-if="distribute"></div>
 
@@ -91,24 +88,21 @@
           <md-icon>notifications</md-icon>
           <span>{{$t('actions.watch')}}</span>
         </md-menu-item>
-        <md-menu-item @selected="togglePersonal()" v-if="showPersonal && !item.personal && item.creator === auth.user.uid">
+        <md-menu-item @selected="togglePersonal()" v-if="showPersonal && !item.personal && item.creator === Current.user.uid">
           <md-icon>lock_outline</md-icon>
           <span>{{$t('actions.makePersonal')}}</span>
         </md-menu-item>
-        <md-menu-item @selected="toggleArchive()" v-if="!item.archive && permissions[item.resource].write">
+        <md-menu-item @selected="toggleArchive()" v-if="!item.archive && Current.permissions[item.resource].write">
           <md-icon>archive</md-icon>
           <span>{{$t('actions.archive')}}</span>
         </md-menu-item>
         <md-menu-item
             @selected="confirm = {action: 'delete', handler: deleteItem}"
-            v-if="showDelete && permissions.role === 'admin'">
+            v-if="showDelete && Current.permissions.role === 'admin'">
           <md-icon>delete</md-icon>
           <span>{{$t('actions.delete')}}</span>
         </md-menu-item>
-        <resource-links
-            :item="item" :organization="organization" :permissions="permissions" v-if="!item.archive"
-            menu
-        ></resource-links>
+        <resource-links v-if="!item.archive" :item="item" menu></resource-links>
       </md-menu-content>
     </md-menu>
 
@@ -143,7 +137,7 @@
         </div>
         <md-input-container>
           <label>{{$t('transition.reason')}}</label>
-          <editor ref="transitionReason" :organization="organization" v-model="transition.reason" toolbar="small"></editor>
+          <editor ref="transitionReason" v-model="transition.reason" toolbar="small"></editor>
         </md-input-container>
       </md-dialog-content>
       <md-dialog-actions>
@@ -156,7 +150,7 @@
 </template>
 
 <script>
-  import auth from '../../../auth';
+  import Current from '../../../models/Current';
   import mixin from './mixin';
   import Share from '../../Share';
   import ResourceLinks from './Links';
@@ -170,9 +164,7 @@
     mixins: [mixin],
     components: { Share, ResourceLinks, Avatar, Editor, EditorText },
     props: {
-      organization: Object,
       item: Object,
-      permissions: Object,
       // Buttons:
       showLinkBadges: Boolean,
       showEditInMenu: Boolean,
@@ -185,12 +177,12 @@
     },
     data() {
       return {
-        auth,
         hasLiked: false,
         confirm: undefined,
         transition: undefined,
         archiveInfo: false,
-        watcher: undefined
+        watcher: undefined,
+        Current
       };
     },
     computed: {
@@ -228,7 +220,7 @@
             });
           }
           if (item && item.creator && this.showNotifications) {
-            this.watcher = this.organization.watchers.get(item, auth.user.uid);
+            this.watcher = Current.organization.watchers.get(item, Current.user.uid);
           }
         }
       },
@@ -263,7 +255,7 @@
           return;
         }
         this.archiveInfo = undefined;
-        this.organization.journal.getArchiveInfo(this.item).then((archiveInfo) => {
+        Current.organization.journal.getArchiveInfo(this.item).then((archiveInfo) => {
           this.archiveInfo = archiveInfo;
         });
       },
@@ -278,7 +270,7 @@
         Item.getFirebaseRef(it.resource, archive, !personal, it.id)
           .set(it.prepareForFirebase())
           .then(() => {
-            this.organization.journal.getRef()
+            Current.organization.journal.getRef()
               .orderByChild('id')
               .equalTo(it.id)
               .once('value', (sn) => {
@@ -303,7 +295,7 @@
         if (archive || personal) {
           linkValue = {};
           if (personal) {
-            linkValue.personal = auth.user.uid;
+            linkValue.personal = Current.user.uid;
           }
           if (archive) {
             linkValue.archive = true;
@@ -350,7 +342,7 @@
             if (transition.occasion) {
               props[transition.occasion] = true;
             }
-            this.organization.journal.addEntry(
+            Current.organization.journal.addEntry(
               item, archive ? 'unarchive' : 'archive',
               undefined, transition.reason, props
             );
@@ -368,8 +360,8 @@
         /** @type {Item} */
         const item = this.item;
         const promises = [
-          this.organization.journal.clear(item),
-          this.organization.watchers.clear(item)
+          Current.organization.journal.clear(item),
+          Current.organization.watchers.clear(item)
         ];
         this.forEachLink((link) => {
           promises.push(

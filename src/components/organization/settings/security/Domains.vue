@@ -31,10 +31,11 @@
 
 <script>
   import CardForm from '../../../form/Card';
+  import Current from '../../../../models/Current';
 
   export default {
-    props: ['organization'],
     components: { CardForm },
+    data: () => ({ Current }),
     methods: {
       isDomainArrayValid(domainArray) {
         let valid = true;

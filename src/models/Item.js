@@ -1,9 +1,7 @@
 import extend from 'extend';
 import Config from './Config';
-import auth from '../auth';
 import Firebase from '../firebase';
-import Permissions from './Permissions';
-import Organization from './Organization';
+import Current from './Current';
 
 /**
  * // Properties not in firebase:
@@ -53,7 +51,7 @@ export default class Item {
     } else {
       this.links = {};
     }
-    const permissions = Permissions.current;
+    const permissions = Current.permissions;
     Object.keys(Config.resources).forEach((key) => {
       const ar = permissions[key].read;
       const arp = permissions['personal_' + key].read;
@@ -64,7 +62,7 @@ export default class Item {
         Object.keys(this.links[key]).forEach((target) => {
           const value = this.links[key][target];
           if (typeof value === 'object' && value.personal) {
-            if (value.personal !== auth.user.uid || !arp) {
+            if (value.personal !== Current.user.uid || !arp) {
               delete this.links[key][target];
             } else {
               value.personal = true;
@@ -167,8 +165,8 @@ export default class Item {
       throw new Error('No resource given');
     }
     return '/' + (archive ? 'archive' : 'resources')
-      + '/organizations/' + Organization.current.key
-      + '/' + (personal ? auth.user.uid : 'organization')
+      + '/organizations/' + Current.organization.key
+      + '/' + (personal ? Current.user.uid : 'organization')
       + '/' + resource
       + (id ? '/' + id : '')
       + (property ? '/' + property : '');

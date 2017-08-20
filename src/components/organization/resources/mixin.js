@@ -1,6 +1,6 @@
 import moment from 'moment';
 import Firebase from '../../../firebase';
-import auth from '../../../auth';
+import Current from '../../../models/Current';
 import ResourceImage from './Image';
 
 const viewed = {};
@@ -13,8 +13,8 @@ export default {
     },
 
     getLikesRef(id, all, byUser) {
-      const path = '/likes/organizations/' + this.organization.key + '/by' + (byUser ? 'User' : 'Resource');
-      const lastParts = [id, auth.user.uid];
+      const path = '/likes/organizations/' + Current.organization.key + '/by' + (byUser ? 'User' : 'Resource');
+      const lastParts = [id, Current.user.uid];
       if (byUser) {
         lastParts.reverse();
       }
@@ -31,7 +31,7 @@ export default {
     setLike(item, like) {
       const byResourceRef = this.getLikesRef(item.id, false, false);
       const byUserRef = this.getLikesRef(item.id, false, true);
-      const factor = auth.user.elevate ? auth.user.elevate + 1 : 1;
+      const factor = Current.user.elevate ? Current.user.elevate + 1 : 1;
       (like ? byResourceRef.set(factor) : byResourceRef.remove()).then(() => {
         (like ? byUserRef.set(factor) : byUserRef.remove()).then(() => {
           if (!item.stats) {
@@ -45,13 +45,13 @@ export default {
           this.updateRank(item);
 
           if (like) {
-            this.organization.journal.addEntry(item, 'like');
+            Current.organization.journal.addEntry(item, 'like');
           } else {
             // Remove all like journal entries
-            this.organization.journal.getRef().orderByChild('id').equalTo(item.id).once('value', (snapshot) => {
+            Current.organization.journal.getRef().orderByChild('id').equalTo(item.id).once('value', (snapshot) => {
               snapshot.forEach((childSnapshot) => {
                 const entry = childSnapshot.val();
-                if (entry.uid === auth.user.uid && entry.action === 'like') {
+                if (entry.uid === Current.user.uid && entry.action === 'like') {
                   childSnapshot.ref.remove();
                 }
               });
@@ -72,14 +72,14 @@ export default {
         return;
       }
       this.trackedViews[item.id] = true;
-      if (!viewed[auth.user.uid]) {
-        viewed[auth.user.uid] = {};
+      if (!viewed[Current.user.uid]) {
+        viewed[Current.user.uid] = {};
       }
       const statsRef = item.ref().child('stats');
-      if (!viewed[auth.user.uid][item.id]) {
-        viewed[auth.user.uid][item.id] = true;
+      if (!viewed[Current.user.uid][item.id]) {
+        viewed[Current.user.uid][item.id] = true;
         Firebase.database().ref(
-          '/views/organizations/' + this.organization.key + '/' + item.id + '/' + auth.user.uid
+          '/views/organizations/' + Current.organization.key + '/' + item.id + '/' + Current.user.uid
         ).once('value', (sn) => {
           if (!sn.val()) {
             sn.ref.set(1);
@@ -114,7 +114,7 @@ export default {
         }),
         new Promise((resolve) => {
           Firebase.database().ref(
-            '/scorings/organizations/' + this.organization.key + '/' + item.id
+            '/scorings/organizations/' + Current.organization.key + '/' + item.id
           ).once('value', (sn) => {
             let sumScorings = 0;
             let numScorings = 0;

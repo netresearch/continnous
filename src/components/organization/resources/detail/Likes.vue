@@ -22,13 +22,12 @@
 <script>
   import mixin from '../mixin';
   import User from '../../../../models/User';
-  import auth from '../../../../auth';
+  import Current from '../../../../models/Current';
 
   export default {
     mixins: [mixin],
     props: {
       item: Object,
-      organization: Object,
       likerNamesLimit: {
         type: Number,
         default: 2
@@ -39,7 +38,6 @@
     },
     data() {
       return {
-        auth,
         likes: [],
         userLikes: false,
         showAllLikers: false
@@ -55,7 +53,7 @@
         if (show) {
           this.likes.forEach((user, i) => {
             if (typeof user !== 'object') {
-              this.likes[i] = new User(user, this.organization);
+              this.likes[i] = new User(user, Current.organization);
             }
           });
         }
@@ -68,11 +66,11 @@
             this.userLikes = false;
             let i = 0;
             snapshot.forEach((user) => {
-              if (user.key === auth.user.uid) {
+              if (user.key === Current.user.uid) {
                 this.userLikes = true;
               } else {
                 this.likes.push(
-                  i < this.numLikerNames ? new User(user.key, this.organization) : user.key
+                  i < this.numLikerNames ? new User(user.key, Current.organization) : user.key
                 );
                 i++;
               }

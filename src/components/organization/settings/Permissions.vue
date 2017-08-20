@@ -1,7 +1,7 @@
 <template>
   <div>
-    <domains :organization="organization"></domains>
-    <permissions :organization="organization"></permissions>
+    <domains></domains>
+    <permissions></permissions>
   </div>
 </template>
 
@@ -10,7 +10,6 @@
   import Permissions from './security/Permissions';
 
   export default {
-    props: ['organization'],
     components: {
       Domains,
       Permissions

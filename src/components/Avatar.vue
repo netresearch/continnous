@@ -16,20 +16,19 @@
 
 <script>
   import User from '../models/User';
-  import auth from '../auth';
+  import Current from '../models/Current';
 
   export default {
     props: {
       uid: String,
       user: Object,
-      organization: Object,
       big: Boolean,
       mini: Boolean,
       noName: Boolean
     },
     data() {
       return {
-        auth,
+        Current,
         userObject: undefined,
         imgNotFound: false
       };
@@ -39,7 +38,7 @@
         immediate: true,
         handler: 'setUserObject'
       },
-      organization: 'setUserObject',
+      'Current.user': 'setUserObject',
       user: 'setUserObject'
     },
     methods: {
@@ -49,9 +48,9 @@
             this.userObject = this.user;
             return;
           }
-          const uid = this.uid === 'current' ? this.auth.user.uid : this.uid;
-          this.userObject = uid && this.organization
-              ? new User(uid, this.organization) : undefined;
+          const uid = this.uid === 'current' ? Current.user.uid : this.uid;
+          this.userObject = uid && Current.organization
+              ? new User(uid, Current.organization) : undefined;
         });
       }
     }

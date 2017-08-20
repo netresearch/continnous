@@ -27,14 +27,11 @@
 
 <script>
   import Flashlight from '../../../models/Flashlight';
-  import auth from '../../../auth';
 
   export default {
     props: {
       value: Array,
       disabled: Boolean,
-      organization: Object,
-      permissions: Object,
       matchCase: Boolean
     },
     data() {
@@ -62,7 +59,7 @@
       search(tag) {
         return new Promise((resolve) => {
           if (!this.flashlight) {
-            this.flashlight = new Flashlight(this.organization, this.permissions, auth);
+            this.flashlight = new Flashlight();
             this.flashlight.ignoreSubsequents();
           }
           const search = {

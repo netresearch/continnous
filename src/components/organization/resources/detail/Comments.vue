@@ -1,16 +1,16 @@
 <template>
   <div class="comments">
     <div class="comment-group" v-for="group in (comments ? comments.groups : [])">
-      <avatar :organization="organization" :uid="group.uid">
+      <avatar :uid="group.uid">
         <template scope="avatar">
           <div class="comment" :class="{ 'current-edit': editComment === comment }" v-for="(comment, i) in group">
             <span class="avatar-name" v-if="i === 0">{{avatar.user.displayName}}</span>
             <div class="comment-time">
               <md-icon v-if="i > 0" class="md-mini">arrow_downward</md-icon>{{moment(comment.time).calendar()}}
             </div>
-            <editor-text :organization="organization" :text="comment.comment"></editor-text>
+            <editor-text :text="comment.comment"></editor-text>
             <div class="comment-actions">
-              <template v-if="comment.uid === auth.user.uid">
+              <template v-if="comment.uid === Current.user.uid">
                   <span v-if="!editComment || editComment !== comment">
                     <span @click="editComment = comment">{{$t('actions.edit')}}</span>
                   </span>
@@ -26,14 +26,13 @@
 
     <md-input-container ref="form">
       <div class="comment-form-whiteframe"></div>
-      <avatar :organization="organization" uid="current" no-name></avatar>
+      <avatar uid="current" no-name></avatar>
       <editor
           v-model="text"
           ref="editor"
           toolbar="mini"
           :disabled="saving"
           :class="{'md-editor-sticky-toolbar': !!text || editComment }"
-          :organization="organization"
           :placeholder="$t('actions.writeComment') + '...'"></editor>
       <div class="comment-form-buttons">
         <md-button
@@ -64,12 +63,11 @@
   import Avatar from '../../../Avatar';
   import Editor from '../../common/Editor';
   import EditorText from '../../common/EditorText';
-  import auth from '../../../../auth';
+  import Current from '../../../../models/Current';
 
   export default {
     components: { Avatar, Editor, EditorText },
     props: {
-      organization: Object,
       item: Object
     },
     data() {
@@ -79,12 +77,12 @@
         saving: false,
         editComment: undefined,
         deleteComment: undefined,
-        auth,
+        Current,
         moment
       };
     },
     watch: {
-      organization: {
+      'Current.organization': {
         immediate: true,
         handler: 'loadEntries'
       },
@@ -105,10 +103,10 @@
           if (this.comments) {
             this.comments.off();
           }
-          if (!this.organization) {
+          if (!Current.organization) {
             return;
           }
-          this.comments = this.organization.journal.getEntries(this.item, {
+          this.comments = Current.organization.journal.getEntries(this.item, {
             reverse: true,
             onBeforeAdd: entry => entry.action === 'comment'
           });
@@ -126,7 +124,7 @@
         if (editComment) {
           p = editComment.updateComment(text);
         } else {
-          p = this.organization.journal.addEntry(item, 'comment', undefined, text);
+          p = Current.organization.journal.addEntry(item, 'comment', undefined, text);
         }
         p.then(() => {
           this.text = '';

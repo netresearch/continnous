@@ -4,7 +4,7 @@
     <card-form
         ref="form"
         class="permissions"
-        :firebase-path="'/security/organizations/' + organization.key + '/permissions'"
+        :firebase-path="'/security/organizations/' + Current.organization.key + '/permissions'"
         :firebase-bind="true"
         :firebase-receive="firebaseReceive"
         :keys="roles"
@@ -63,17 +63,18 @@
   import Config from '../../../../models/Config';
   import Permissions from '../../../../models/Permissions';
   import Flashlight from '../../../../models/Flashlight';
+  import Current from '../../../../models/Current';
 
   export default {
     components: {
       CardForm
     },
-    props: ['organization'],
     data() {
       const defaultPermissions = Permissions.getDefaults();
       return {
         defaultPermissions,
-        roles: Config.roles
+        roles: Config.roles,
+        Current
       };
     },
     methods: {
@@ -102,7 +103,7 @@
       },
       onSaved() {
         Flashlight.updatePaths(
-          this.organization.key,
+          Current.organization.key,
           'organization',
           Permissions.merge(true, ...this.$objectValues(this.$refs.form.values))
         );

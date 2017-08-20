@@ -21,7 +21,7 @@
           </div>
           <md-list-expand>
             <md-list>
-              <template v-if="entry.uid !== auth.user.uid">
+              <template v-if="entry.uid !== Current.user.uid">
                 <md-subheader class="md-inset">{{$t('changeStatus')}}</md-subheader>
                 <md-list-item
                     v-for="newRole in roles.concat('applicant', 'denied')"
@@ -51,11 +51,10 @@
 
 <script>
   import Firebase from 'firebase';
-  import auth from '../../../auth';
   import Config from '../../../models/Config';
+  import Current from '../../../models/Current';
 
   export default {
-    props: ['organization'],
     data() {
       return {
         users: undefined,
@@ -63,7 +62,7 @@
         domains: undefined,
         groupedUsers: {},
         roles: Config.roles,
-        auth
+        Current
       };
     },
     created() {
@@ -107,22 +106,24 @@
         this.groupedUsers = groupedUsers;
       };
 
-      Firebase.database().ref('security/organizations/' + this.organization.key + '/domains').on('value', (snapshot) => {
+      const org = Current.organization.key;
+      Firebase.database().ref('security/organizations/' + org + '/domains').on('value', (snapshot) => {
         this.domains = snapshot.val() || {};
         groupUsers();
       });
-      Firebase.database().ref('security/organizations/' + this.organization.key + '/users').on('value', (snapshot) => {
+      Firebase.database().ref('security/organizations/' + org + '/users').on('value', (snapshot) => {
         this.userRoles = snapshot.val() || {};
         groupUsers();
       });
-      Firebase.database().ref('/users/organizations/' + this.organization.key).orderByChild('displayName').on('value', (snapshot) => {
+      Firebase.database().ref('/users/organizations/' + org).orderByChild('displayName').on('value', (snapshot) => {
         this.users = snapshot.val();
         groupUsers();
       });
     },
     methods: {
       changeRole(uid, newRole, domainRole) {
-        const ref = Firebase.database().ref('security/organizations/' + this.organization.key + '/users/' + uid);
+        const org = Current.organization.key;
+        const ref = Firebase.database().ref('security/organizations/' + org + '/users/' + uid);
         let finalRole = newRole;
         if (finalRole === 'applicant') {
           finalRole = '?';
@@ -133,7 +134,7 @@
           ref.remove();
         } else {
           ref.set(finalRole).then(() => {
-            Firebase.database().ref('users/' + uid + '/organizations/' + this.organization.key)
+            Firebase.database().ref('users/' + uid + '/organizations/' + org)
               .set(finalRole !== '?' && finalRole !== '!');
           });
         }
@@ -142,14 +143,15 @@
           // State 2 means notify the user with the invite
           // @see InvitationStates
           Firebase.database().ref(
-            '/users/organizations/' + this.organization.key + '/' + uid + '/inviteState'
+            '/users/organizations/' + org + '/' + uid + '/inviteState'
           ).set(2);
         }
         const li = this.$el.querySelector('.user-' + uid);
         li.className = li.className.replace(/ md-active/, '');
       },
       setElevation(uid, elevate) {
-        Firebase.database().ref('/users/organizations/' + this.organization.key + '/' + uid).update({ elevate });
+        const org = Current.organization.key;
+        Firebase.database().ref('/users/organizations/' + org + '/' + uid).update({ elevate });
       }
     }
   };

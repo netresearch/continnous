@@ -1,5 +1,5 @@
 import Firebase from '../firebase';
-import auth from '../auth';
+import Current from './Current';
 
 export default class Watchers {
   constructor(organization) {
@@ -37,7 +37,7 @@ export default class Watchers {
       off: () => ref.off('value')
     };
     ref.on('value', (sn) => {
-      if (sn.val() === 1 && uid === auth.user.uid) {
+      if (sn.val() === 1 && uid === Current.user.uid) {
         watcher.isWatching = true;
         ref.set(true);
       } else {

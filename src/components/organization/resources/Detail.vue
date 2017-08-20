@@ -4,7 +4,7 @@
       :firebase-path="Item.getFirebasePath(type, archive, personal, id || '{new}')"
       firebase-bind
       :firebase-receive="firebaseReceive"
-      :defaults="{creator: auth.user.uid}"
+      :defaults="{creator: Current.user.uid}"
       :keys="id ? ['updated'] : ['creator', 'created', 'updated']"
       :validate="{title: validateTitle}"
       ref="form"
@@ -18,11 +18,11 @@
     <md-whiteframe md-elevation="2" v-if="item">
       <md-toolbar class="md-dense resource-detail-mobile-head">
         <md-whiteframe md-elevation="2"></md-whiteframe>
-        <h2 class="md-title" style="flex: 1">{{personal ? $tc(type + '.personal', 2) : organization.name + ' ' + $tc(type + '.personal', 2)}}</h2>
+        <h2 class="md-title" style="flex: 1">{{personal ? $tc(type + '.personal', 2) : Current.organization.name + ' ' + $tc(type + '.personal', 2)}}</h2>
         <md-button class="md-icon-button" @click.native="close()"><md-icon>chevron_left</md-icon></md-button>
       </md-toolbar>
       <div :class="['resource-detail-head', {'resource-detail-head-elevate': scrollTop > 0}]" v-if="item">
-        <avatar v-if="id" :uid="item.creator" :organization="organization">
+        <avatar v-if="id" :uid="item.creator">
           <template scope="avatar">
             <span class="avatar-name">{{avatar.user.displayName}}</span>
             <span class="md-caption">
@@ -37,8 +37,6 @@
         <resource-actions
             class="md-card-actions"
             v-if="!id || !edit"
-            :organization="organization"
-            :permissions="permissions"
             :item="item"
             show-personal
             show-notifications
@@ -77,7 +75,7 @@
         <div class="resource-detail-main">
           <div class="resource-detail-section">
             <md-icon class="md-primary">{{config.icon}}</md-icon>
-            <resource-form v-if="edit || !id" :item="item" :organization="organization" :permissions="permissions">
+            <resource-form v-if="edit || !id" :item="item">
               <component :is="type + '-form'"></component>
               <form-element
                   type="form-file"
@@ -91,19 +89,17 @@
           </div>
           <div class="resource-detail-section" v-if="config.results">
             <md-icon>flag</md-icon>
-            <resource-results :is-new="!id" :inline="!edit" :editable="mayEdit" :organization="organization" :type="type" :item="item"></resource-results>
+            <resource-results :is-new="!id" :inline="!edit" :editable="mayEdit" :type="type" :item="item"></resource-results>
           </div>
           <template v-if="!edit">
             <div class="resource-detail-section" v-if="config.scoring && config.scoring.length">
               <md-icon>thumbs_up_down</md-icon>
-              <resource-scoring :criteria="config.scoring" :is-new="!id" :organization="organization" :item="item"></resource-scoring>
+              <resource-scoring :criteria="config.scoring" :is-new="!id" :item="item"></resource-scoring>
             </div>
             <resource-links
                 class="resource-detail-links resource-detail-section"
                 list
-                :organization="organization"
                 :item="item"
-                :permissions="permissions"
                 v-if="hasLinks"
             >
               <md-icon>link</md-icon>
@@ -121,7 +117,7 @@
                 {{period.format()}}
               </div>
             </div>
-            <resource-likes class="resource-detail-section" :organization="organization" :item="item">
+            <resource-likes class="resource-detail-section" :item="item">
             </resource-likes>
             <div class="resource-detail-section" v-if="item.parties && item.parties.length">
               <md-icon>
@@ -129,12 +125,12 @@
                 <md-tooltip>{{$t('fields.parties')}}</md-tooltip>
               </md-icon>
               <div v-for="uid in item.parties">
-                <avatar :uid="uid" :organization="organization" mini></avatar>
+                <avatar :uid="uid" mini></avatar>
               </div>
             </div>
             <div class="resource-detail-section" v-if="item.tags">
               <md-icon>local_offer</md-icon>
-              <resource-tags :organization="organization" :item="item"></resource-tags>
+              <resource-tags :item="item"></resource-tags>
             </div>
             <base-form sub direct class="resource-detail-section" v-if="mayEdit || item.attachments">
               <form-element
@@ -149,23 +145,20 @@
           <div v-else-if="!id">
             <div class="resource-detail-section">
               <md-icon>thumb_up</md-icon>
-              <span v-html="$t('detail.motivation', {firstName: auth.user.displayName.split(' ').shift(), displayName: auth.user.displayName})"></span>
+              <span v-html="$t('detail.motivation', {firstName: Current.user.displayName.split(' ').shift(), displayName: Current.user.displayName})"></span>
               <p>{{$t('detail.readStatementsHint')}}</p>
             </div>
             <div class="resource-detail-section" v-for="(icon, key) in {vision: 'flare', mission: 'navigation'}">
               <md-icon>{{icon}}</md-icon>
               <span>
-                <strong>{{organization[key + 'Title'] || $t(key + '.defaultTitle')}}</strong><br>
-                {{organization[key]}}
+                <strong>{{Current.organization[key + 'Title'] || $t(key + '.defaultTitle')}}</strong><br>
+                {{Current.organization[key]}}
               </span>
             </div>
           </div>
         </div>
         <div class="resource-detail-comments" v-if="!edit">
-          <resource-comments
-              :organization="organization"
-              :item="item"
-          ></resource-comments>
+          <resource-comments :item="item"></resource-comments>
         </div>
       </div>
     </md-whiteframe>
@@ -174,7 +167,6 @@
 
 <script>
   import BaseForm from '../../form/Base';
-  import auth from '../../../auth';
   import Config from '../../../models/Config';
   import mixin from './mixin';
   import ResourceContent from './detail/Content';
@@ -191,6 +183,7 @@
   import Period from '../../../models/Period';
   import Mentions from '../../../models/Mentions';
   import Item from '../../../models/Item';
+  import Current from '../../../models/Current';
 
   const components = {
     BaseForm,
@@ -216,11 +209,9 @@
 
   export default {
     mixins: [mixin],
-    props: ['organization', 'permissions'],
     components,
     data() {
       return {
-        auth,
         type: undefined,
         personal: false,
         id: undefined,
@@ -229,7 +220,8 @@
         edit: false,
         scrollTop: 0,
         hasLinks: false,
-        Item
+        Item,
+        Current
       };
     },
     watch: {
@@ -251,7 +243,7 @@
     },
     computed: {
       mayEdit() {
-        return this.type && this.permissions[(this.personal ? 'personal_' : '') + this.type].write;
+        return this.type && Current.permissions[(this.personal ? 'personal_' : '') + this.type].write;
       },
       config() {
         return this.type ? Config.resources[this.type] : {};
@@ -316,7 +308,7 @@
               mentions[uid] = false;
             }
           });
-          promises.push(this.organization.journal.addEntry(
+          promises.push(Current.organization.journal.addEntry(
             item,
             this.id ? 'update' : 'create',
             this.id ? Object.keys(updates).filter(field => field !== 'updated') : null,

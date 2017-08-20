@@ -14,7 +14,7 @@
       <dt>
         <span>
           {{$t('scoring.criteria.' + key)}}
-          <md-tooltip md-direction="bottom">{{$t('scoring.help.' + key, {organization: organization.name})}}</md-tooltip>
+          <md-tooltip md-direction="bottom">{{$t('scoring.help.' + key, {organization: Current.organization.name})}}</md-tooltip>
         </span>
       </dt>
       <dd>
@@ -26,17 +26,18 @@
 
 <script>
   import Child from '../../../form/child';
-  import auth from '../../../../auth';
   import Firebase from '../../../../firebase';
   import mixin from '../mixin';
+  import Current from '../../../../models/Current';
   
   export default {
     extends: Child,
-    props: ['organization', 'item', 'isNew', 'criteria'],
+    props: ['item', 'isNew', 'criteria'],
     mixins: [mixin],
     data() {
       return {
-        values: {}
+        values: {},
+        Current
       };
     },
     watch: {
@@ -48,7 +49,7 @@
           }
           if (id) {
             this.ref = Firebase.database().ref(
-              '/scorings/organizations/' + this.organization.key + '/' + id + '/' + auth.user.uid
+              '/scorings/organizations/' + Current.organization.key + '/' + id + '/' + Current.user.uid
             );
             this.ref.on('value', (sn) => {
               this.values = sn.val() || {};
@@ -85,8 +86,8 @@
         this.criteria.forEach((criterion) => {
           values[criterion] = this.values[criterion] || 0;
         });
-        if (auth.user.elevate) {
-          values._elevate = auth.user.elevate;
+        if (Current.user.elevate) {
+          values._elevate = Current.user.elevate;
         }
         return this.ref.set(values);
       }
