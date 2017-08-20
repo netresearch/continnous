@@ -1,6 +1,6 @@
 <template>
   <div class="md-slider" :class="[themeClass, {'md-slider-zero': isAtMinimum}]" :disabled="disabled">
-    <div ref="slider"></div>
+    <div ref="slider" :disabled="disabled"></div>
   </div>
 </template>
 

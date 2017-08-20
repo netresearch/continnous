@@ -182,6 +182,7 @@ module.exports = {
   },
   scoring: {
     title: 'Your scoring',
+    plural: 'All {numScorings} scorings',
     criteria: {
       strategy: 'Strategy',
       need: 'Need',

@@ -1,8 +1,15 @@
 <template>
   <div class="resource-scoring">
     <div class="resource-scoring-title">
-      <span>
-      {{$t('scoring.title')}}
+      <span :class="{'resource-scoring-title-tabs': average}">
+        <template v-if="showAverage !== undefined">
+          <span v-if="average" :class="{'resource-scoring-title-current': showAverage}" @click="showAverage = true">
+            {{$t('scoring.all', {numScorings})}}
+          </span>
+          <span :class="{'resource-scoring-title-current': !showAverage}" @click="showAverage = false">
+            {{$t('scoring.title')}}
+          </span>
+        </template>
       </span>
       <md-icon>
         help_outline
@@ -18,7 +25,7 @@
         </span>
       </dt>
       <dd>
-        <md-slider :value="values[key]" @change="updateCriterion(key, $event)" max="5" :name="key" :step="1" tooltips></md-slider>
+        <md-slider :value="showAverage ? average[key] : values[key]" :disabled="showAverage" @change="updateCriterion(key, $event)" max="5" :name="key" :step="1" tooltips></md-slider>
       </dd>
     </dl>
   </div>
@@ -37,6 +44,9 @@
     data() {
       return {
         values: {},
+        average: null,
+        showAverage: undefined,
+        numScorings: 0,
         Current
       };
     },
@@ -47,12 +57,49 @@
           if (this.ref) {
             this.ref.off('value');
           }
+          this.showAverage = undefined;
           if (id) {
             this.ref = Firebase.database().ref(
-              '/scorings/organizations/' + Current.organization.key + '/' + id + '/' + Current.user.uid
+              '/scorings/organizations/' + Current.organization.key + '/' + id
             );
             this.ref.on('value', (sn) => {
-              this.values = sn.val() || {};
+              this.values = {};
+              this.average = null;
+              this.numScorings = 0;
+              const allValues = {};
+              let hasOtherScorings = false;
+              let hasUserScoring = false;
+              sn.forEach((csn) => {
+                this.numScorings++;
+                if (csn.key === Current.user.uid) {
+                  this.values = csn.val() || {};
+                  hasUserScoring = true;
+                } else {
+                  hasOtherScorings = true;
+                }
+                csn.forEach((ccsn) => {
+                  if (!allValues[ccsn.key]) {
+                    allValues[ccsn.key] = [];
+                  }
+                  allValues[ccsn.key].push(ccsn.val());
+                });
+              });
+              if (hasUserScoring && hasOtherScorings) {
+                const average = {};
+                this.criteria.forEach((criterion) => {
+                  if (allValues[criterion]) {
+                    average[criterion] =
+                      allValues[criterion].reduce((value, sum) => value + sum, 0)
+                      / allValues[criterion].length;
+                  }
+                });
+                this.average = average;
+                if (this.showAverage === undefined) {
+                  this.showAverage = true;
+                }
+              } else {
+                this.showAverage = false;
+              }
             });
           }
         }
@@ -89,7 +136,7 @@
         if (Current.user.elevate) {
           values._elevate = Current.user.elevate;
         }
-        return this.ref.set(values);
+        return this.ref.child(Current.user.uid).set(values);
       }
     }
   };
@@ -103,8 +150,22 @@
       align-items: center;
       color: rgba(0, 0, 0, 0.54);
       margin: -4px 0 -4px;
-      span {
+      > span {
         flex: 1 0 auto;
+        &.resource-scoring-title-tabs {
+          span {
+            padding-left: 10px;
+            padding-right: 10px;
+            &:not(.resource-scoring-title-current) {
+              cursor: pointer;
+            }
+            &.resource-scoring-title-current {
+              cursor: default;
+              border-bottom: 2px solid rgba(0, 0, 0, 0.25);
+              padding-bottom: calc(1em - 1px);
+            }
+          }
+        }
       }
       .md-icon {
         cursor: help;
