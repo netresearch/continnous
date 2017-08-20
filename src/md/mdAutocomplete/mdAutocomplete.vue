@@ -170,10 +170,10 @@ export default {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        if (['input', 'textarea', 'select'].indexOf(e.relatedTarget.tagName.toLowerCase()) < 0) {
-          e.target.focus();
+        if (['input', 'textarea', 'select'].indexOf(e.relatedTarget.tagName.toLowerCase()) > -1) {
+          e.relatedTarget.focus();
         } else {
-          this.input.focus();
+          window.setTimeout(() => this.input.focus(), 100);
         }
         return;
       }

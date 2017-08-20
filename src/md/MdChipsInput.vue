@@ -18,7 +18,7 @@
         :id="inputId"
         :name="mdInputName"
         :disabled="disabled"
-        @keydown.native.backspace="deleteLastChip"
+        @keydown.native.delete="deleteLastChip"
         @keydown.native.prevent.188="addChip"
         @keydown.native.prevent.enter="$emit('enter')"
         @input.native="$emit('input-input', selectedChips)"
