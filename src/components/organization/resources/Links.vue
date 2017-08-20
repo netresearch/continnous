@@ -58,7 +58,7 @@
               :links="cLinks"
               :item="item"
               :type="item.resource"
-              :clearable="permissions[item.resource].write"
+              :clearable="Current.permissions[item.resource].write"
               @clear="removeConnectionLink(connectionKey, $event)"
           >
           </component>
@@ -135,7 +135,8 @@
         dialogLink: undefined,
         loadLinks: [],
         connections: undefined,
-        linkConnection: false
+        linkConnection: false,
+        Current
       };
     },
     watch: {
@@ -171,12 +172,12 @@
         return links;
       },
       links() {
-        if (!this.item || !this.permissions) {
+        if (!this.item || !Current.permissions) {
           return [];
         }
         const links = [];
         Object.keys(this.resources).forEach((resource) => {
-          if (!this.permissions[resource].read) {
+          if (!Current.permissions[resource].read) {
             return;
           }
           const rc = this.resources[resource];
@@ -198,9 +199,9 @@
         });
         links.numItems = 0;
         links.mayLink = false;
-        const mayEdit = this.permissions[this.item.resource].write;
+        const mayEdit = Current.permissions[this.item.resource].write;
         links.forEach((link) => {
-          link.mayEdit = mayEdit || this.permissions[link.resource].write;
+          link.mayEdit = mayEdit || Current.permissions[link.resource].write;
           if (!link.assign && link.mayEdit) {
             links.mayLink = true;
           }

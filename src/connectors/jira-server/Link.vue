@@ -24,16 +24,14 @@
   import Login from '../../components/Login';
   import Connector from './index';
   import Config from '../../models/Config';
+  import Current from '../../models/Current';
 
   export default {
     components: { Login },
     props: {
       connection: Connector,
       current: Object,
-      organization: Object,
-      item: Object,
-      type: String,
-      archive: Boolean
+      item: Object
     },
     data() {
       return {
@@ -101,7 +99,8 @@
         event.propagate = false;
         const icnUrlPre = 'https://raw.githubusercontent.com/google/material-design-icons/master/action/1x_web/ic_';
         const icnUrlPost = '_black_18dp.png';
-        (this.archive ? this.organization.journal.getArchiveInfo(this.item) : Promise.resolve())
+        const organization = Current.organization;
+        (this.item.archive ? organization.journal.getArchiveInfo(this.item) : Promise.resolve())
           .then(archiveInfo => this.connection.post(
             'api/2/issue/' + issue.key + '/remotelink',
             {
@@ -111,7 +110,7 @@
                 title: this.item.title,
                 icon: {
                   url16x16: icnUrlPre + Config.resources[this.item.resource].icon + icnUrlPost,
-                  title: this.$tc(this.type + '.title', 1)
+                  title: this.$tc(this.item.resource + '.title', 1)
                 },
                 status: !archiveInfo ? undefined : {
                   resolved: true,
