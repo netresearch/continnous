@@ -17,6 +17,7 @@
               v-model="username"
               @change="inv = undefined"
               :disabled="processing || err"
+              @keydown.native.prevent.enter="submit"
               required></md-input>
         </md-input-container>
         <md-input-container>
@@ -26,6 +27,7 @@
               v-model="password"
               @change="inv = undefined"
               :disabled="processing || err"
+              @keydown.native.prevent.enter="submit"
               required></md-input>
         </md-input-container>
       </md-dialog-content>
@@ -37,7 +39,7 @@
         <div style="flex: 1"></div>
         <md-button
             class="md-primary"
-            :disabled="processing || err || !username.trim() || !password.trim()"
+            :disabled="!canSubmit"
             @click.native="submit"
         >{{$t('auth.signIn')}}</md-button>
       </md-dialog-actions>
@@ -63,6 +65,11 @@
         password: ''
       };
     },
+    computed: {
+      canSubmit() {
+        return !this.processing && !this.err && !!this.username.trim() && !!this.password.trim();
+      }
+    },
     methods: {
       login(invalid) {
         this.inv = invalid;
@@ -84,6 +91,9 @@
         this.$refs.login.close();
       },
       submit() {
+        if (!this.canSubmit) {
+          return;
+        }
         this.processing = true;
         this.reject = undefined;
         if (this.resolve) {

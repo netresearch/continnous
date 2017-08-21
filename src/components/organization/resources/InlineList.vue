@@ -44,6 +44,7 @@
   import Config from '../../../models/Config';
   import Flashlight from '../../../models/Flashlight';
   import Item from '../../../models/Item';
+  import Current from '../../../models/Current';
 
   export default {
     mixins: [mixin],
@@ -55,9 +56,7 @@
       all: Boolean,
       personal: Boolean,
       archive: Boolean,
-      organization: Object,
       search: Boolean,
-      permissions: Object,
       link: Boolean,
       load: {
         type: Boolean,
@@ -98,7 +97,7 @@
     methods: {
       doSearch(sword) {
         if (!this.flashlight) {
-          this.flashlight = new Flashlight(this.organization, this.permissions);
+          this.flashlight = new Flashlight();
         }
         this.loading = true;
         this.flashlight.suggest(sword, true, ...this.types).then((results) => {
@@ -181,7 +180,7 @@
               const args = [[a, p], [!a, p], [a, !p], [!a, !p]];
               const load = (archive, personal) => {
                 const next = args.shift();
-                if (!this.permissions[(personal ? 'personal_' : '') + item.resource].read) {
+                if (!Current.permissions[(personal ? 'personal_' : '') + item.resource].read) {
                   if (next) {
                     load(...next);
                   }
