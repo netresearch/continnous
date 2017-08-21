@@ -25,7 +25,14 @@
         </span>
       </dt>
       <dd>
-        <md-slider :value="showAverage ? average[key] : values[key]" :disabled="showAverage" @change="updateCriterion(key, $event)" max="5" :name="key" :step="1" tooltips></md-slider>
+        <md-slider
+            :value="showAverage ? average[key] : values[key]"
+            :disabled="showAverage"
+            @change="updateCriterion(key, $event)"
+            max="5"
+            :name="key"
+            :step="showAverage ? 0.01 : 1"
+            tooltips></md-slider>
       </dd>
     </dl>
   </div>
