@@ -1,5 +1,5 @@
 <template>
-  <div class="md-editor-text">
+  <div class="md-editor-text ql-snow">
     <div class="ql-editor" v-if="formatedText" v-html="formatedText"></div>
   </div>
 </template>

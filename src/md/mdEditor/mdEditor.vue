@@ -125,7 +125,7 @@
         const root = this.editor ? this.editor.root : this.$refs.editor;
         if (root && html !== this.getFilteredHTML()) {
           let h = html || '';
-          if (h && !h.match(/^<(p|ul|ol|div|h[1-6]|blockquote)(\s|>)/)) {
+          if (h && !h.match(/^<(p|ul|ol|div|h[1-6]|blockquote|pre)(\s|>)/)) {
             h = '<p>' + h + '</p>';
           }
           root.innerHTML = h;

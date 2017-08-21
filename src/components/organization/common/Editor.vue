@@ -77,10 +77,8 @@
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-  .md-editor {
-    .ql-snow .ql-editor pre.ql-syntax {
-      background: #fafafa;
-      color: rgba(0, 0, 0, 0.87);
-    }
+  .ql-snow .ql-editor pre.ql-syntax {
+    background: #fafafa !important;
+    color: rgba(0, 0, 0, 0.87) !important;
   }
 </style>
