@@ -25,6 +25,7 @@
     "autolinker": "^1.4.2",
     "extend": "^3.0.0",
     "firebase": "^3.6.4",
+    "highlight.js": "^9.12.0",
     "masonry-layout": "^4.1.1",
     "moment": "^2.17.1",
     "mutation-observer": "^1.0.2",

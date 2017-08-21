@@ -192,6 +192,9 @@
         }
         const ops = delta.ops.slice(0);
         const retain = ops[0].hasOwnProperty('retain') ? ops.shift().retain : 0;
+        if (!ops.length || this.editor.getFormat()['code-block']) {
+          return;
+        }
         const insert = ops[0].insert;
         const mention = (ops[0].attributes ? ops[0].attributes : this.editor.getFormat()).mention;
         if (mention && !mention.id) {

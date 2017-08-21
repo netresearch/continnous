@@ -11,38 +11,7 @@
 <script>
   import Quill from 'quill';
   import Vue from 'vue';
-
-  const presets = {
-    normal: [
-      { header: [1, 2, 3, 4, 5, false] },
-      'bold',
-      'italic',
-      'underline',
-      'strike',
-      'link',
-      { list: 'ordered' },
-      { list: 'bullet' },
-      'clean'
-    ],
-    small: [
-      'bold',
-      'italic',
-      'underline',
-      'strike',
-      'link',
-      { list: 'ordered' },
-      { list: 'bullet' },
-      'clean'
-    ],
-    mini: [
-      'bold',
-      'italic',
-      'underline',
-      'strike',
-      'link',
-      'clean'
-    ]
-  };
+  import { options, presets } from './defaults';
 
   /* global document */
 
@@ -109,13 +78,15 @@
         if (!this.editor && this.mounted) {
           this.setFilteredHTML(this.value);
 
-          this.editor = new Quill(this.$refs.editor, {
-            theme: 'snow',
-            placeholder: this.placeholder,
-            modules: {
-              toolbar: typeof this.toolbar === 'string' ? presets[this.toolbar] : this.toolbar
-            }
-          });
+          const opts = Object.assign({}, options);
+          opts.modules = opts.modules ? Object.assign({}, opts.modules) : {};
+          opts.modules.toolbar = typeof this.toolbar === 'string' ? presets[this.toolbar] : this.toolbar;
+          if (this.placeholder) {
+            opts.placeholder = this.placeholder;
+          }
+          opts.theme = 'snow';
+
+          this.editor = new Quill(this.$refs.editor, opts);
           this.editor.on('text-change', () => {
             const value = this.getFilteredHTML();
             if (value !== this.value) {
