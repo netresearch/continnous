@@ -1,16 +1,21 @@
-export default class Current {
+// This was a class with static members first - but vue binding didn't work with that :(
+
+/**
+ * @type {Current}
+ */
+export default {
   /**
    * @type {Organization}
    */
-  static organization;
+  organization: undefined,
 
   /**
    * @type {Permissions}
    */
-  static permissions;
+  permissions: undefined,
 
   /**
    * @type {User}
    */
-  static user;
-}
+  user: undefined
+};
