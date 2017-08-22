@@ -36,6 +36,8 @@
 </template>
 
 <script>
+  import Current from '../models/Current';
+
   const minWidth = 928; // See SCSS variable below as well
 
   export default {
@@ -54,6 +56,8 @@
       };
     },
     created() {
+      Current.app = this;
+
       /* global window */
       window.addEventListener('resize', () => {
         this.isMobile = window.innerWidth < minWidth;

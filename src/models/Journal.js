@@ -1,10 +1,3 @@
-import extend from 'extend';
-import sortBy from 'sort-by';
-import Firebase from '../firebase';
-import Mentions from './Mentions';
-import Item from './Item';
-import Current from './Current';
-
 /**
  * Save an entry or updates to an entry
  * - Adds mentions present in comment
@@ -19,6 +12,14 @@ import Current from './Current';
  * @param {Object=} current The current entry object if present
  * @return {Promise}
  */
+import extend from 'extend';
+import sortBy from 'sort-by';
+import Firebase from '../firebase';
+import Mentions from './Mentions';
+import Item from './Item';
+import Current from './Current';
+import Connections from './Connections';
+
 const save = (journal, item, entry, id, current) => {
   const ref = id ? journal.getRef().child(id) : journal.getRef().push();
 
@@ -50,6 +51,21 @@ const save = (journal, item, entry, id, current) => {
       }
     });
   }
+
+  promises.push(
+    Connections.getForOrganization(organization).then((allConnections) => {
+      const listener = id ? 'onJournalEntryUpdate' : 'onJournalEntryAdd';
+      const connections = allConnections.filter(connection => connection[listener]);
+      const connectionPromises = [];
+      /* eslint-disable no-use-before-define */
+      const normalizedEntry = new JournalEntry(journal, id || ref.key, entry, item);
+      const normalizedCurrent = current ? new JournalEntry(journal, id, current, item) : undefined;
+      Object.values(connections).forEach((connection) => {
+        connectionPromises.push(connection[listener](normalizedEntry, normalizedCurrent));
+      });
+      return Promise.all(connectionPromises);
+    })
+  );
 
   return ref.update(entry).then(() => Promise.all(promises));
 };

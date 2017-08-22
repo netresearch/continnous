@@ -14,7 +14,7 @@ export default class Connectors {
   static loadAll() {
     const promises = [];
     const connectors = {};
-    ['jira-server'].forEach((name) => {
+    ['jira-server', 'slack-webhook'].forEach((name) => {
       promises.push(loadConnector(name).then((connector) => {
         connectors[name] = connector;
       }));

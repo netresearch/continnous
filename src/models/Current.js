@@ -4,6 +4,8 @@
  * @type {Current}
  */
 export default {
+  app: undefined,
+
   /**
    * @type {Organization}
    */
