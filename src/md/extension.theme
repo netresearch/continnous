@@ -43,24 +43,31 @@
         color: #{'PRIMARY-COLOR'};
       }
   }
-  .md-toolbar.md-nav-bar > .md-button,
-   .md-toolbar.md-nav-bar > .md-menu > .md-button{
-    color: #{'PRIMARY-CONTRAST-0.54'};
-  }
+
   .md-toolbar .router-link-active {
     color: #{'PRIMARY-CONTRAST'} !important;
       > .md-icon {
         color: #{'PRIMARY-CONTRAST'};
       }
   }
-  .md-nav-bar > .md-button {
-    &.md-active,
-    &.router-link-active {
-      &:after {
-        background: #{'PRIMARY-CONTRAST'};
+
+  .md-nav-bar {
+    hr {
+      background: #{'BACKGROUND-CONTRAST-0.12'};
+    }
+    > .md-button,
+    > .md-navbar-button-group > .md-button {
+      &.md-active,
+      &.router-link-active {
+        background: #{'BACKGROUND-CONTRAST-0.16'} !important;
       }
     }
+    > .md-menu > .md-button.md-active {
+      background-color: #{'PRIMARY-CONTRAST-0.72'};
+      color: #{'PRIMARY-COLOR'};
+    }
   }
+
   .md-app > .md-sidenav > .md-sidenav-content {
       background-color: #{'BACKGROUND-COLOR-A100'};
       color: #{'BACKGROUND-CONTRAST'};

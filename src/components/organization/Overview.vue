@@ -8,7 +8,7 @@
         <div class="overview-latest">
         </div>
         <md-layout md-column class="overview-journal">
-          <p class="md-caption">What's hot</p>
+          <p class="md-caption">{{$t('whatshot')}}</p>
           <md-card>
             <md-card-content style="padding-bottom: 16px;">
               <journal></journal>

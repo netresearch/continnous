@@ -1,53 +1,64 @@
 <template>
   <div id="organization" class="full-height">
-    <md-app
-        :toolbar-class="{'md-transparent': !organization}" class="scroll-container" content-class="full-height"
-        :search="$t('actions.search')"
-        @search="handleSearch"
-        :q="$route.query.q"
-        v-if="organization && Current.user && role"
-    >
-      <template slot="title">
-        <h2 class="md-title">{{title}}</h2>
-      </template>
-      <template slot="actions">
-        <md-menu md-size="6" md-direction="bottom left">
-          <md-button class="md-icon-button" md-menu-trigger>
+    <template v-if="organization && Current.user && role">
+      <md-toolbar :class="['app-nav', 'md-nav-bar', {'md-navbar-vert': navbarVert, 'app-nav-xsmall': Object.keys(resources).length * 40 + (role === 'admin' ? 40 : 0) + 284 >= $root.width }]">
+        <router-link class="md-app-icon" :to="getUrlPath()" exact>
+          <img v-if="organizationIcon !== undefined" :src="organizationIcon || '/static/app-icon.png'"/>
+        </router-link>
+        <div style="flex: 1" class="app-resource-buttons-center"></div>
+        <div class="md-navbar-button-group app-resource-buttons">
+          <md-link-button class="md-icon-button" :to="getUrlPath({search: true})">
+            <md-icon>search</md-icon>
+            <md-tooltip :md-direction="tooltipDirection">{{$t('search')}}</md-tooltip>
+          </md-link-button>
+          <hr>
+          <md-link-button
+              class="md-icon-button"
+              v-for="(resource, key) in resources"
+              :to="getUrlPath({type: key, archive: prefs.archive, personal: prefs.personal})"
+          >
+            <md-icon>{{resource.icon}}</md-icon>
+            <md-tooltip :md-direction="tooltipDirection">{{$tc(key + '.title', 2)}}</md-tooltip>
+          </md-link-button>
+          <hr>
+          <div class="speed-dial-container">
+            <md-speed-dial :md-direction="navbarVert ? 'right' : 'bottom'" @click.native="createSpeedDialOpen = !createSpeedDialOpen">
+              <md-button class="md-icon-button" md-fab-trigger>
+                <md-icon md-icon-morph>close</md-icon>
+                <md-icon>add</md-icon>
+                <md-tooltip :md-direction="tooltipDirection" v-show="!createSpeedDialOpen">{{$t('actions.create')}}</md-tooltip>
+              </md-button>
+              <md-link-button
+                  v-for="(resource, key) in resources"
+                  v-if="permissions[key].write || permissions['personal_' + key].write"
+                  :to="getUrlPath({type: key, create: true})"
+                  class="md-fab md-primary md-mini md-clean"
+              >
+                <md-icon>{{resource.icon}}</md-icon>
+              </md-link-button>
+            </md-speed-dial>
+          </div>
+        </div>
+        <div style="flex: 1"></div>
+        <md-menu md-size="6" :md-direction="navbarVert ? 'top right' : 'bottom left'" md-align-trigger @open="whatshotOpen = true" @close="whatshotOpen = false">
+          <md-button class="md-icon-button" :class="whatshotOpen ? 'md-active' : null" md-menu-trigger>
             <md-icon>whatshot</md-icon>
+            <md-tooltip :md-direction="tooltipDirection">{{$t('whatshot')}}</md-tooltip>
           </md-button>
           <md-menu-content class="md-dense">
             <journal></journal>
           </md-menu-content>
         </md-menu>
-        <account-switcher></account-switcher>
-      </template>
-
+        <md-link-button v-if="role === 'admin'" :to="getUrlPath({settings: true})" class="md-icon-button">
+          <md-icon>settings</md-icon>
+          <md-tooltip :md-direction="tooltipDirection">{{$t('settings.title')}}</md-tooltip>
+        </md-link-button>
+        <account-switcher :md-direction="navbarVert ? 'top right' : 'bottom left'"></account-switcher>
+      </md-toolbar>
       <div class="app-content full-height">
         <router-view></router-view>
       </div>
-
-      <md-list slot="sidebar">
-        <md-list-item class="menu-entry">
-          <router-link :to="getUrlPath()" exact>
-            <md-icon>home</md-icon>
-            <span>{{$t('overview.title')}}</span>
-            <router-link v-if="role === 'admin'" :to="getUrlPath({settings: true})" class="md-button md-icon-button md-list-action">
-              <md-icon>settings</md-icon>
-              <md-tooltip>{{$t('settings.title')}}</md-tooltip>
-            </router-link>
-          </router-link>
-        </md-list-item>
-        <md-list-item v-for="(resource, key) in resources" v-if="permissions[key].write || permissions['personal_' + key].write || permissions[key].read || permissions['personal_' + key].read">
-          <router-link :to="getUrlPath({type: key})">
-            <md-icon>{{resource.icon}}</md-icon>
-            <span>{{$tc(key + '.title', 2)}}</span>
-            <router-link v-if="permissions[key].write || permissions['personal_' + key].write" :to="getUrlPath({type: key, create: true})" class="md-button md-icon-button md-list-action">
-              <md-icon>add</md-icon>
-            </router-link>
-          </router-link>
-        </md-list-item>
-      </md-list>
-    </md-app>
+    </template>
 
     <md-message
         v-if="!organization"
@@ -81,6 +92,7 @@
   import File from '../models/File';
   import Current from '../models/Current';
   import auth from '../auth';
+  import Store from '../models/Store';
 
   /* global document */
   const titleElements = document.querySelectorAll(
@@ -123,14 +135,41 @@
     data() {
       return {
         organization: undefined,
+        organizationIcon: undefined,
         role: undefined,
         permissions: new Permissions(),
-        resources: Config.resources,
         Current,
         auth,
         title: undefined,
-        key: undefined
+        key: undefined,
+        whatshotOpen: false,
+        createSpeedDialOpen: false,
+        prefs: Store.bind('prefs', { archive: false, personal: false })
       };
+    },
+    computed: {
+      navbarVert() {
+        const $root = this.$root;
+        return Math.min($root.height, $root.width) > $root.breakpoints.xsmall;
+      },
+      tooltipDirection() {
+        return this.navbarVert ? 'right' : 'bottom';
+      },
+      resources() {
+        const resources = {};
+        const permissions = this.permissions;
+        Object.keys(Config.resources).forEach((key) => {
+          if (
+            permissions[key].write
+            || permissions['personal_' + key].write
+            || permissions[key].read
+            || permissions['personal_' + key].read
+          ) {
+            resources[key] = Config.resources[key];
+          }
+        });
+        return resources;
+      }
     },
     watch: {
       $route: {
@@ -188,14 +227,21 @@
                     this.$material.registerAndSetTheme(snapshot.key, this.organization.theme);
                   }
                   this.title = this.organization.title || (this.organization.name + ' ' + this.$t('thisPlatform'));
+                  this.organizationIcon = undefined;
                   setTitle(this.title);
                   ['icon', 'favicon'].forEach((type, isFavicon) => {
                     if (this.organization[type]) {
                       File.getURL(this.organization[type].id, (src) => {
                         setIcon(isFavicon, src);
+                        if (!isFavicon) {
+                          this.organizationIcon = src;
+                        }
                       });
                     } else {
                       setIcon(isFavicon, null);
+                      if (!isFavicon) {
+                        this.organizationIcon = null;
+                      }
                     }
                   });
                 });
@@ -259,36 +305,80 @@
         const user = Current.user;
         const orgKey = this.key;
         Firebase.database().ref('/security/organizations/' + orgKey + '/users/' + user.uid).set('?');
-      },
-      handleSearch(search) {
-        const path = this.getUrlPath({ search: true });
-        if (search === false) {
-          this.$router.replace(this.previousRoute || '/' + this.getUrlPath());
-        } else {
-          const query = Object.assign({}, this.$route.query);
-          if (search) {
-            query.q = search;
-          } else if (query.q) {
-            delete query.q;
-          }
-          if (this.$route.path.substr(0, path.length) !== path) {
-            this.previousRoute = { path: this.$route.path, query: this.$route.query };
-            this.$router.push({ path, query });
-          } else {
-            this.$router.replace({ query });
-          }
-        }
       }
     }
   };
 </script>
 
 <style lang="scss" rel="stylesheet/scss">
-  .menu-entry {
-    background-color: #fafafa;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-  }
-  .app-content .scroll-content {
-    padding: 16px;
+  #organization {
+    .organization-resource-nav {
+      text-align: center;
+    }
+    .app-nav {
+      position: relative;
+      z-index: 2;
+      flex-wrap: nowrap;
+    }
+    .app-content {
+      position: relative;
+      z-index: 1;
+    }
+    .app-nav:not(.md-navbar-vert) .app-resource-buttons {
+      white-space: nowrap;
+    }
+    .app-nav-xsmall {
+      padding-bottom: 48px;
+      .app-resource-buttons {
+        position: absolute;
+        left: 0;
+        right: 0;
+        padding: 4px 0 0;
+        bottom: 0;
+        background: rgba(#000, 0.12);
+      }
+    }
+    .app-nav.md-navbar-vert {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      & + .app-content {
+        padding-left: 64px;
+      }
+      .app-resource-buttons-center {
+        display: none;
+      }
+    }
+    .app-content {
+      .scroll-content {
+        padding: 16px;
+      }
+      > .scroll-container > .scroll-content {
+        padding-top: 0;
+        > .md-nav-bar {
+          margin-bottom: 16px;
+          position: sticky;
+          top: 0;
+          z-index: 3;
+          border-bottom: 2px solid rgba(#000, 0.08);
+          &:before {
+            content: " ";
+            display: block;
+            background: #F5F5F5;
+            position: absolute;
+            z-index: -1;
+            left: -16px;
+            right: -16px;
+            top: 0;
+            bottom: 0;
+          }
+        }
+        > .md-nav-bar + div {
+          position: relative;
+          z-index: 1;
+        }
+      }
+    }
   }
 </style>

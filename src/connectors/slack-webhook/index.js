@@ -55,7 +55,7 @@ export default class SlackWebhook {
     }
 
     data.pretext = '<'
-      + Current.app.getAbsoluteUrl({ user: Current.user })
+      + app.getAbsoluteUrl({ user: Current.user })
       + '|' + Current.user.displayName
       + '> '
       + entry.action.replace(/t$/, 'te') + 'd '

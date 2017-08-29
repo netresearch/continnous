@@ -1,17 +1,13 @@
 import MutationObserver from 'mutation-observer';
 import mdExtensionTheme from './extension.theme';
 import MdAvatarButton from './AvatarButton';
-import MdLinkButton from './LinkButton';
 import MdMessage from './Message';
-import MdApp from './App';
 
 import './extension.scss';
 
 const components = {
   MdAvatarButton,
-  MdLinkButton,
-  MdMessage,
-  MdApp
+  MdMessage
 };
 
 const registeredThemes = ['default'];
@@ -48,6 +44,8 @@ export default function install(Vue) {
   Vue.use(MdAutocomplete);
   const MdChipsInput = require('./MdChipsInput');
   Vue.component('md-chips-input', MdChipsInput);
+  const MdLinkButton = require('./MdLinkButton');
+  Vue.component('md-link-button', MdLinkButton);
 
   Object.keys(components).forEach((component) => {
     Vue.component(

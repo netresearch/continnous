@@ -6,16 +6,18 @@
       :personal="personal"
       additional-sort="_score"
   >
-    <router-link
-        slot="buttons"
-        v-for="result in results"
-        :to="{
-          path: getUrlPath(type === result.resource && personal === result.personal ? {search: true, type: null, personal: null} : {search: true, type: result.resource, personal: result.personal}),
-          query: $route.query
-        }"
-        class="md-button"
-    >{{$tc(result.resource + '.' + (result.personal ? 'personal' : 'title'), 2)}}</router-link>
-
+    <div class="search-form" :class="{'search-form-focused': searchFocus}" slot="title">
+      <md-icon>search</md-icon>
+      <input
+          ref="searchInput"
+          type="text"
+          :value="q"
+          :placeholder="$t('search')"
+          @focus="searchFocus = true"
+          @blur="searchFocus = false"
+          @input="handleInput">
+      <md-icon @click.native.stop="handleInput(false)">clear</md-icon>
+    </div>
     <router-view></router-view>
   </resource-list>
 </template>
@@ -40,7 +42,8 @@
         sort: '_score',
         order: 'desc',
         q: undefined,
-        Current
+        Current,
+        searchFocus: false
       };
     },
     watch: {
@@ -55,7 +58,32 @@
         handler: 'search'
       },
     },
+    mounted() {
+      if (!this.q) {
+        this.$refs.searchInput.focus();
+      }
+    },
     methods: {
+      handleInput(cleared) {
+        const path = this.getUrlPath({ search: true });
+        if (cleared === false) {
+          this.$router.replace(this.previousRoute || '/' + this.getUrlPath());
+        } else {
+          const q = this.$refs.searchInput.value;
+          const query = Object.assign({}, this.$route.query);
+          if (q) {
+            query.q = q;
+          } else if (query.q) {
+            delete query.q;
+          }
+          if (this.$route.path.substr(0, path.length) !== path) {
+            this.previousRoute = { path: this.$route.path, query: this.$route.query };
+            this.$router.push({ path, query });
+          } else {
+            this.$router.replace({ query });
+          }
+        }
+      },
       search(reason) {
         this.$nextTick(() => {
           const query = this.$route.query;
@@ -125,3 +153,48 @@
     }
   };
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .search-form {
+    height: 48px;
+    margin-bottom: -1px;
+    display: flex;
+    flex-flow: row;
+    flex: 1;
+    transition: background 100ms ease-in, width 100ms ease-out;
+    cursor: pointer;
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    &.search-form-focused {
+      border-bottom: 2px solid rgba(#000, 0.48);
+    }
+    .md-icon {
+      margin-left: 8px;
+      margin-right: 16px;
+    }
+    input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      font-size: inherit;
+      cursor: text;
+      &:focus {
+        border: none;
+        outline: none;
+      }
+      color: inherit !important;
+      &::-webkit-input-placeholder {
+        color: inherit !important;
+      }
+      &:-moz-placeholder {
+        color: inherit !important;
+      }
+      &::-moz-placeholder {
+        color: inherit !important;
+      }
+      &:-ms-input-placeholder {
+        color: inherit !important;
+      }
+    }
+  }
+</style>

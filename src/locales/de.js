@@ -22,6 +22,7 @@ module.exports = {
     de: 'Deutsch',
     en: 'Englisch',
   },
+  whatshot: 'What\'s hot',
   settings: {
     title: 'Einstellungen',
     icons: 'Icons',
@@ -88,6 +89,7 @@ module.exports = {
   unelevated: 'Nicht erhöht',
   elevated: 'Erhöht',
   actions: {
+    create: 'Erstellen',
     edit: 'Bearbeiten',
     delete: 'Löschen',
     reset: 'Zurücksetzen',
@@ -260,6 +262,7 @@ module.exports = {
   search: 'Suche',
   and: 'und',
   archive: 'Archiv',
+  personal: 'Persönlich',
   noMatches: 'Keine passenden Ergebnisse gefunden',
   sort: {
     sort: 'Sortieren nach',

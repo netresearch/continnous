@@ -352,7 +352,7 @@
       positionAutocomplete() {
         const selection = window.getSelection();
         const ac = this.$refs.autocomplete.$el;
-        if (!selection) {
+        if (!selection || !selection.anchorNode) {
           ac.removeAttribute('style');
           return;
         }

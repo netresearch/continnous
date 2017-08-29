@@ -3,7 +3,7 @@
     <p class="md-caption">{{$tc('domain', 2)}}</p>
     <card-form
         ref="form"
-        :firebase-path="'/security/organizations/' + organization.key + '/domains'"
+        :firebase-path="'/security/organizations/' + Current.organization.key + '/domains'"
         :firebase-bind="true"
         :validate="{member: isDomainArrayValid, guest: isDomainArrayValid}"
         :keys="['member', 'guest']"

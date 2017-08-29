@@ -1,6 +1,6 @@
 <template>
   <resource-list
-      :title="$tc(type + '.title', 2)"
+      class="resource-index"
       :type="type"
       :archive="archive"
       :items="items"
@@ -10,17 +10,12 @@
       :sort="sort"
       :order="order"
       archive-enabled
+      :personal-enabled="Current.permissions['personal_' + type].read"
   >
-    <md-link-button
-        slot="buttons"
-        v-for="(name, p) in [Current.organization.name + ' ' + $tc(type + '.title', 2), $tc(type + '.personal', 2)]"
-        :to="getUrlPath({personal: !!p})"
-        v-if="Current.permissions[(p ? 'personal_' : '') + type].read || Current.permissions[(p ? 'personal_' : '') + type].write"
-        exact
-        :class="{'router-link-active': !p && !personal || p && personal}">
-      {{name}}
-    </md-link-button>
-
+    <template slot="title">
+      <md-icon>{{Config.resources[type].icon}}</md-icon>
+      <h2 class="md-title">{{$tc(type + '.title', 2)}}</h2>
+    </template>
     <router-view v-if="type" :type="type"></router-view>
   </resource-list>
 </template>
@@ -47,14 +42,15 @@
         archive: false,
         period: undefined,
         status: 0,
-        Current
+        Current,
+        Config
       };
     },
     watch: {
       $route: {
         immediate: true,
         handler(route) {
-          if (route.params.id && this.type) {
+          if ((route.params.id || route.params.create) && this.type) {
             return;
           }
           const p = {
@@ -141,3 +137,13 @@
     }
   };
 </script>
+
+<style lang="scss" rel="stylesheet/scss">
+  .resource-index {
+    > .md-toolbar {
+      .md-icon:first-child {
+        margin-right: 8px;
+      }
+    }
+  }
+</style>

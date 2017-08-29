@@ -161,31 +161,89 @@ p.md-caption {
     }
   }
 }
-.md-nav-bar > .md-button {
-  margin: 6px 0;
-  overflow: visible;
-  &:first-child {
-    margin-left: -8px;
-    margin-right: 0;
-  }
-  &:hover {
-    background: transparent !important;
-  }
-  &.md-active,
-  &.router-link-active {
-    &:after {
-      content: "";
-      display: block;
-      height: 2px;
-      background: #fff;
-      position: absolute;
-      bottom: -6px;
-      left: 0;
-      right: 0;
+
+.md-nav-bar {
+  $padding: 8px;
+  $sidebar-width: 64px;
+  &:not(.md-navbar-vert) {
+    .md-button:not(.md-active) {
+      color: rgba(#000, 0.64);
+      &:hover {
+        color: inherit;
+      }
     }
   }
-  &.md-icon-button {
-    margin: 0;
+  hr {
+    border: none;
+    height: 40px;
+    width: 1px;
+    margin: 0 8px;
+    display: inline-block;
+  }
+  .md-app-icon {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    margin: 0 12px 0 0;
+    img {
+      height: 100%;
+    }
+  }
+  &.md-navbar-vert {
+    width: $sidebar-width;
+    flex-flow: column wrap-reverse;
+    overflow: visible;
+    padding: $padding;
+    .md-app-icon {
+      width: 32px;
+      height: 32px;
+      margin: 0 0 12px;
+    }
+    hr {
+      height: 1px;
+      width: 40px;
+      margin: 8px 0;
+    }
+  }
+  .speed-dial-container {
+    display: inline-block;
+    max-width: 100%;
+    height: 40px;
+    width: 40px;
+    overflow: visible;
+    position: relative;
+    .md-speed-dial {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+  }
+  .md-navbar-button-group {
+    text-align: center;
+  }
+  > .md-button,
+  > .md-navbar-button-group > .md-button {
+    margin: 6px 0;
+    overflow: visible;
+    &:hover {
+      background: transparent !important;
+    }
+    &.md-active,
+    &.router-link-active {
+      border-radius: 4px;
+    }
+    &.md-icon-button {
+      margin: 0;
+    }
+  }
+  > .md-menu > .md-button.md-active {
+    border-radius: 4px 4px 0 0;
+  }
+  &.md-navbar-vert {
+    > .md-menu > .md-button.md-active {
+      border-radius: 0 0 4px 4px;
+    }
   }
 }
 

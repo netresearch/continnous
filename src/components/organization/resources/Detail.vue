@@ -16,21 +16,16 @@
   >
     <div class="resource-detail-backdrop" @click="close()"></div>
     <md-whiteframe md-elevation="2" v-if="item">
-      <md-toolbar class="md-dense resource-detail-mobile-head">
-        <md-whiteframe md-elevation="2"></md-whiteframe>
-        <h2 class="md-title" style="flex: 1">{{personal ? $tc(type + '.personal', 2) : Current.organization.name + ' ' + $tc(type + '.personal', 2)}}</h2>
-        <md-button class="md-icon-button" @click.native="close()"><md-icon>chevron_left</md-icon></md-button>
-      </md-toolbar>
       <div :class="['resource-detail-head', {'resource-detail-head-elevate': scrollTop > 0}]" v-if="item">
         <avatar v-if="id" :uid="item.creator">
           <template scope="avatar">
             <span class="avatar-name">{{avatar.user.displayName}}</span>
             <span class="md-caption">
-                  {{moment(item.created).fromNow()}}
-                  <span v-if="item.updated > item.created">
-                    ({{$t('detail.updated', {ago: moment(item.updated).fromNow()})}})
-                  </span>
-                </span>
+              {{moment(item.created).fromNow()}}
+              <span v-if="item.updated > item.created">
+                ({{$t('detail.updated', {ago: moment(item.updated).fromNow()})}})
+              </span>
+            </span>
           </template>
         </avatar>
         <h3 v-else-if="type" style="flex: 1">{{$t(type + '.new')}}</h3>
@@ -106,7 +101,7 @@
             </resource-links>
           </template>
         </div>
-        <div class="resource-detail-aside" :style="{top: scrollTop + (scrollTop ? 'px' : '')}">
+        <div class="resource-detail-aside">
           <template v-if="id && !edit">
             <div v-if="period" class="resource-detail-section">
               <md-icon>
@@ -344,13 +339,13 @@
 <style lang="scss" rel="stylesheet/scss">
   $padding: 32px;
   .resource-detail {
-    padding: $padding;
     position: absolute;
     left: 0;
     top: 0;
     right: 0;
     bottom: 0;
-    z-index: 2;
+    z-index: 4;
+    padding-top: 16px;
   }
   .resource-detail-backdrop {
     background: rgba(#000, 0.36);
@@ -367,17 +362,17 @@
   .resource-detail > .md-whiteframe {
     overflow: hidden;
     background: #fff;
-    border-radius: 4px;
-    margin: 0 auto;
     max-height: 100%;
     max-width: 1000px;
     display: flex;
     flex-flow: column;
+    margin: 0 auto;
   }
   .resource-detail-head {
     transition: all 0.2s;
     border-bottom: 1px solid rgba(#000, 0.12);
-    position: relative;
+    position: static;
+    top: 0;
     z-index: 2;
     display: flex;
     flex-flow: row wrap;
@@ -413,13 +408,12 @@
     }
   }
   .resource-detail-body {
+    overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     z-index: 1;
     max-height: calc(100% - 64px);
-    overflow: auto;
-    overflow-x: hidden;
-    padding: $padding;
-    padding-right: 0;
+    padding: 0 0 $padding $padding;
     &:after {
       content: ".";
       clear: both;
@@ -434,8 +428,13 @@
     padding-right: $padding;
     float: left;
   }
+  .resource-detail-main {
+    padding-top: $padding;
+  }
   .resource-detail-aside {
-    position: relative;
+    position: sticky;
+    top: 0;
+    padding-top: $padding;
     padding-right: $padding;
     float:right;
     width: 296px;
@@ -500,6 +499,9 @@
       color: rgba(#000, 0.32);
       left: 6px;
       top: 0px;
+    }
+    &:first-child > .md-icon {
+      top: -2px;
     }
     .resource-detail-section-content {
       padding-top: 4px;
@@ -589,39 +591,27 @@
   /*
       Mobile stuff
   */
-  .resource-detail-mobile-head {
-    position: relative;
-    overflow: hidden;
-    padding-left: $padding;
-    z-index: 3;
-    .md-whiteframe {
-      position: absolute;
-      height: 10px;
-      top: -10px;
-      left: -10px;
-      right: -10px;
-    }
-  }
-
+  $detail-max-width: 1000px;
   $main-max-width: 600px;
-  $sidebar-from: 928px;
-  $sidebar-width: 304px;
-  @media (max-width: $sidebar-from) {
+  $sidebar-from: 600px;
+  $sidebar-width: 64px;
+  @media (max-width: $detail-max-width + $sidebar-width) {
     .resource-detail {
       padding: 0;
       > .md-whiteframe {
-        border-radius: 0;
         box-shadow: none;
         height: 100%;
       }
     }
-    .resource-detail-close {
-      display: none;
-    }
   }
-  @media (min-width: $sidebar-from) {
-    .resource-detail-mobile-head {
-      display: none;
+  @media (max-width: $sidebar-from) {
+    .resource-detail-body, .resource-detail-head {
+      padding-left: 16px;
+    }
+    .resource-detail-head,
+    .resource-detail-main,
+    .resource-detail-aside {
+      padding-right: 16px;
     }
   }
   @media (min-width: $sidebar-from) and (max-width: $sidebar-width + $main-max-width + ((4 * $padding) + 40px)),

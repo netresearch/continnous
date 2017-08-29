@@ -6,7 +6,7 @@
       <resource-image :image="item.image"></resource-image>
       <editor-text class="resource-detail-description" v-if="item.description" :text="item.description"></editor-text>
     </template>
-    
+
     <slot></slot>
   </div>
 </template>

@@ -93,7 +93,7 @@ Object.keys(Config.resources).forEach((resource) => {
     component: OrganizationResourcesPage,
     children: [
       { path: ':id(-[^/]+)/:edit(edit)?', component: OrganizationResourcesResource },
-      { path: 'create', component: OrganizationResourcesResource }
+      { path: ':create(create)', component: OrganizationResourcesResource }
     ]
   });
   organizationRoute.children.push({

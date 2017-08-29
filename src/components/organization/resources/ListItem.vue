@@ -40,22 +40,20 @@
     },
     computed: {
       to() {
-        const isSearch = !!this.$route.params.search;
-        const params = Object.assign({}, this.$route.params, { id: this.item.id });
-        if (isSearch) {
-          ['type', 'personal', 'archive'].forEach((key) => {
-            if (params[key] === undefined) {
-              params[key] = null;
-            }
-          });
+        if (!this.$route.params.search) {
+          return this.getUrlPath(this.item);
         }
+        const params = Object.assign({}, this.$route.params, { id: this.item.id });
+        ['type', 'personal', 'archive'].forEach((key) => {
+          if (params[key] === undefined) {
+            params[key] = null;
+          }
+        });
         const path = this.getUrlPath(params);
         const query = Object.assign({}, this.$route.query);
-        if (isSearch) {
-          query.type = this.item.resource;
-          if (this.item.personal) {
-            query.personal = 1;
-          }
+        query.type = this.item.resource;
+        if (this.item.personal) {
+          query.personal = 1;
         }
         return { path, query };
       }

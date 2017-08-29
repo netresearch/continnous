@@ -65,16 +65,34 @@ Vue.mixin({
 });
 
 /* eslint-disable no-new */
+/* global window */
 new Vue({
   el: '#app',
   router: new VueRouter(Routes),
   template: '<App/>',
   components: { App },
   data() {
-    return { historyLength: 0 };
+    return {
+      historyLength: 0,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      breakpoints: {
+        xsmall: 600,
+        small: 960,
+        medium: 1280,
+        large: 1920
+      }
+    };
   },
-  beforeRouteLeave(to, from, next) {
-    this.historyLength++;
-    next();
+  watch: {
+    $route() {
+      this.historyLength++;
+    }
+  },
+  created() {
+    window.addEventListener('resize', () => {
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+    });
   },
 });

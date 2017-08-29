@@ -9,84 +9,89 @@
     'resources-list-' + (masonry ? 'masonry' : 'stream'),
     'resources-list-' + columns + '-columns'
     ]">
-    <md-toolbar class="md-dense">
-      <h2 class="md-title">{{title}}</h2>
-    </md-toolbar>
-    <md-toolbar class="md-dense md-nav-bar">
-      <slot name="buttons"></slot>
-      <div style="flex: 1"></div>
-      <template v-if="period">
-        <md-link-button
-            class="md-icon-button resources-list-period-button"
-            :to="getUrlPath({period: period.getPrevious().getId()})"
-        ><md-icon>chevron_left</md-icon></md-link-button>
-        <span class="resources-list-period">{{period.format()}}</span>
-        <md-link-button
-            class="md-icon-button resources-list-period-button"
-            :to="getUrlPath({period: period.getNext().getId()})"
-        ><md-icon>chevron_right</md-icon></md-link-button>
-        <div style="flex: 1"></div>
-      </template>
-      <md-menu v-else md-direction="bottom left" md-size="4">
-        <md-button md-menu-trigger>
-          <template v-for="field in sortFields" v-if="field.current">
-            <md-icon>arrow_{{reverseOrderQuery.order !== 'desc' ? 'down' : 'up'}}ward</md-icon>
-            {{$t('fields.' + field.name)}}
-          </template>
-        </md-button>
-        <md-menu-content>
-          <md-subheader>{{$t('sort.sort')}}</md-subheader>
-          <md-menu-item
-              v-for="field in sortFields"
-              @selected="$router.replace({query: field.query})"
-              :disabled="field.current"
-          >{{$t('fields.' + field.name)}}</md-menu-item>
-          <md-divider></md-divider>
-          <md-subheader>{{$t('sort.order')}}</md-subheader>
-          <md-menu-item
-              v-for="order in ['asc', 'desc']"
-              @selected="$router.replace({query: reverseOrderQuery})"
-              :disabled="reverseOrderQuery.order !== order"
-          >
-            <span>{{$t('sort.' + order)}}</span>
-            <md-icon>arrow_{{order === 'desc' ? 'down' : 'up'}}ward</md-icon>
-          </md-menu-item>
-        </md-menu-content>
-      </md-menu>
-      <md-button class="md-icon-button" @click.native="masonry = !masonry">
-        <md-icon>{{'view_' + (masonry ? 'stream' : 'quilt')}}</md-icon>
-      </md-button>
-      <md-link-button v-if="archiveEnabled" :to="getUrlPath({archive: !archive})" :class="{'md-contrast': archive}">
-        <md-icon>archive</md-icon>
-        <span>{{$t('archive')}}</span>
-      </md-link-button>
-    </md-toolbar>
-
     <div class="scroll-content">
-      <div v-if="status === 1 && !items.length">
-        <template v-if="archive">
-          {{$t('archiveEmpty')}}
+      <md-toolbar class="md-dense md-transparent md-nav-bar">
+        <slot name="title">
+          <h2 class="md-title">{{title}}</h2>
+        </slot>
+        <div style="flex: 1"></div>
+        <template v-if="period">
+          <md-link-button
+              class="md-icon-button resources-list-period-button"
+              :to="getUrlPath({period: period.getPrevious().getId()})"
+          ><md-icon>chevron_left</md-icon></md-link-button>
+          <span class="resources-list-period">{{period.format()}}</span>
+          <md-link-button
+              class="md-icon-button resources-list-period-button"
+              :to="getUrlPath({period: period.getNext().getId()})"
+          ><md-icon>chevron_right</md-icon></md-link-button>
+          <div style="flex: 1"></div>
         </template>
-        <template v-else>
-          {{
-            $t(personal ? 'youDontHave' : 'thereAreNo', {accusative: $t(type + '.' + (personal ? 'personal_' : '') + 'accusative')})
-            + (period ? ' ' + $t('for') + ' ' + period.format() : '')
-            + (Current.permissions[(personal ? 'personal_' : '') + type].write ? '' : '.')
-          }}
-          <template v-if="Current.permissions[(personal ? 'personal_' : '') + type].write">
-            - {{$t('howAbout')}}
-            <router-link :to="getUrlPath({create: true})">
-              {{$t('addingOne', {accusative_one: $t(type + '.accusative_one')})}}</router-link>?
-          </template>
-        </template>
-      </div>
-      <slot></slot>
+        <md-menu v-else md-direction="bottom left" md-size="4">
+          <md-button md-menu-trigger>
+            <template v-for="field in sortFields" v-if="field.current">
+              <md-icon>arrow_{{reverseOrderQuery.order !== 'desc' ? 'down' : 'up'}}ward</md-icon>
+              {{$t('fields.' + field.name)}}
+            </template>
+          </md-button>
+          <md-menu-content>
+            <md-subheader>{{$t('sort.sort')}}</md-subheader>
+            <md-menu-item
+                v-for="field in sortFields"
+                @selected="$router.replace({query: field.query})"
+                :disabled="field.current"
+            >{{$t('fields.' + field.name)}}</md-menu-item>
+            <md-divider></md-divider>
+            <md-subheader>{{$t('sort.order')}}</md-subheader>
+            <md-menu-item
+                v-for="order in ['asc', 'desc']"
+                @selected="$router.replace({query: reverseOrderQuery})"
+                :disabled="reverseOrderQuery.order !== order"
+            >
+              <span>{{$t('sort.' + order)}}</span>
+              <md-icon>arrow_{{order === 'desc' ? 'down' : 'up'}}ward</md-icon>
+            </md-menu-item>
+          </md-menu-content>
+        </md-menu>
+        <md-button class="md-icon-button" @click.native="masonry = !masonry">
+          <md-icon>{{'view_' + (masonry ? 'stream' : 'quilt')}}</md-icon>
+        </md-button>
+        <md-button
+            v-for="(key, isArchive) in ['personal', 'archive']"
+            v-if="isArchive ? archiveEnabled : personalEnabled"
+            :class="['md-icon-button', {'md-active': isArchive ? archive : personal}]"
+            @click.native="Store.set('prefs.' + key, isArchive ? !archive : !personal); $router.push(getUrlPath(isArchive ? {archive: !archive} : {personal: !personal}))"
+        >
+          <md-icon>{{isArchive ? 'archive' : 'lock_outline'}}</md-icon>
+          <md-tooltip>{{$t(key)}}</md-tooltip>
+        </md-button>
+      </md-toolbar>
+
       <div ref="list" :class="['resources-list']">
         <div :class="['resources-list-item', 'item-' + item.id]" v-for="item in items">
           <resource-item :item="item" @resource-image-shown="updateMasonry"></resource-item>
         </div>
       </div>
     </div>
+
+    <div v-if="status === 1 && !items.length">
+      <template v-if="archive">
+        {{$t('archiveEmpty')}}
+      </template>
+      <template v-else>
+        {{
+          $t(personal ? 'youDontHave' : 'thereAreNo', {accusative: $t(type + '.' + (personal ? 'personal_' : '') + 'accusative')})
+          + (period ? ' ' + $t('for') + ' ' + period.format() : '')
+          + (Current.permissions[(personal ? 'personal_' : '') + type].write ? '' : '.')
+        }}
+        <template v-if="Current.permissions[(personal ? 'personal_' : '') + type].write">
+          - {{$t('howAbout')}}
+          <router-link :to="getUrlPath({create: true})">
+            {{$t('addingOne', {accusative_one: $t(type + '.accusative_one')})}}</router-link>?
+        </template>
+      </template>
+    </div>
+    <slot></slot>
   </div>
 </template>
 
@@ -94,6 +99,7 @@
   import Masonry from 'masonry-layout';
   import ResourceItem from './ListItem';
   import Current from '../../../models/Current';
+  import Store from '../../../models/Store';
 
   export default {
     components: { ResourceItem },
@@ -105,6 +111,7 @@
       archive: Boolean,
       archiveEnabled: Boolean,
       personal: Boolean,
+      personalEnabled: Boolean,
       sort: String,
       order: String,
       additionalSort: [String, Array],
@@ -119,7 +126,8 @@
         mounted: false,
         masonry: true,
         columns: 1,
-        Current
+        Current,
+        Store
       };
     },
     computed: {
@@ -217,6 +225,8 @@
 <style lang="scss" rel="stylesheet/scss">
   .resources-list-container {
     position: relative;
+    > .md-toolbar {
+    }
   }
   .resources-list {
     position: relative;

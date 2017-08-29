@@ -2,7 +2,7 @@
   <div class="auth">
     <template v-if="auth.ready">
       <md-button @click.native="auth.login()" v-if="!Current.user">Login</md-button>
-      <md-menu md-direction="bottom left" md-size="6" v-else>
+      <md-menu :md-direction="mdDirection" md-size="6" v-else>
         <md-avatar-button md-menu-trigger><img :src="Current.user.photoURL"></md-avatar-button>
         <md-menu-content>
           <div class="account-card">
@@ -38,6 +38,9 @@
   import Current from '../models/Current';
 
   export default {
+    props: {
+      mdDirection: String
+    },
     data() {
       return {
         auth,

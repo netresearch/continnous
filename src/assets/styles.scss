@@ -24,14 +24,16 @@ hr {
       flex-flow: row;
       > div {
         flex: 1 0 0;
-        &.scroll-content {
-          overflow: auto;
-        }
+        height: auto;
       }
     }
     &.scroll-content {
       flex: 1 1 auto;
-      overflow: auto;
+      height: auto;
     }
   }
+}
+.scroll-content {
+  overflow: auto;
+  height: 100%;
 }

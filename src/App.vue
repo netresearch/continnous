@@ -1,4 +1,6 @@
 <script>
+import Current from './models/Current';
+
 export default {
   name: 'app',
   data() {
@@ -8,6 +10,9 @@ export default {
       errors: [],
       mouse: false
     };
+  },
+  created() {
+    Current.app = this;
   },
   mounted() {
     /* global document */
