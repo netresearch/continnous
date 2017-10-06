@@ -102,7 +102,6 @@
         parentForm: undefined,
         subFormsChanged: 0,
         subFormsErrors: 0,
-        subFormsMissing: 0,
         elements: [],
         subForms: []
       };

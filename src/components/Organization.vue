@@ -31,7 +31,7 @@
               <md-link-button
                   v-for="(resource, key) in resources"
                   v-if="permissions[key].write || permissions['personal_' + key].write"
-                  :to="getUrlPath({type: key, create: true})"
+                  :to="getUrlPath({type: key, create: true, personal: !permissions[key].write})"
                   class="md-fab md-primary md-mini md-clean"
               >
                 <md-icon>{{resource.icon}}</md-icon>

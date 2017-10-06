@@ -72,24 +72,24 @@
           <resource-item :item="item" @resource-image-shown="updateMasonry"></resource-item>
         </div>
       </div>
-    </div>
 
-    <div v-if="status === 1 && !items.length">
-      <template v-if="archive">
-        {{$t('archiveEmpty')}}
-      </template>
-      <template v-else>
-        {{
+      <div class="resources-list-no-items" v-if="status === 1 && !items.length">
+        <template v-if="archive">
+          {{$t('archiveEmpty')}}
+        </template>
+        <template v-else>
+          {{
           $t(personal ? 'youDontHave' : 'thereAreNo', {accusative: $t(type + '.' + (personal ? 'personal_' : '') + 'accusative')})
           + (period ? ' ' + $t('for') + ' ' + period.format() : '')
           + (Current.permissions[(personal ? 'personal_' : '') + type].write ? '' : '.')
-        }}
-        <template v-if="Current.permissions[(personal ? 'personal_' : '') + type].write">
-          - {{$t('howAbout')}}
-          <router-link :to="getUrlPath({create: true})">
-            {{$t('addingOne', {accusative_one: $t(type + '.accusative_one')})}}</router-link>?
+          }}
+          <template v-if="Current.permissions[(personal ? 'personal_' : '') + type].write">
+            - {{$t('howAbout')}}
+            <router-link :to="getUrlPath({create: true})">
+              {{$t('addingOne', {accusative_one: $t(type + '.accusative_one')})}}</router-link>?
+          </template>
         </template>
-      </template>
+      </div>
     </div>
     <slot></slot>
   </div>
@@ -275,5 +275,12 @@
     &.resources-list-5-columns .resources-list-item {
       width: 20%;
     }
+  }
+  .resources-list-no-items {
+    position: absolute;
+    top: 15%;
+    left: 0;
+    width: 100%;
+    text-align: center;
   }
 </style>

@@ -156,8 +156,8 @@
 
 <style lang="scss" rel="stylesheet/scss">
   .search-form {
-    height: 48px;
-    margin-bottom: -1px;
+    height: 50px;
+    margin-bottom: -2px;
     display: flex;
     flex-flow: row;
     flex: 1;
