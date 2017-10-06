@@ -1,6 +1,6 @@
 <template>
   <div class="scroll-container">
-    <md-toolbar class="md-dense">
+    <md-toolbar class="md-dense md-transparent md-nav-bar">
       <h2 class="md-title">{{$t('overview.title')}}</h2>
     </md-toolbar>
     <div class="scroll-content">
