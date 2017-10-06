@@ -275,6 +275,12 @@
     &.resources-list-5-columns .resources-list-item {
       width: 20%;
     }
+    &.resources-list-6-columns .resources-list-item {
+      width: 16.6667%;
+    }
+    &.resources-list-7-columns .resources-list-item {
+      width: 14.2857%;
+    }
   }
   .resources-list-no-items {
     position: absolute;
