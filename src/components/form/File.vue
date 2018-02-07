@@ -220,27 +220,32 @@
           }
         }
         acceptedFiles.forEach((file) => {
-          const fileObject = this.createFileObject({
-            name: file.name,
-            id: this.generateUid()
-          });
-          this.files.push(fileObject);
-          fileObject.file = file;
+          const addFile = (fileData) => {
+            const fileObject = this.createFileObject({
+              name: file.name,
+              id: this.generateUid(),
+              ...(fileData || {}),
+              file
+            });
+            if (fileObject.preview && this.registerPreviewUrl) {
+              this.registerPreviewUrl(fileObject, fileObject.preview);
+            }
+            this.files.push(fileObject);
+            this.triggerChange();
+          };
           if (file.type.substr(0, 6) === 'image/'
             && ['jpeg', 'jpg', 'png', 'gif'].indexOf(file.type.substr(6)) > -1) {
             this.resizeImage(file).then(
               (res) => {
-                if (this.registerPreviewUrl) {
-                  this.registerPreviewUrl(fileObject, res.url);
-                }
-                fileObject.preview = res.url;
-                fileObject.width = res.width;
-                fileObject.height = res.height;
-                this.triggerChange();
+                addFile({
+                  preview: res.url,
+                  width: res.width,
+                  height: res.height
+                });
               }
             );
           } else {
-            this.triggerChange();
+            addFile();
           }
         });
       },
