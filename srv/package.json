@@ -1,0 +1,29 @@
+{
+  "name": "continnous-server",
+  "version": "1.0.0",
+  "description": "Server for continnous",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/netresearch/continnous.git"
+  },
+  "keywords": [
+    "continnous"
+  ],
+  "author": "Christian Opitz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/netresearch/continnous/issues"
+  },
+  "homepage": "https://github.com/netresearch/continnous#readme",
+  "dependencies": {
+    "deepstream.io": "^3.1.2",
+    "deepstream.io-storage-elasticsearch": "^1.0.1"
+  },
+  "peerDependencies": {
+    "express": "^4.16.2"
+  }
+}
